@@ -1,1 +1,1 @@
-Welcome to Team Dangle's Lotto Project. Please refer to our [wiki](https://github.com/CMPUT301F25dangle/dangle-lotto/wiki) for up to date project documentation and deliverables.
+Welcome to Team Dangle's Lotto Project. Please refer to our [wiki](https://github.com/CMPUT301F25dangle/dangle-lotto/wiki) for up to date project documentation and deliverables. You can find the scrum board [here](https://github.com/orgs/CMPUT301F25dangle/projects/1).

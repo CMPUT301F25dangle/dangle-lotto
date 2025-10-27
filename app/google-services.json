@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "394294845633",
+    "project_id": "dangle-lotto-dd0b9",
+    "storage_bucket": "dangle-lotto-dd0b9.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:394294845633:android:489a4f78660e2df9d3f440",
+        "android_client_info": {
+          "package_name": "com.dangle.lotto"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBtRQXHmGBw2y5VpeY9Qwlwk3uEB3hskMM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

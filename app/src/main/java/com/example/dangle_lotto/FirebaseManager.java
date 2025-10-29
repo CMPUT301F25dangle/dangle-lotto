@@ -28,6 +28,9 @@ public class FirebaseManager {
 
         users.document(uid).set(data);;
 
+    }
+
+    public void addEvent(String name, String date, String time, String location, String description){
 
     }
 

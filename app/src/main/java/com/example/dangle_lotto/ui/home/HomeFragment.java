@@ -36,6 +36,7 @@ public class HomeFragment extends Fragment {
         RecyclerView recyclerView = binding.homeEventRecyclerView;
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
         ArrayList<Event> events = new ArrayList<>();
+        // temporarily adding for testing
         for (int i = 1; i < 4; i++) {
             events.add(new Event(String.format("Example %d", i), R.drawable.event_card_test_image));
         }

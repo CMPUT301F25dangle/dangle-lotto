@@ -76,8 +76,8 @@ public class Event {
     }
 
     // select chosen attendees from signups list
-    public ArrayList<User> chooseLottoWinners() {
-        ArrayList<User> winners = new ArrayList<>();
+    public ArrayList<String> chooseLottoWinners() {
+        ArrayList<String> winners = new ArrayList<>();
         if (signUps.isEmpty()) {
             System.out.println("No sign-ups yet");
             return winners;
@@ -86,7 +86,7 @@ public class Event {
             winners = new ArrayList<>(signUps);
             return winners;
         }
-        ArrayList<User> shuffled = new ArrayList<>(signUps);
+        ArrayList<String> shuffled = new ArrayList<>(signUps);
         Collections.shuffle(shuffled);
 
         for (int i = 0; i < eventSize; i++) {

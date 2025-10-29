@@ -1,11 +1,10 @@
 package com.example.dangle_lotto;
 
-import com.google.type.DateTime;
+import com.google.firebase.Timestamp;
 
 public class Event {
     String name;
-    DateTime date;
-    DateTime time;
+    Timestamp date;
     String location;
     String description;
     int eventSize;

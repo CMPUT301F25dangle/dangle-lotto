@@ -6,18 +6,17 @@ import java.util.ArrayList;
 
 public class Event {
     String name;
-    Timestamp date;
-    Timestamp time;
+    Timestamp datetime;
     String location;
     String description;
     int eventSize;
-    String eid;
+    final String eid;
     ArrayList<User> signUps = new ArrayList<>();
 
-    public Event(String name, Timestamp date, Timestamp time, String location, String description, int eventSize) {
+    public Event(String eid, String name, Timestamp datetime, String location, String description, int eventSize) {
+        this.eid = eid;
         this.name = name;
-        this.date = date;
-        this.time = time;
+        this.datetime = datetime;
         this.location = location;
         this.description = description;
         this.eventSize = eventSize;
@@ -39,20 +38,12 @@ public class Event {
         this.location = location;
     }
 
-    public Timestamp getTime() {
-        return time;
-    }
-
-    public void setTime(Timestamp time) {
-        this.time = time;
-    }
-
     public Timestamp getDate() {
-        return date;
+        return datetime;
     }
 
-    public void setDate(Timestamp date) {
-        this.date = date;
+    public void setDate(Timestamp datetime) {
+        this.datetime = datetime;
     }
 
     public String getName() {
@@ -73,10 +64,6 @@ public class Event {
 
     public String getEid () {
         return eid;
-    }
-
-    public void setEid(String eid) {
-        this.eid = eid;
     }
 
     public void addUser(ArrayList<User> signUps, User newUser) {

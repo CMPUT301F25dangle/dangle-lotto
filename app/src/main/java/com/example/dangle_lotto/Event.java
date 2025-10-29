@@ -12,15 +12,18 @@ public class Event {
     String description;
     int eventSize;
     final String eid;
-    ArrayList<User> signUps = new ArrayList<>();
+    ArrayList<String> signUps = new ArrayList<>();
 
-    public Event(String eid, String name, Timestamp datetime, String location, String description, int eventSize) {
+    FirebaseManager firebaseManager;
+
+    public Event(String eid, String name, Timestamp datetime, String location, String description, int eventSize, FirebaseManager firebaseManager) {
         this.eid = eid;
         this.name = name;
         this.datetime = datetime;
         this.location = location;
         this.description = description;
         this.eventSize = eventSize;
+        this.firebaseManager = firebaseManager;
     }
 
     // getters and setters
@@ -68,8 +71,8 @@ public class Event {
         return eid;
     }
 
-    public void addUser(ArrayList<User> signUps, User newUser) {
-        signUps.add(newUser);
+    public void addUser(String uid) {
+        signUps.add(uid);
     }
 
     // select chosen attendees from signups list

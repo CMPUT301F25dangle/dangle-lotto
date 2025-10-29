@@ -3,6 +3,7 @@ package com.example.dangle_lotto;
 import com.google.firebase.Timestamp;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class Event {
     String name;
@@ -70,14 +71,24 @@ public class Event {
         signUps.add(newUser);
     }
 
-    public ArrayList<User> chooseLottoWinners(ArrayList<User> signUps) {
+    public ArrayList<User> chooseLottoWinners() {
+        ArrayList<User> winners = new ArrayList<>();
         if (signUps.isEmpty()) {
-
+            System.out.println("No sign-ups yet");
+            return winners;
         }
         if (signUps.size() <= eventSize) {
-            return signUps;
+            winners = new ArrayList<>(signUps);
+            return winners;
         }
-        return signUps;
+        ArrayList<User> shuffled = new ArrayList<>(signUps);
+        Collections.shuffle(shuffled);
+
+        for (int i = 0; i < eventSize; i++) {
+            winners.add(shuffled.get(i));
+        }
+
+        return winners;
     }
 
 }

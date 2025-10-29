@@ -24,6 +24,7 @@ public class Event {
         this.eventSize = eventSize;
     }
 
+    // getters and setters
     public String getDescription() {
         return description;
     }
@@ -80,10 +81,12 @@ public class Event {
         this.eid = eid;
     }
 
+    // add a user signup to the event
     public void addUser(User newUser) {
         signUps.add(newUser);
     }
 
+    // select chosen attendees from signups list
     public ArrayList<User> chooseLottoWinners() {
         ArrayList<User> winners = new ArrayList<>();
         if (signUps.isEmpty()) {

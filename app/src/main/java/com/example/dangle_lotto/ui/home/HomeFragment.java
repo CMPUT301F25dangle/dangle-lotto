@@ -9,6 +9,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.NavHostController;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -19,7 +22,6 @@ import com.example.dangle_lotto.databinding.FragmentHomeBinding;
 import java.util.ArrayList;
 
 public class HomeFragment extends Fragment {
-
     private FragmentHomeBinding binding;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -30,8 +32,8 @@ public class HomeFragment extends Fragment {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        final TextView textView = binding.textHome;
-        homeViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
+//        final TextView textView = binding.textHome;
+//        homeViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
 
         RecyclerView recyclerView = binding.homeEventRecyclerView;
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
@@ -40,7 +42,10 @@ public class HomeFragment extends Fragment {
         for (int i = 1; i < 4; i++) {
             events.add(new Event(String.format("Example %d", i), R.drawable.event_card_test_image));
         }
-        EventCardAdapter adapter = new EventCardAdapter(events);
+        EventCardAdapter adapter = new EventCardAdapter(events, position -> {
+            Event event = events.get(position);
+            openEventFragment();
+        });
         recyclerView.setAdapter(adapter);
 
         return root;
@@ -50,5 +55,10 @@ public class HomeFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+    }
+
+    private void openEventFragment() {
+        NavController navController = NavHostFragment.findNavController(this);
+        navController.navigate(R.id.action_navigation_home_to_placeholderFragment);
     }
 }

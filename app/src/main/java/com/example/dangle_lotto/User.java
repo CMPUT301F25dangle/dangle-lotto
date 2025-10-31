@@ -7,8 +7,12 @@ import java.util.ArrayList;
  *
  * <p>Usage example:
  * <pre>
- *     ExampleClass example = new ExampleClass(context);
- *     example.doSomething();
+ *     User user = new User("123456789", "Mahd", "Afzal", "john.mclean@examplepetstore.com");
+ *     user.setFirst_name("Mahd");
+ *     user.setLast_name("Afzal");
+ *
+ *     Do not use the addEvent method directly, use the firebaseManager instead this ensures database and both the event and user are updated.
+ *
  * </pre>
  *
  * @author Mahd Afzal
@@ -68,7 +72,7 @@ public class User {
         this.email = email;
         firebaseManager.updateUser(uid, first_name, last_name, email);
     }
-
+    // do NOT call this directly, use the firebaseManager instead
     public void addEvent(String eid) {
         signedUpEvents.add(eid);
     }

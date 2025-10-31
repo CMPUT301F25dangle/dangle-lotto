@@ -4,6 +4,7 @@ import android.util.Log;
 
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -48,6 +49,19 @@ public class FirebaseManager {
         users.document(user.getUid()).delete();
     }
 
+    public User getUser(String uid){
+        DocumentSnapshot doc = users.document(uid).get().getResult();
+        if (doc.exists()) {
+            Map<String, Object> data = doc.getData();
+            String first_name = (String) data.get("First Name");
+            String last_name = (String) data.get("Last Name");
+            String email = (String) data.get("Email");
+            return new User(uid, first_name, last_name, email, this);
+        }
+        return null;
+
+    }
+
     public Event createEvent(String name, Timestamp datetime, String location, String description, int eventSize){
         String eid = events.document().getId();
         Map<String, Object> data = Map.of(
@@ -68,7 +82,8 @@ public class FirebaseManager {
                 "Name", event.getName(),
                 "Date", event.getDate(),
                 "Location", event.getLocation(),
-                "Description", event.getDescription()
+                "Description", event.getDescription(),
+                "Event Size", event.getEventSize()
         );
     }
 
@@ -76,7 +91,21 @@ public class FirebaseManager {
         events.document(event.getEid()).delete();
     }
 
-    public void UserSignUp(User user, Event event){
+    public Event getEvent(String eid){
+        DocumentSnapshot doc = events.document(eid).get().getResult();
+        if (doc.exists()) {
+            Map<String, Object> data = doc.getData();
+            String name = (String) data.get("Name");
+            Timestamp datetime = (Timestamp) data.get("Date");
+            String location = (String) data.get("Location");
+            String description = (String) data.get("Description");
+            int eventSize = (int) data.get("Event Size");
+            return new Event(eid, name, datetime, location, description, eventSize, this);
+        }
+        return null;
+    }
+
+    public void userSignUp(User user, Event event){
         // add signup time to user's event document and event's signup document
         Map<String, Object> data = Map.of(
                 "SignUpTime", Timestamp.now()
@@ -87,7 +116,7 @@ public class FirebaseManager {
         events.document(event.getEid()).collection("SignUps").document(user.getUid()).set(data);
     }
 
-    public void UserUnSignUp(User user, Event event) {
+    public void userDelete(User user, Event event) {
         users.document(user.getUid()).collection("Events").document(event.getEid()).delete();
         events.document(event.getEid()).collection("SignUps").document(user.getUid()).delete();
     }

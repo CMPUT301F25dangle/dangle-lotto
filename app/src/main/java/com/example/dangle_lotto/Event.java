@@ -33,6 +33,7 @@ public class Event {
 
     public void setDescription(String description) {
         this.description = description;
+        firebaseManager.updateEvent(this);
     }
 
     public String getLocation() {
@@ -41,6 +42,7 @@ public class Event {
 
     public void setLocation(String location) {
         this.location = location;
+        firebaseManager.updateEvent(this);
     }
 
     public Timestamp getDate() {
@@ -49,6 +51,7 @@ public class Event {
 
     public void setDate(Timestamp datetime) {
         this.datetime = datetime;
+        firebaseManager.updateEvent(this);
     }
 
     public String getName() {
@@ -57,6 +60,7 @@ public class Event {
 
     public void setName(String name) {
         this.name = name;
+        firebaseManager.updateEvent(this);
     }
 
     public int getEventSize () {
@@ -65,6 +69,7 @@ public class Event {
 
     public void setEventSize(int eventSize) {
         this.eventSize = eventSize;
+        firebaseManager.updateEvent(this);
     }
 
     public String getEid () {

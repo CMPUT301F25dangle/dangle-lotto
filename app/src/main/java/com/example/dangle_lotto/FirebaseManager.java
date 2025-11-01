@@ -25,24 +25,25 @@ public class FirebaseManager {
     }
 
 
-    public User createNewUser(String uid, String first_name, String last_name, String email){
-        Map<String, String> data = Map.of(
+    public User createNewUser(String uid, String first_name, String last_name, String email, boolean canOrganize){
+        Map<String, Object> data = Map.of(
                 "First Name", first_name,
                 "Last Name", last_name,
-                "Email", email
+                "Email", email,
+                "CanOrganize", canOrganize
         );
 
         users.document(uid).set(data);
 
-        return new User(uid, first_name, last_name, email, this);
+        return new GeneralUser(uid, first_name, last_name, email, this, canOrganize);
     }
 
 
-    public void updateUser(String uid, String first_name, String last_name, String email) {
-        users.document(uid).update(
-                "First Name", first_name,
-                "Last Name", last_name,
-                "Email", email
+    public void updateUser(User user) {
+        users.document(user.getUid()).update(
+                "First Name", user.getFirst_name(),
+                "Last Name", user.getLast_name(),
+                "Email", user.getEmail()
         );
     }
 
@@ -57,7 +58,8 @@ public class FirebaseManager {
             String first_name = (String) data.get("First Name");
             String last_name = (String) data.get("Last Name");
             String email = (String) data.get("Email");
-            return new User(uid, first_name, last_name, email, this);
+            Boolean canOrganize = (Boolean) data.get("CanOrganize");
+            return new GeneralUser(uid, first_name, last_name, email, this, Boolean.TRUE.equals(canOrganize));
         }
         return null;
 
@@ -106,26 +108,24 @@ public class FirebaseManager {
         return null;
     }
 
-    public void userSignUp(User user, Event event){
-        // add signup time to user's event document and event's signup document
+    public void userRegister(User user, Event event){
+        // add register time to user's event document and event's signup document
         Map<String, Object> data = Map.of(
                 "SignUpTime", Timestamp.now()
                 );
-        user.addEvent(event.getEid());
-        event.addUser(user.getUid());
-        users.document(user.getUid()).collection("Events").document(event.getEid()).set(data);
-        events.document(event.getEid()).collection("SignUps").document(user.getUid()).set(data);
+        event.addRegistered(user.getUid());
+        users.document(user.getUid()).collection("Registered").document(event.getEid()).set(data);
+        events.document(event.getEid()).collection("Registrants").document(user.getUid()).set(data);
     }
 
-    public void userUnSignUp(User user, Event event) {
-        user.deleteEvent(event.getEid());
-        event.deleteUser(user.getUid());
-        users.document(user.getUid()).collection("Events").document(event.getEid()).delete();
-        events.document(event.getEid()).collection("SignUps").document(user.getUid()).delete();
+    public void userUnregister(User user, Event event) {
+        event.deleteRegistered(user.getUid());
+        users.document(user.getUid()).collection("Registered").document(event.getEid()).delete();
+        events.document(event.getEid()).collection("Registrants").document(user.getUid()).delete();
     }
 
-    public ArrayList<String> getParticipatedEvents(String uid) {
-        QuerySnapshot docs = users.document(uid).collection("Events").get().getResult();
+    public ArrayList<String> getRegisteredEvents(String uid) {
+        QuerySnapshot docs = users.document(uid).collection("Registered").get().getResult();
         ArrayList<String> participatedEvents = new ArrayList<>();
         for (DocumentSnapshot doc : docs) {
             participatedEvents.add(doc.getId());
@@ -133,7 +133,7 @@ public class FirebaseManager {
         return participatedEvents;
     }
 
-    public ArrayList<String> getEventParticipants(String eid) {
+    public ArrayList<String> getEventRegistrants(String eid) {
         QuerySnapshot docs = events.document(eid).collection("SignUps").get().getResult();
         ArrayList<String> eventParticipants = new ArrayList<>();
         for (DocumentSnapshot doc : docs) {
@@ -141,4 +141,6 @@ public class FirebaseManager {
         }
         return eventParticipants;
     }
+
+    // implement for chosen and cancelled and stuff
 }

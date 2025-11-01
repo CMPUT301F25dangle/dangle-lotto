@@ -3,30 +3,23 @@ package com.example.dangle_lotto;
 import java.util.ArrayList;
 
 /**
- * User — data model for the user
+ * User — abstract class for user data model. is the superclass of GeneralUser and Admin
  *
- * <p>Usage example:
- * <pre>
- *     User user = new User("123456789", "Mahd", "Afzal", "john.mclean@examplepetstore.com");
- *     user.setFirst_name("Mahd");
- *     user.setLast_name("Afzal");
+ * Contains methods for getting and setting some personal user data.
+ * Also contains one abstract function definition to check if the user is an admin or not
  *
- *     Do not use the addEvent method directly, use the firebaseManager instead this ensures database and both the event and user are updated.
- *
- * </pre>
  *
  * @author Mahd Afzal
  * @version 1.0
  * @since 2025-10-29
  */
 
-public class User {
-    private final String uid;
-    private String first_name;
-    private String last_name;
-    private String email;
-    private ArrayList<String> signedUpEvents = new ArrayList<>();
-    private FirebaseManager firebaseManager;
+public abstract class User {
+    protected final String uid;
+    protected String first_name;
+    protected String last_name;
+    protected String email;
+    protected FirebaseManager firebaseManager;
 
 
 
@@ -60,27 +53,18 @@ public class User {
 
     public void setFirst_name(String first_name) {
         this.first_name = first_name;
-        firebaseManager.updateUser(uid, first_name, last_name, email);
+        firebaseManager.updateUser(this);
     }
 
     public void setLast_name(String last_name) {
         this.last_name = last_name;
-        firebaseManager.updateUser(uid, first_name, last_name, email);
+        firebaseManager.updateUser(this);
     }
 
     public void setEmail(String email) {
         this.email = email;
-        firebaseManager.updateUser(uid, first_name, last_name, email);
-    }
-    // do NOT call this directly, use the firebaseManager instead
-    public void addEvent(String eid) {
-        signedUpEvents.add(eid);
+        firebaseManager.updateUser(this);
     }
 
-    public void deleteEvent(String eid) {
-        signedUpEvents.remove(eid);
-    }
-
-
-
+    public abstract boolean isAdmin();
 }

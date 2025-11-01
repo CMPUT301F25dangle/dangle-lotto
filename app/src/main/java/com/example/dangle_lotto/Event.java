@@ -5,6 +5,16 @@ import com.google.firebase.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 
+/**
+ * Event — model for an event
+ *
+ * This class is a representation for each event. It will contain a list of all registered, chosen, signups and cancelled users.
+ * Still need to implement methods for chosen, signups, and cancelled and picture stuff
+ *
+ * @author Mahd and Fogil
+ * @version 1.0
+ * @since 2025-11-01
+ */
 public class Event {
     String name;
     Timestamp datetime;
@@ -12,7 +22,9 @@ public class Event {
     String description;
     int eventSize;
     final String eid;
-    ArrayList<String> signUps = new ArrayList<>();
+    ArrayList<String> registered = new ArrayList<>();
+
+    // implement chosen, signups and cancelled later
 
     FirebaseManager firebaseManager;
 
@@ -76,26 +88,42 @@ public class Event {
         return eid;
     }
 
-    public void addUser(String uid) {
-        signUps.add(uid);
+    public void addRegistered(String uid) {
+        registered.add(uid);
     }
 
-    public void deleteUser(String uid) {
-        signUps.remove(uid);
+    public void deleteRegistered(String uid) {
+        registered.remove(uid);
     }
 
-    // select chosen attendees from signups list
+    public ArrayList<String> getRegistered() {
+        return registered;
+    }
+
+    public int getNumRegistered() {
+        return registered.size();
+    }
+
+    public boolean isMaxRegistered(){
+        return registered.size() >= eventSize;
+    }
+
+    /**
+     * Choose Lottery winners drawn randomly
+     *
+     * @return arraylist of user id's who have been chosen for the lottery for the event
+     */
     public ArrayList<String> chooseLottoWinners() {
         ArrayList<String> winners = new ArrayList<>();
-        if (signUps.isEmpty()) {
+        if (registered.isEmpty()) {
             System.out.println("No sign-ups yet");
             return winners;
         }
-        if (signUps.size() <= eventSize) {
-            winners = new ArrayList<>(signUps);
+        if (registered.size() <= eventSize) {
+            winners = new ArrayList<>(registered);
             return winners;
         }
-        ArrayList<String> shuffled = new ArrayList<>(signUps);
+        ArrayList<String> shuffled = new ArrayList<>(registered);
         Collections.shuffle(shuffled);
 
         for (int i = 0; i < eventSize; i++) {
@@ -105,4 +133,7 @@ public class Event {
         return winners;
     }
 
+
+    // implement chosen and sign ups and cancelled later
+    // implement logic for displaying pictures
 }

@@ -77,6 +77,10 @@ public class User {
         signedUpEvents.add(eid);
     }
 
+    public void deleteEvent(String eid) {
+        signedUpEvents.remove(eid);
+    }
+
 
 
 }

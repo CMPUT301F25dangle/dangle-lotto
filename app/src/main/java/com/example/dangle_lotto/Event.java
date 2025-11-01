@@ -80,6 +80,10 @@ public class Event {
         signUps.add(uid);
     }
 
+    public void deleteUser(String uid) {
+        signUps.remove(uid);
+    }
+
     // select chosen attendees from signups list
     public ArrayList<String> chooseLottoWinners() {
         ArrayList<String> winners = new ArrayList<>();

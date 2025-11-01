@@ -6,26 +6,26 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.sql.Time;
+import java.util.ArrayList;
 import java.util.Map;
 
 public class FirebaseManager {
     private final FirebaseFirestore db;
     private final CollectionReference users;
     private final CollectionReference events;
-    FirebaseManager() {
+    public FirebaseManager() {
         db = FirebaseFirestore.getInstance();
         users = db.collection("users");
         events = db.collection("events");
     }
 
-    public FirebaseFirestore getDb() {
-        return db;
-    }
 
-    public User createUser(String uid, String first_name, String last_name, String email){
+    public User createNewUser(String uid, String first_name, String last_name, String email){
         Map<String, String> data = Map.of(
                 "First Name", first_name,
                 "Last Name", last_name,
@@ -37,6 +37,7 @@ public class FirebaseManager {
         return new User(uid, first_name, last_name, email, this);
     }
 
+
     public void updateUser(String uid, String first_name, String last_name, String email) {
         users.document(uid).update(
                 "First Name", first_name,
@@ -45,8 +46,8 @@ public class FirebaseManager {
         );
     }
 
-    public void deleteUser(User user) {
-        users.document(user.getUid()).delete();
+    public void deleteUser(String uid) {
+        users.document(uid).delete();
     }
 
     public User getUser(String uid){
@@ -87,8 +88,8 @@ public class FirebaseManager {
         );
     }
 
-    public void deleteEvent(Event event) {
-        events.document(event.getEid()).delete();
+    public void deleteEvent(String eid) {
+        events.document(eid).delete();
     }
 
     public Event getEvent(String eid){
@@ -116,23 +117,28 @@ public class FirebaseManager {
         events.document(event.getEid()).collection("SignUps").document(user.getUid()).set(data);
     }
 
-    public void userDelete(User user, Event event) {
+    public void userUnSignUp(User user, Event event) {
+        user.deleteEvent(event.getEid());
+        event.deleteUser(user.getUid());
         users.document(user.getUid()).collection("Events").document(event.getEid()).delete();
         events.document(event.getEid()).collection("SignUps").document(user.getUid()).delete();
     }
 
-    public void getParticipatedEvents(User user) {
-        users.document(user.getUid()).collection("Events").get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                        String eid = doc.getId();
-                        user.addEvent(eid);
-                        Log.d("Firestore", "Event ID: " + eid);
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Firestore", "Error getting documents", e);
-                });
+    public ArrayList<String> getParticipatedEvents(String uid) {
+        QuerySnapshot docs = users.document(uid).collection("Events").get().getResult();
+        ArrayList<String> participatedEvents = new ArrayList<>();
+        for (DocumentSnapshot doc : docs) {
+            participatedEvents.add(doc.getId());
+        }
+        return participatedEvents;
+    }
 
+    public ArrayList<String> getEventParticipants(String eid) {
+        QuerySnapshot docs = events.document(eid).collection("SignUps").get().getResult();
+        ArrayList<String> eventParticipants = new ArrayList<>();
+        for (DocumentSnapshot doc : docs) {
+            eventParticipants.add(doc.getId());
+        }
+        return eventParticipants;
     }
 }

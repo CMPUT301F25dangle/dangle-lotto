@@ -1,7 +1,5 @@
 package com.example.dangle_lotto;
 
-import java.util.ArrayList;
-
 /**
  * User — abstract class for user data model. is the superclass of GeneralUser and Admin
  *
@@ -16,17 +14,16 @@ import java.util.ArrayList;
 
 public abstract class User {
     protected final String uid;
-    protected String first_name;
-    protected String last_name;
+    protected String name;
     protected String email;
+    protected String phone;
     protected FirebaseManager firebaseManager;
 
 
 
-    public User(String uid, String first_name, String last_name, String email, FirebaseManager firebaseManager) {
+    public User(String uid, String name, String email, FirebaseManager firebaseManager) {
         this.uid = uid;
-        this.first_name = first_name;
-        this.last_name = last_name;
+        this.name = name;
         this.email = email;
         this.firebaseManager = firebaseManager;
     }
@@ -35,34 +32,30 @@ public abstract class User {
         return uid;
     }
 
-    public String getFirst_name() {
-        return first_name;
+    public String getName() {
+        return name;
     }
 
-    public String getLast_name() {
-        return last_name;
-    }
-
-    public String getFullNames() {
-        return first_name + " " + last_name;
+    public String getPhone(){
+        return phone;
     }
 
     public String getEmail() {
         return email;
     }
 
-    public void setFirst_name(String first_name) {
-        this.first_name = first_name;
-        firebaseManager.updateUser(this);
-    }
-
-    public void setLast_name(String last_name) {
-        this.last_name = last_name;
+    public void setName(String name) {
+        this.name = name;
         firebaseManager.updateUser(this);
     }
 
     public void setEmail(String email) {
         this.email = email;
+        firebaseManager.updateUser(this);
+    }
+
+    public void setPhone(String phone){
+        this.phone = phone;
         firebaseManager.updateUser(this);
     }
 

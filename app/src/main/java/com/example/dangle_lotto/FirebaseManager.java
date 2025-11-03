@@ -1,16 +1,11 @@
 package com.example.dangle_lotto;
 
-import android.util.Log;
-
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Map;
 
@@ -25,25 +20,25 @@ public class FirebaseManager {
     }
 
 
-    public User createNewUser(String uid, String first_name, String last_name, String email, boolean canOrganize){
+    public User createNewUser(String uid, String name, String phone, String email, boolean canOrganize){
         Map<String, Object> data = Map.of(
-                "First Name", first_name,
-                "Last Name", last_name,
+                "Name", name,
                 "Email", email,
+                "Phone", phone,
                 "CanOrganize", canOrganize
         );
 
         users.document(uid).set(data);
 
-        return new GeneralUser(uid, first_name, last_name, email, this, canOrganize);
+        return new GeneralUser(uid, name, email, this, canOrganize);
     }
 
 
     public void updateUser(User user) {
         users.document(user.getUid()).update(
-                "First Name", user.getFirst_name(),
-                "Last Name", user.getLast_name(),
-                "Email", user.getEmail()
+                "Name", user.getName(),
+                "Email", user.getEmail(),
+                "Phone", user.getPhone()
         );
     }
 
@@ -55,11 +50,13 @@ public class FirebaseManager {
         DocumentSnapshot doc = users.document(uid).get().getResult();
         if (doc.exists()) {
             Map<String, Object> data = doc.getData();
-            String first_name = (String) data.get("First Name");
-            String last_name = (String) data.get("Last Name");
+            String name = (String) data.get("Name");
             String email = (String) data.get("Email");
             Boolean canOrganize = (Boolean) data.get("CanOrganize");
-            return new GeneralUser(uid, first_name, last_name, email, this, Boolean.TRUE.equals(canOrganize));
+            GeneralUser user = new GeneralUser(uid, name, email, this, Boolean.TRUE.equals(canOrganize));
+            String phone = (String) data.get("Phone");
+            user.setPhone(phone);
+            return user;
         }
         return null;
 

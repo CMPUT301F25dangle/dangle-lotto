@@ -16,13 +16,19 @@ import java.util.Collections;
  * @since 2025-11-01
  */
 public class Event {
+    final String eid;
+    String description;
+    int eventSize;
+    boolean hasMax;
     String name;
     Timestamp datetime;
     String location;
-    String description;
-    int eventSize;
-    final String eid;
+    String category;
     ArrayList<String> registered = new ArrayList<>();
+    ArrayList<String> chosen = new ArrayList<>();
+    ArrayList<String> signUps = new ArrayList<>();
+    ArrayList<String> cancelled = new ArrayList<>();
+
 
     // implement chosen, signups and cancelled later
 
@@ -84,6 +90,14 @@ public class Event {
         firebaseManager.updateEvent(this);
     }
 
+    public boolean getHasMax() {
+        return hasMax;
+    }
+
+    public void setHasMax(boolean hasMax) {
+        this.hasMax = hasMax;
+    }
+
     public String getEid () {
         return eid;
     }
@@ -106,6 +120,14 @@ public class Event {
 
     public boolean isMaxRegistered(){
         return registered.size() >= eventSize;
+    }
+
+    public String getCategory() {
+        return category;
+    }
+
+    public void setCategory(String category) {
+        this.category = category;
     }
 
     /**
@@ -135,5 +157,57 @@ public class Event {
 
 
     // implement chosen and sign ups and cancelled later
+    public ArrayList<String> getChosen() {
+        return chosen;
+    }
+
+    /**
+     * Adds a user ID to the list of chosen participants.
+     *
+     * @param uid the user ID to add to the chosen list
+     */
+    public void addChosen(String uid) {
+        if (!chosen.contains(uid)) {
+            chosen.add(uid);
+            firebaseManager.updateEvent(this);
+        }
+    }
+
+    public ArrayList<String> getSignUps() {
+        return signUps;
+    }
+
+    /**
+     * Adds a user ID to the list of sign-ups.
+     *
+     * @param uid the user ID to add to the sign-ups list
+     */
+    public void addSignUp(String uid) {
+        if (!signUps.contains(uid)) {
+            signUps.add(uid);
+            firebaseManager.updateEvent(this);
+        }
+    }
+
+    public ArrayList<String> getCancelled() {
+        return cancelled;
+    }
+
+    /**
+     * Adds a user ID to the cancelled list and removes them
+     * from registered, chosen, or sign-up lists if present.
+     *
+     * @param uid the user ID to add to the cancelled list
+     */
+    public void addCancelled(String uid) {
+        if (!cancelled.contains(uid)) {
+            cancelled.add(uid);
+            registered.remove(uid);
+            chosen.remove(uid);
+            signUps.remove(uid);
+            firebaseManager.updateEvent(this);
+        }
+    }
+
     // implement logic for displaying pictures
 }

@@ -19,11 +19,12 @@ public class Event {
     final String eid;
     String description;
     int eventSize;
-    boolean hasMax;
     String name;
-    Timestamp datetime;
+    Timestamp deadline;
     String location;
-    String category;
+    String oid;
+    String pid;
+    ArrayList<String> categories = new ArrayList<>();
     ArrayList<String> registered = new ArrayList<>();
     ArrayList<String> chosen = new ArrayList<>();
     ArrayList<String> signUps = new ArrayList<>();
@@ -34,14 +35,23 @@ public class Event {
 
     FirebaseManager firebaseManager;
 
-    public Event(String eid, String name, Timestamp datetime, String location, String description, int eventSize, FirebaseManager firebaseManager) {
+    public Event(String eid, String oid, String name, Timestamp deadline, String location, String description, String pid, int eventSize, FirebaseManager firebaseManager) {
         this.eid = eid;
+        this.oid = oid;
         this.name = name;
-        this.datetime = datetime;
+        this.deadline = deadline;
         this.location = location;
         this.description = description;
+        this.pid = pid;
         this.eventSize = eventSize;
         this.firebaseManager = firebaseManager;
+    }
+    public String getEid () {
+        return eid;
+    }
+
+    public String getOid () {
+        return oid;
     }
 
     // getters and setters
@@ -64,11 +74,11 @@ public class Event {
     }
 
     public Timestamp getDate() {
-        return datetime;
+        return deadline;
     }
 
     public void setDate(Timestamp datetime) {
-        this.datetime = datetime;
+        this.deadline = datetime;
         firebaseManager.updateEvent(this);
     }
 
@@ -90,24 +100,22 @@ public class Event {
         firebaseManager.updateEvent(this);
     }
 
-    public boolean getHasMax() {
-        return hasMax;
-    }
-
-    public void setHasMax(boolean hasMax) {
-        this.hasMax = hasMax;
-    }
-
-    public String getEid () {
-        return eid;
-    }
-
     public void addRegistered(String uid) {
-        registered.add(uid);
+        if (registered.contains(uid)){
+            throw new IllegalArgumentException("User is already registered");
+        }else if (isMaxRegistered()){
+            throw new IllegalArgumentException("Event is full");
+        }else{
+            registered.add(uid);
+        }
     }
 
     public void deleteRegistered(String uid) {
-        registered.remove(uid);
+        if (!registered.contains(uid)){
+            throw new IllegalArgumentException("User is not registered");
+        } else {
+            registered.remove(uid);
+        }
     }
 
     public ArrayList<String> getRegistered() {
@@ -122,13 +130,27 @@ public class Event {
         return registered.size() >= eventSize;
     }
 
-    public String getCategory() {
-        return category;
+    // FINALIZE IMPLEMENTATION LATER
+//    public ArrayList<String> getCategories() {
+//        return categories;
+//    }
+//
+//    public void addCategory(String category) {
+//        categories.add(category);
+//    }
+//
+//    public void removeCategory(String category) {
+//        categories.remove(category);
+//    }
+
+    public String getPid() {
+        return pid;
     }
 
-    public void setCategory(String category) {
-        this.category = category;
+    public void setPid(String pid) {
+        this.pid = pid;
     }
+
 
     /**
      * Choose Lottery winners drawn randomly

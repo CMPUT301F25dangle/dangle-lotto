@@ -15,8 +15,8 @@ import java.util.ArrayList;
 public class GeneralUser extends User{
 
     private boolean canOrganize;
-    public GeneralUser(String uid, String name, String email, FirebaseManager firebaseManager, boolean canOrganize) {
-        super(uid, name, email, firebaseManager);
+    public GeneralUser(String uid, String name, String email, String phone, String pid, FirebaseManager firebaseManager, boolean canOrganize) {
+        super(uid, name, email, phone, pid, firebaseManager);
         this.canOrganize = canOrganize;
     }
 

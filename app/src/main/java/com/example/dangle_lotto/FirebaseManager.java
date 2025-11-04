@@ -20,17 +20,17 @@ public class FirebaseManager {
     }
 
 
-    public User createNewUser(String uid, String name, String phone, String email, boolean canOrganize){
+    public User createNewUser(String uid, String name, String phone, String pid, String email, boolean canOrganize){
         Map<String, Object> data = Map.of(
                 "Name", name,
                 "Email", email,
                 "Phone", phone,
+                "Picture", pid,
                 "CanOrganize", canOrganize
         );
 
         users.document(uid).set(data);
-
-        return new GeneralUser(uid, name, email, this, canOrganize);
+        return new GeneralUser(uid, name, email, phone, pid,this, canOrganize);
     }
 
 
@@ -53,28 +53,28 @@ public class FirebaseManager {
             String name = (String) data.get("Name");
             String email = (String) data.get("Email");
             Boolean canOrganize = (Boolean) data.get("CanOrganize");
-            GeneralUser user = new GeneralUser(uid, name, email, this, Boolean.TRUE.equals(canOrganize));
             String phone = (String) data.get("Phone");
-            user.setPhone(phone);
-            return user;
+            String pid = (String) data.get("Picture");
+            return new GeneralUser(uid, name, email, phone, pid, this, Boolean.TRUE.equals(canOrganize));
         }
         return null;
 
     }
 
-    public Event createEvent(String name, Timestamp datetime, String location, String description, int eventSize){
+    public Event createEvent(String oid, String name, Timestamp datetime, String location, String description, int eventSize, String pid){
         String eid = events.document().getId();
         Map<String, Object> data = Map.of(
+                "Organizer", oid,
                 "Name", name,
                 "Date", datetime,
                 "Location", location,
                 "Description", description,
-                "Event Size", eventSize
+                "Event Size", eventSize,
+                "Picture", pid
         );
 
         events.document(eid).set(data);
-
-        return new Event(eid, name, datetime, location, description, eventSize, this);
+        return new Event(eid, oid, name, datetime, location, description, pid, eventSize, this);
     }
 
     public void updateEvent(Event event) {
@@ -95,12 +95,15 @@ public class FirebaseManager {
         DocumentSnapshot doc = events.document(eid).get().getResult();
         if (doc.exists()) {
             Map<String, Object> data = doc.getData();
+            assert data != null;
+            String oid = (String) data.get("Organizer");
             String name = (String) data.get("Name");
             Timestamp datetime = (Timestamp) data.get("Date");
             String location = (String) data.get("Location");
             String description = (String) data.get("Description");
             int eventSize = (int) data.get("Event Size");
-            return new Event(eid, name, datetime, location, description, eventSize, this);
+            String pid = (String) data.get("Picture");
+            return new Event(eid, oid, name, datetime, location, description, pid, eventSize, this);
         }
         return null;
     }

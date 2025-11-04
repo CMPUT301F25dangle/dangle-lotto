@@ -17,14 +17,16 @@ public abstract class User {
     protected String name;
     protected String email;
     protected String phone;
+    protected String pid;
     protected FirebaseManager firebaseManager;
 
 
-
-    public User(String uid, String name, String email, FirebaseManager firebaseManager) {
+    public User(String uid, String name, String email, String phone, String pid, FirebaseManager firebaseManager) {
         this.uid = uid;
         this.name = name;
         this.email = email;
+        this.phone = phone;
+        this.pid = pid;
         this.firebaseManager = firebaseManager;
     }
 
@@ -56,6 +58,15 @@ public abstract class User {
 
     public void setPhone(String phone){
         this.phone = phone;
+        firebaseManager.updateUser(this);
+    }
+
+    public String getPid() {
+        return pid;
+    }
+
+    public void setPid(String pid) {
+        this.pid = pid;
         firebaseManager.updateUser(this);
     }
 

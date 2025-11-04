@@ -1,6 +1,16 @@
 package com.example.dangle_lotto;
 import java.util.Date;
 
+/**
+ * Picture
+ *
+ * Contains methods for getting picture information
+ *
+ *
+ * @author Annie Ding
+ * @version 1.0
+ * @since 2025-11-01
+ */
 public class Picture {
     private String pid;
     private Date dateAdded;

@@ -18,9 +18,20 @@ public class FirebaseManager {
         users = db.collection("users");
         events = db.collection("events");
     }
-
-
-    public User createNewUser(String uid, String name, String phone, String pid, String email, boolean canOrganize){
+    /**
+     * Adds a new user to the database and instantiates a user object with all required attributes.
+     *
+     * Pass null into phone and pid if user has decided not to provide that information.
+     *
+     * @param uid  user id. is a string provided by firebase auth that can uniquely identify a user
+     * @param name  Name of the user
+     * @param email  Email of the user
+     * @param phone  Phone number of the user - set null if not provided
+     * @param pid  Photo id for user profile picture - set null if not provided
+     * @param canOrganize  Boolean value indicating whether the user can organize events
+     * @return Instantiated GeneralUser object with all required attributes
+     */
+    public User createNewUser(String uid, String name, String email, String phone, String pid, boolean canOrganize){
         Map<String, Object> data = Map.of(
                 "Name", name,
                 "Email", email,
@@ -33,19 +44,38 @@ public class FirebaseManager {
         return new GeneralUser(uid, name, email, phone, pid,this, canOrganize);
     }
 
-
+    /**
+     * Updates a user's information in the database.
+     *
+     * Is the update method for all users in general. canOrganize does NOT get updated here for
+     * GeneralUser and will be handled separately in admin related functions
+     *
+     * @param user  User object containing all required attributes
+     */
     public void updateUser(User user) {
         users.document(user.getUid()).update(
                 "Name", user.getName(),
                 "Email", user.getEmail(),
-                "Phone", user.getPhone()
+                "Phone", user.getPhone(),
+                "Picture", user.getPhotoID()
         );
     }
 
+    /**
+     * Deletes a user from the database.
+     *
+     * @param uid  string of user id to delete from database
+     */
     public void deleteUser(String uid) {
         users.document(uid).delete();
     }
 
+    /**
+     * Retrieves a user from the database and instantiates an object for them
+     *
+     * @param uid  string of user id to search for and retrieve all attributes
+     * @return Instantiated GeneralUser object with all required attributes
+     */
     public User getUser(String uid){
         DocumentSnapshot doc = users.document(uid).get().getResult();
         if (doc.exists()) {
@@ -60,7 +90,19 @@ public class FirebaseManager {
         return null;
 
     }
-
+    /**
+     * Adds a new event to the database and instantiates an object for it.
+     *
+     * @param oid  Organizer id of the event
+     * @param name  Name of the event
+     * @param datetime  Timestamp of the event
+     * @param location  Location of the event
+     * @param description  Description of the event
+     * @param eventSize  Size of the event
+     * @param pid  Photo id for event banner
+     *
+     * @return Instantiated Event object with all required attributes
+     */
     public Event createEvent(String oid, String name, Timestamp datetime, String location, String description, int eventSize, String pid){
         String eid = events.document().getId();
         Map<String, Object> data = Map.of(
@@ -77,6 +119,11 @@ public class FirebaseManager {
         return new Event(eid, oid, name, datetime, location, description, pid, eventSize, this);
     }
 
+    /**
+     * Updates an event's information in the database.
+     *
+     * @param event  string of user id to search for and retrieve all attributes
+     */
     public void updateEvent(Event event) {
         events.document(event.getEid()).update(
                 "Name", event.getName(),
@@ -87,10 +134,21 @@ public class FirebaseManager {
         );
     }
 
+    /**
+     * Deletes an event from the database.
+     *
+     * @param eid  string of user id to search for and retrieve all attributes
+     */
     public void deleteEvent(String eid) {
         events.document(eid).delete();
     }
 
+    /**
+     * Retrieves an event from the database and instantiates an object for it.
+     *
+     * @param eid  string of user id to search for and retrieve all attributes
+     * @return Instantiated Event object with all required attributes
+     */
     public Event getEvent(String eid){
         DocumentSnapshot doc = events.document(eid).get().getResult();
         if (doc.exists()) {
@@ -108,22 +166,104 @@ public class FirebaseManager {
         return null;
     }
 
+    /**
+     * Adds a user to the sign-up list for an event in the database.
+     *
+     * Only adds if user is not yet in the list, otherwise throws an exception.
+     * ONLY USE THIS FUNCTION WHEN ADDING A NEW USER TO AN EVENT
+     *
+     * @param user  User object containing all required attributes
+     * @param event  Event object containing all required attributes
+     */
+    public void userSignUp(User user, Event event) {
+        Map<String, Object> data = Map.of(
+                "SignUpTime", Timestamp.now()
+        );
+        event.addSignUp(user.getUid());
+        users.document(user.getUid()).collection("SignUps").document(event.getEid()).set(data);
+        events.document(event.getEid()).collection("SignUps").document(user.getUid()).set(data);
+    }
+    /**
+     * Deletes a user from the sign-up list for an event in the database.
+     *
+     * Only deletes if user is already in the list, otherwise throws an exception.
+     * ONLY USE THIS FUNCTION WHEN DELETING A USER FROM EVENT.
+     *
+     * @param user  User object containing all required attributes
+     * @param event  Event object containing all required attributes
+     */
+    public void userCancelSignUp(User user, Event event) {
+        event.cancelSignUp(user.getUid());
+        users.document(user.getUid()).collection("SignUps").document(event.getEid()).delete();
+        events.document(event.getEid()).collection("SignUps").document(user.getUid()).delete();
+    }
+
+    /**
+     * Retrieves a list of events a user has signed up for from the database.
+     *
+     * @param uid  string of user id to search for and retrieve all attributes
+     * @return ArrayList of event ids that the user has signed up for
+     */
+    public ArrayList<String> getSignedUpEvents(String uid) {
+        QuerySnapshot docs = users.document(uid).collection("SignUps").get().getResult();
+        ArrayList<String> signedUpEvents = new ArrayList<>();
+        for (DocumentSnapshot doc : docs) {
+            signedUpEvents.add(doc.getId());
+        }
+        return signedUpEvents;
+    }
+
+    /**
+     * Retrieves a list of users who have signed up for an event from the database.
+     *
+     * @param eid  string of user id to search for and retrieve all attributes
+     * @return ArrayList of user ids who have signed up for the event
+     */
+    public ArrayList<String> getEventSignUps(String eid) {
+        QuerySnapshot docs = events.document(eid).collection("SignUps").get().getResult();
+        ArrayList<String> eventSignUps = new ArrayList<>();
+        for (DocumentSnapshot doc : docs) {
+            eventSignUps.add(doc.getId());
+        }
+        return eventSignUps;
+    }
+    /**
+     * Adds a user to the registered list for an event in the database.
+     *
+     * ONLY USE THIS FUNCTION WHEN REGISTERING A NEW USER FOR AN EVENT
+     *
+     * @param user  User object containing all required attributes
+     * @param event  Event object containing all required attributes
+     */
     public void userRegister(User user, Event event){
         // add register time to user's event document and event's signup document
         Map<String, Object> data = Map.of(
-                "SignUpTime", Timestamp.now()
+                "RegisterTime", Timestamp.now()
                 );
         event.addRegistered(user.getUid());
         users.document(user.getUid()).collection("Registered").document(event.getEid()).set(data);
         events.document(event.getEid()).collection("Registrants").document(user.getUid()).set(data);
     }
-
+    /**
+     * Removes a user from the registered list for an event in the database.
+     *
+     * ONLY USE THIS FUNCTION WHEN UNREGISTERING A NEW USER FOR AN EVENT
+     *
+     * @param user  User object containing all required attributes
+     * @param event  Event object containing all required attributes
+     */
     public void userUnregister(User user, Event event) {
         event.deleteRegistered(user.getUid());
         users.document(user.getUid()).collection("Registered").document(event.getEid()).delete();
         events.document(event.getEid()).collection("Registrants").document(user.getUid()).delete();
     }
 
+    /**
+     * Retrieves a list of events a user has registered for from the database.
+     *
+     * @param uid  string of user id to search for and retrieve all attributes
+     * @return ArrayList of event ids that the user has signed up for
+     */
     public ArrayList<String> getRegisteredEvents(String uid) {
         QuerySnapshot docs = users.document(uid).collection("Registered").get().getResult();
         ArrayList<String> participatedEvents = new ArrayList<>();
@@ -133,6 +273,12 @@ public class FirebaseManager {
         return participatedEvents;
     }
 
+    /**
+     * Retrieves a list of users who have registered for an event from the database.
+     *
+     * @param eid  string of user id to search for and retrieve all attributes
+     * @return ArrayList of user ids who have signed up for the event
+     */
     public ArrayList<String> getEventRegistrants(String eid) {
         QuerySnapshot docs = events.document(eid).collection("SignUps").get().getResult();
         ArrayList<String> eventParticipants = new ArrayList<>();
@@ -143,4 +289,16 @@ public class FirebaseManager {
     }
 
     // implement for chosen and cancelled and stuff
+//    public void userChooseEvent(User user, Event event);
+//
+//    public void userCancelChosenEvent(User user, Event event);
+//
+//    public ArrayList<String> getChosenEvents(String uid);
+//
+//    public ArrayList<String> getEventChosenUsers(String eid);
+//
+//    public void userCancelEvent(User user, Event event);
+//
+//    public void userReinstateEvent(User user, Event event);
+
 }

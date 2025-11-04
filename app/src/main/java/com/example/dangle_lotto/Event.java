@@ -22,8 +22,8 @@ public class Event {
     String name;
     Timestamp deadline;
     String location;
-    String oid;
-    String pid;
+    String organizer_id;
+    String photo_id;
     ArrayList<String> categories = new ArrayList<>();
     ArrayList<String> registered = new ArrayList<>();
     ArrayList<String> chosen = new ArrayList<>();
@@ -35,23 +35,25 @@ public class Event {
 
     FirebaseManager firebaseManager;
 
-    public Event(String eid, String oid, String name, Timestamp deadline, String location, String description, String pid, int eventSize, FirebaseManager firebaseManager) {
+    public Event(String eid, String organizer_id, String name, Timestamp deadline, String location, String description, String photo_id, int eventSize, FirebaseManager firebaseManager) {
         this.eid = eid;
-        this.oid = oid;
+        this.organizer_id = organizer_id;
         this.name = name;
         this.deadline = deadline;
         this.location = location;
         this.description = description;
-        this.pid = pid;
+        this.photo_id = photo_id;
         this.eventSize = eventSize;
         this.firebaseManager = firebaseManager;
+        signUps = firebaseManager.getEventSignUps(eid);
+        registered = firebaseManager.getEventRegistrants(eid);
     }
     public String getEid () {
         return eid;
     }
 
-    public String getOid () {
-        return oid;
+    public String getOrganizerID() {
+        return organizer_id;
     }
 
     // getters and setters
@@ -103,10 +105,9 @@ public class Event {
     public void addRegistered(String uid) {
         if (registered.contains(uid)){
             throw new IllegalArgumentException("User is already registered");
-        }else if (isMaxRegistered()){
-            throw new IllegalArgumentException("Event is full");
         }else{
             registered.add(uid);
+
         }
     }
 
@@ -143,12 +144,12 @@ public class Event {
 //        categories.remove(category);
 //    }
 
-    public String getPid() {
-        return pid;
+    public String getPhotoID(){
+        return photo_id;
     }
 
-    public void setPid(String pid) {
-        this.pid = pid;
+    public void setPhotoID(String photo_id) {
+        this.photo_id = photo_id;
     }
 
 
@@ -207,7 +208,16 @@ public class Event {
     public void addSignUp(String uid) {
         if (!signUps.contains(uid)) {
             signUps.add(uid);
-            firebaseManager.updateEvent(this);
+        }else{
+            throw new IllegalArgumentException("User is already signed up");
+        }
+    }
+
+    public void cancelSignUp(String uid) {
+        if (!signUps.contains(uid)) {
+            throw new IllegalArgumentException("User is not signed up");
+        } else {
+            signUps.remove(uid);
         }
     }
 

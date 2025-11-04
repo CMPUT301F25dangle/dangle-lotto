@@ -12,10 +12,11 @@
         android:layout_height="match_parent">
 
         <ImageView
-            android:id="@+id/event_card_image"
+            android:id="@+id/event_card_banner"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="centerCrop"
+            android:contentDescription="Event Banner"
             android:src="@drawable/event_card_test_image"/>
 
         <View

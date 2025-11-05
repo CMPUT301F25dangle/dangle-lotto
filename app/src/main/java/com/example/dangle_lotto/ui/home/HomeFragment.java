@@ -1,6 +1,7 @@
 package com.example.dangle_lotto.ui.home;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.dangle_lotto.Event;
 import com.example.dangle_lotto.FirebaseManager;
+import com.example.dangle_lotto.FirestoreCallback;
 import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.databinding.FragmentHomeBinding;
 import com.google.firebase.Timestamp;
@@ -33,6 +35,8 @@ public class HomeFragment extends Fragment {
     private RecyclerView recyclerView;
     private ArrayList<String> selectedFilters = new ArrayList<>();
     private FirebaseManager firebaseManager = new FirebaseManager();
+    ArrayList<Event> events;
+    EventCardAdapter adapter;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -44,17 +48,30 @@ public class HomeFragment extends Fragment {
 
         recyclerView = binding.homeEventRecyclerView;
         recyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-        ArrayList<Event> events = new ArrayList<>();
+        events = new ArrayList<>();
 
         // temporarily adding for testing
-        for (int i = 1; i < 4; i++) {
-            events.add(firebaseManager.createEvent("bruh", "bruh", Timestamp.now(), "bruh", "bruh", 10, "bruh"));
-        }
-        EventCardAdapter adapter = new EventCardAdapter(events, position -> {
+//        for (int i = 1; i < 4; i++) {
+//            events.add(firebaseManager.createEvent("bruh", "bruh", Timestamp.now(), "bruh", "bruh", 10, "bruh"));
+//        }
+
+         adapter = new EventCardAdapter(events, position -> {
             Event event = events.get(position);
             openEventFragment();
         });
         recyclerView.setAdapter(adapter);
+
+        firebaseManager.getEvent("7rHZzxyUqLwcju31Rxe8", new FirestoreCallback<Event>() {
+            @Override
+            public void onSuccess(Event event) {
+                events.add(event);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e("Firebase", "Failed to load event", e);
+            }
+        });
 
         // initialize button for opening filter dialogue
         binding.filterButton.setOnClickListener(v -> openFilterDialogue());

@@ -1,0 +1,87 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".ui.dashboard.OrganizerEventDetailsFragment">
+
+
+    <ImageButton
+        android:id="@+id/organizer_event_details_back_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:background="@android:color/transparent"
+        android:src="@drawable/outline_arrow_back_24"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/organizer_event_details_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="Event Name"
+        android:textSize="30sp"
+        android:textColor="@color/black"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageButton
+        android:id="@+id/organizer_event_details_edit_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <Button
+        android:id="@+id/organizer_event_details_event_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Event"
+        android:textColor="@drawable/text_color_organizer_event_details"
+        android:background="@drawable/rounded_buttons_organizer_event_details"
+        app:layout_constraintEnd_toStartOf="@id/organizer_event_details_entrants_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/organizer_event_details_title" />
+
+    <Button
+        android:id="@+id/organizer_event_details_entrants_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Entrants"
+        android:textColor="@drawable/text_color_organizer_event_details"
+        android:background="@drawable/rounded_buttons_organizer_event_details"
+        app:layout_constraintEnd_toStartOf="@id/organizer_event_details_map_button"
+        app:layout_constraintStart_toEndOf="@id/organizer_event_details_event_button"
+        app:layout_constraintTop_toBottomOf="@+id/organizer_event_details_title" />
+
+    <Button
+        android:id="@+id/organizer_event_details_map_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Map"
+        android:textColor="@drawable/text_color_organizer_event_details"
+        android:background="@drawable/rounded_buttons_organizer_event_details"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/organizer_event_details_entrants_button"
+        app:layout_constraintTop_toBottomOf="@+id/organizer_event_details_title" />
+
+    <FrameLayout
+        android:id="@+id/organizer_event_view_display"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_margin="16dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/organizer_event_details_entrants_button" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

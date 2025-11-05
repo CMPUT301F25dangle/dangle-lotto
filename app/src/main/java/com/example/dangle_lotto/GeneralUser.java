@@ -28,10 +28,6 @@ public class GeneralUser extends User{
         return canOrganize;
     }
 
-    public void getRegistered(OnCompleteListener<QuerySnapshot> listener) {
-        firebaseManager.getRegisteredEvents(uid, listener);
-    }
-
     public boolean isAdmin(){
         return false;
     }

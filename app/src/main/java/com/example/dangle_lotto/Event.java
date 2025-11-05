@@ -1,6 +1,7 @@
 package com.example.dangle_lotto;
 
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -45,8 +46,31 @@ public class Event {
         this.photo_id = photo_id;
         this.eventSize = eventSize;
         this.firebaseManager = firebaseManager;
-        signUps = firebaseManager.getEventSignUps(eid);
-        registered = firebaseManager.getEventRegistrants(eid);
+        this.populateSignUps();
+        this.populateRegistrants();
+    }
+
+    private void populateSignUps(){
+        firebaseManager.getEventSignUps(eid, task -> {
+            if (task.isSuccessful()) {
+                for (DocumentSnapshot doc : task.getResult()) {
+                    signUps.add(doc.getId());
+                }
+            }else{
+                System.out.println("Error getting sign ups");
+            }
+        });
+    }
+    private void populateRegistrants(){
+        firebaseManager.getEventRegistrants(eid, task ->{
+            if (task.isSuccessful()){
+                for (DocumentSnapshot doc : task.getResult()){
+                    registered.add(doc.getId());
+                }
+            }else{
+                System.out.println("Error getting registrants");
+            }
+        });
     }
     public String getEid () {
         return eid;

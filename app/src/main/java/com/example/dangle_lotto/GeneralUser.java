@@ -1,5 +1,9 @@
 package com.example.dangle_lotto;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 /**
@@ -24,16 +28,8 @@ public class GeneralUser extends User{
         return canOrganize;
     }
 
-    public void register(String eid) {
-        firebaseManager.userRegister(this, firebaseManager.getEvent(eid));
-    }
-
-    public void unregister(String eid) {
-        firebaseManager.userUnregister(this, firebaseManager.getEvent(eid));
-    }
-
-    public ArrayList<String> getRegistered() {
-        return firebaseManager.getRegisteredEvents(uid);
+    public void getRegistered(OnCompleteListener<QuerySnapshot> listener) {
+        firebaseManager.getRegisteredEvents(uid, listener);
     }
 
     public boolean isAdmin(){

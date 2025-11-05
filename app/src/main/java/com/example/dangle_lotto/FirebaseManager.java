@@ -9,6 +9,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 
 public class FirebaseManager {
     private final FirebaseFirestore db;
@@ -168,7 +169,7 @@ public class FirebaseManager {
                     Timestamp datetime = (Timestamp) data.get("Date");
                     String location = (String) data.get("Location");
                     String description = (String) data.get("Description");
-                    int eventSize = (int) data.get("Event Size");
+                    int eventSize = ((Long) Objects.requireNonNull(data.get("Event Size"))).intValue();
                     String organizer = (String) data.get("Organizer");
                     String pid = (String) data.get("Picture");
                     Event event = new Event(eid, organizer, name, datetime, location, description, pid, eventSize, this);

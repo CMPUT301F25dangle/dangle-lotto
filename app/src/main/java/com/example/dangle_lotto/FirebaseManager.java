@@ -77,20 +77,27 @@ public class FirebaseManager {
      * @param uid  string of user id to search for and retrieve all attributes
      * @return Instantiated GeneralUser object with all required attributes
      */
-    public void getUser(String uid, OnCompleteListener<DocumentSnapshot> listener){
-        users.document(uid).get().addOnCompleteListener(listener);
-//        if (doc.exists()) {
-//            Map<String, Object> data = doc.getData();
-//            String name = (String) data.get("Name");
-//            String email = (String) data.get("Email");
-//            Boolean canOrganize = (Boolean) data.get("CanOrganize");
-//            String phone = (String) data.get("Phone");
-//            String pid = (String) data.get("Picture");
-//            return new GeneralUser(uid, name, email, phone, pid, this, Boolean.TRUE.equals(canOrganize));
-//        }
-//        return null;
-
+    public void getUser(String uid, FirestoreCallback<User> callback) {
+        users.document(uid).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot doc = task.getResult();
+                if (doc.exists()) {
+                    Map<String, Object> data = doc.getData();
+                    assert data != null;
+                    String name = (String) data.get("Name");
+                    String email = (String) data.get("Email");
+                    Boolean canOrganize = (Boolean) data.get("CanOrganize");
+                    String phone = (String) data.get("Phone");
+                    String pid = (String) data.get("Picture");
+                    GeneralUser user = new GeneralUser(uid, name, email, phone, pid, this, Boolean.TRUE.equals(canOrganize));
+                    callback.onSuccess(user);
+                } else {
+                    callback.onFailure(new Exception("User not found"));
+                }
+            }
+        }).addOnFailureListener(callback::onFailure);
     }
+
     /**
      * Adds a new event to the database and instantiates an object for it.
      *
@@ -148,23 +155,31 @@ public class FirebaseManager {
      * Retrieves an event from the database and instantiates an object for it.
      *
      * @param eid  string of user id to search for and retrieve all attributes
-     * @param listener listener to handle return of the query
+     * @param callback callback function to call when event is retrieved
      */
-    public void getEvent(String eid, OnCompleteListener<DocumentSnapshot> listener){
-        events.document(eid).get().addOnCompleteListener(listener);
-//        if (doc.exists()) {
-//            Map<String, Object> data = doc.getData();
-//            assert data != null;
-//            String oid = (String) data.get("Organizer");
-//            String name = (String) data.get("Name");
-//            Timestamp datetime = (Timestamp) data.get("Date");
-//            String location = (String) data.get("Location");
-//            String description = (String) data.get("Description");
-//            int eventSize = (int) data.get("Event Size");
-//            String pid = (String) data.get("Picture");
-//            return new Event(eid, oid, name, datetime, location, description, pid, eventSize, this);
-//        }
-//        return null;
+    public void getEvent(String eid, FirestoreCallback<Event> callback){
+        events.document(eid).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot doc = task.getResult();
+                if (doc.exists()) {
+                    Map<String, Object> data = doc.getData();
+                    assert data != null;
+                    String name = (String) data.get("Name");
+                    Timestamp datetime = (Timestamp) data.get("Date");
+                    String location = (String) data.get("Location");
+                    String description = (String) data.get("Description");
+                    int eventSize = (int) data.get("Event Size");
+                    String organizer = (String) data.get("Organizer");
+                    String pid = (String) data.get("Picture");
+                    Event event = new Event(eid, organizer, name, datetime, location, description, pid, eventSize, this);
+                    callback.onSuccess(event);
+                } else {
+                    callback.onFailure(new Exception("Event not found"));
+                }
+            }else {
+                callback.onFailure(task.getException());
+            }
+        }).addOnFailureListener(callback::onFailure);
     }
 
     /**
@@ -222,11 +237,6 @@ public class FirebaseManager {
      */
     public void getEventSignUps(String eid, OnCompleteListener<QuerySnapshot> listener) {
         events.document(eid).collection("SignUps").get().addOnCompleteListener(listener);
-//        ArrayList<String> eventSignUps = new ArrayList<>();
-//        for (DocumentSnapshot doc : docs) {
-//            eventSignUps.add(doc.getId());
-//        }
-//        return eventSignUps;
     }
     /**
      * Adds a user to the registered list for an event in the database.

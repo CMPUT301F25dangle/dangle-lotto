@@ -32,5 +32,11 @@ public class MainActivity extends AppCompatActivity {
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
         //NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
+        // Clicking bottom nav button opens that fragment and pops fragments off of it
+        binding.navView.setOnItemSelectedListener(item -> {
+            navController.popBackStack(item.getItemId(), false);
+            NavigationUI.onNavDestinationSelected(item, navController);
+            return true;
+        });
     }
 }

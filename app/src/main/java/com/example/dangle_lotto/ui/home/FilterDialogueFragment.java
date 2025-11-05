@@ -37,8 +37,8 @@ public class FilterDialogueFragment extends DialogFragment {
     }
 
     private ListView filterList;
-    private ArrayList<String> test;
-    private ArrayList<String> preselectedFilters;
+    private ArrayList<String> categories;
+    private ArrayList<String> preselectedCategories;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -49,9 +49,9 @@ public class FilterDialogueFragment extends DialogFragment {
         View root = binding.getRoot();
 
         // Example data
-        test = new ArrayList<>();
+        categories = new ArrayList<>();
         for (int i = 0; i < 12; i++) {
-            test.add("Item " + i);
+            categories.add("Item " + i);
         }
 
         // attaching adapter to the listview
@@ -59,15 +59,15 @@ public class FilterDialogueFragment extends DialogFragment {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(
                 requireContext(),
                 R.layout.filter_list_item,
-                test
+                categories
         );
         filterList.setAdapter(adapter);
         filterList.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 
         // allows for filters to be saved when leaving dialogue and coming back
-        if (preselectedFilters != null) {
-            for (int i = 0; i < test.size(); i++) {
-                if (preselectedFilters.contains(test.get(i))) {
+        if (preselectedCategories != null) {
+            for (int i = 0; i < categories.size(); i++) {
+                if (preselectedCategories.contains(categories.get(i))) {
                     filterList.setItemChecked(i, true);
                 }
             }
@@ -76,9 +76,9 @@ public class FilterDialogueFragment extends DialogFragment {
         // pressing confirm gets all selected items from filter
         binding.dialogueFilterConfirmButton.setOnClickListener(v -> {
             ArrayList<String> selected = new ArrayList<>();
-            for (int i = 0; i < test.size(); i++) {
+            for (int i = 0; i < categories.size(); i++) {
                 if (filterList.isItemChecked(i)) {
-                    selected.add(test.get(i));
+                    selected.add(categories.get(i));
                 }
             }
 
@@ -102,10 +102,10 @@ public class FilterDialogueFragment extends DialogFragment {
      * Sets pre-selected filters
      * <p>To be called by parent fragment to save pre-selected filters</p>
      *
-     * @param preselectedFilters The saved filters from previous use of this fragment
+     * @param preselectedCategories The saved filters from previous use of this fragment
      */
-    public void setPreselectedFilters(ArrayList<String> preselectedFilters) {
-        this.preselectedFilters = preselectedFilters;
+    public void setPreselectedCategories(ArrayList<String> preselectedCategories) {
+        this.preselectedCategories = preselectedCategories;
     }
 }
 

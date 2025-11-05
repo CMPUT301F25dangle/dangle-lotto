@@ -21,7 +21,7 @@ public class FirebaseManager {
     }
     /**
      * Adds a new user to the database and instantiates a user object with all required attributes.
-     *
+     * <p>
      * Pass null into phone and pid if user has decided not to provide that information.
      *
      * @param uid  user id. is a string provided by firebase auth that can uniquely identify a user
@@ -47,7 +47,7 @@ public class FirebaseManager {
 
     /**
      * Updates a user's information in the database.
-     *
+     * <p>
      * Is the update method for all users in general. canOrganize does NOT get updated here for
      * GeneralUser and will be handled separately in admin related functions
      *
@@ -218,7 +218,7 @@ public class FirebaseManager {
 
     /**
      * Adds a user to the sign-up list for an event in the database.
-     *
+     * <p>
      * Only adds if user is not yet in the list, otherwise throws an exception.
      * ONLY USE THIS FUNCTION WHEN ADDING A NEW USER TO AN EVENT
      *
@@ -235,7 +235,7 @@ public class FirebaseManager {
     }
     /**
      * Deletes a user from the sign-up list for an event in the database.
-     *
+     * <p>
      * Only deletes if user is already in the list, otherwise throws an exception.
      * ONLY USE THIS FUNCTION WHEN DELETING A USER FROM EVENT.
      *
@@ -250,7 +250,7 @@ public class FirebaseManager {
 
     /**
      * Adds a user to the registered list for an event in the database.
-     *
+     * <p>
      * ONLY USE THIS FUNCTION WHEN REGISTERING A NEW USER FOR AN EVENT
      *
      * @param user  User object containing all required attributes
@@ -267,7 +267,7 @@ public class FirebaseManager {
     }
     /**
      * Removes a user from the registered list for an event in the database.
-     *
+     * <p>
      * ONLY USE THIS FUNCTION WHEN UNREGISTERING A NEW USER FOR AN EVENT
      *
      * @param user  User object containing all required attributes

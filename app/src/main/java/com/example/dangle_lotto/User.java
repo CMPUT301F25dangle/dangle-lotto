@@ -1,5 +1,7 @@
 package com.example.dangle_lotto;
 
+import com.google.firebase.firestore.Exclude;
+
 /**
  * User — abstract class for user data model. is the superclass of GeneralUser and Admin
  *
@@ -18,6 +20,7 @@ public abstract class User {
     protected String email;
     protected String phone;
     protected String photo_id;
+    @Exclude // this makes sure you don't store this in firebase
     protected FirebaseManager firebaseManager;
 
 

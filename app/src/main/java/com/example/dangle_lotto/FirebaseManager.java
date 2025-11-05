@@ -4,6 +4,7 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -152,6 +153,20 @@ public class FirebaseManager {
         events.document(eid).delete();
     }
 
+    public Event documentToEvent(DocumentSnapshot doc) {
+        return new Event(
+                doc.getId(),
+                doc.getString("Organizer"),
+                doc.getString("Name"),
+                doc.getTimestamp("Date"),
+                doc.getString("Location"),
+                doc.getString("Description"),
+                doc.getString("Picture"),
+                Objects.requireNonNull(doc.getLong("Event Size")).intValue(),
+                this
+        );
+    }
+
     /**
      * Retrieves an event from the database and instantiates an object for it.
      *
@@ -163,17 +178,7 @@ public class FirebaseManager {
             if (task.isSuccessful()) {
                 DocumentSnapshot doc = task.getResult();
                 if (doc.exists()) {
-                    Map<String, Object> data = doc.getData();
-                    assert data != null;
-                    String name = (String) data.get("Name");
-                    Timestamp datetime = (Timestamp) data.get("Date");
-                    String location = (String) data.get("Location");
-                    String description = (String) data.get("Description");
-                    int eventSize = ((Long) Objects.requireNonNull(data.get("Event Size"))).intValue();
-                    String organizer = (String) data.get("Organizer");
-                    String pid = (String) data.get("Picture");
-                    Event event = new Event(eid, organizer, name, datetime, location, description, pid, eventSize, this);
-                    callback.onSuccess(event);
+                    callback.onSuccess(documentToEvent(doc));
                 } else {
                     callback.onFailure(new Exception("Event not found"));
                 }
@@ -286,5 +291,25 @@ public class FirebaseManager {
 //    public void userCancelEvent(User user, Event event);
 //
 //    public void userReinstateEvent(User user, Event event);
+
+
+    // Querying
+    public void getEventsQuery(DocumentSnapshot lastVisible, int numEvents, FirestoreCallback<ArrayList<DocumentSnapshot>> callback){
+        Query query = events.orderBy("Date", Query.Direction.DESCENDING).limit(numEvents);
+
+        if (lastVisible != null) query = query.startAfter(lastVisible);
+        query.get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        ArrayList<DocumentSnapshot> events = new ArrayList<>();
+                        for (DocumentSnapshot doc : task.getResult()) {
+                            events.add(doc);
+                        }
+                        callback.onSuccess(events);
+                    }else{
+                        callback.onFailure(task.getException());
+                    }
+                }).addOnFailureListener(callback::onFailure);
+    }
+
 
 }

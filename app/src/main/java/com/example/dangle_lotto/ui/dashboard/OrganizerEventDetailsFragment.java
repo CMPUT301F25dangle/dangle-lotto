@@ -4,6 +4,8 @@ import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 
 import android.view.LayoutInflater;
 import android.view.View;
@@ -33,13 +35,19 @@ public class OrganizerEventDetailsFragment extends Fragment {
         binding = FragmentOrganizerEventDetailsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
+        // making back button actually take u to previous fragment
+        binding.organizerEventDetailsBackButton.setOnClickListener(v -> {
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.popBackStack();
+        });
+
         // initialize buttons
         eventButton = binding.organizerEventDetailsEventButton;
         entrantsButton = binding.organizerEventDetailsEntrantsButton;
         mapButton = binding.organizerEventDetailsMapButton;
         buttons = new Button[]{eventButton, entrantsButton, mapButton};
 
-        // set listeners
+        // set listeners for buttons
         setupButtonListeners();
 
         // default selection & fragment
@@ -69,6 +77,7 @@ public class OrganizerEventDetailsFragment extends Fragment {
      * Called when a button is clicked
      * </p>
      * Deselects other buttons and keeps the clicked button selected
+     *
      * @param clickedButton Button that as clicked
      */
     private void onTabButtonClicked(Button clickedButton) {

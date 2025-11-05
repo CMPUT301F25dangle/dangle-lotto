@@ -18,6 +18,7 @@ import androidx.fragment.app.Fragment;
 import com.example.dangle_lotto.MainActivity;
 import com.example.dangle_lotto.R;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 public class LoginFragment extends Fragment {
 
@@ -71,8 +72,17 @@ public class LoginFragment extends Fragment {
                 .addOnCompleteListener(task -> {
                     btnLogin.setEnabled(true);
                     if (task.isSuccessful()) {
+                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                        String uid;
+                        if (user != null) {
+                            uid = user.getUid();
+
+                        } else {
+                            uid = null;
+                        }
                         Toast.makeText(getActivity(), "Login successful", Toast.LENGTH_SHORT).show();
                         Intent intent = new Intent(getActivity(), MainActivity.class);
+                        intent.putExtra("UID", uid);
                         startActivity(intent);
                         getActivity().finish();
                     } else {

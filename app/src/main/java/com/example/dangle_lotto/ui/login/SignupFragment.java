@@ -2,6 +2,7 @@ package com.example.dangle_lotto.ui.login;
 
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,17 +13,23 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.example.dangle_lotto.FirebaseManager;
+import com.example.dangle_lotto.GeneralUser;
 import com.example.dangle_lotto.R;
+import com.example.dangle_lotto.User;
 import com.example.dangle_lotto.ui.login.LoginFragment;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.UserProfileChangeRequest;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class SignupFragment extends Fragment {
 
-    private EditText etSignupUsername, etSignupEmail, etSignupPhone, etSignupPassword;
+    private EditText etSignupName, etSignupEmail, etSignupPhone, etSignupPassword;
     private Button btnSignUp;
     private FirebaseAuth mAuth;
+    FirebaseFirestore db = FirebaseFirestore.getInstance();
+
 
     public SignupFragment() {
         // Required empty public constructor
@@ -34,7 +41,7 @@ public class SignupFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_signup, container, false);
 
-        etSignupUsername = view.findViewById(R.id.etSignupUsername);
+        etSignupName = view.findViewById(R.id.etSignupName);
         etSignupEmail = view.findViewById(R.id.etSignupEmail);
         etSignupPhone = view.findViewById(R.id.etSignupPhone);
         etSignupPassword = view.findViewById(R.id.etSignupPassword);
@@ -48,13 +55,13 @@ public class SignupFragment extends Fragment {
     }
 
     private void registerUser() {
-        String username = etSignupUsername.getText().toString().trim();
+        String name = etSignupName.getText().toString().trim();
         String email = etSignupEmail.getText().toString().trim();
         String phone = etSignupPhone.getText().toString().trim();
         String password = etSignupPassword.getText().toString().trim();
 
-        if (TextUtils.isEmpty(username)) {
-            etSignupUsername.setError("Username required");
+        if (TextUtils.isEmpty(name)) {
+            etSignupName.setError("Name required");
             return;
         }
 
@@ -77,7 +84,20 @@ public class SignupFragment extends Fragment {
                         FirebaseUser user = mAuth.getCurrentUser();
 
                         Toast.makeText(getActivity(), "Signup successful! Please log in", Toast.LENGTH_SHORT).show();
+                        // code to make User object
+                        if (user != null) {
+                            String uid = user.getUid();
+                            String photo_id = "";
+                            FirebaseManager firebaseManager = new FirebaseManager();
+                            Boolean canOrganize = Boolean.FALSE;
 
+                            User newUser;
+                            newUser = new GeneralUser(uid, name, email, phone, photo_id, firebaseManager, canOrganize);
+                            db.collection("users").document(uid)
+                                    .set(newUser)
+                                    .addOnSuccessListener(aVoid -> Log.d("Firestore", "User saved successfully"))
+                                    .addOnFailureListener(e -> Log.e("Firestore", "Error saving user", e));
+                        }
                         // switch to login fragment
                         requireActivity().getSupportFragmentManager()
                                 .beginTransaction()

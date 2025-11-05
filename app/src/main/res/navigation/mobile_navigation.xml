@@ -15,7 +15,11 @@
         android:id="@+id/navigation_dashboard"
         android:name="com.example.dangle_lotto.ui.dashboard.DashboardFragment"
         android:label="@string/title_dashboard"
-        tools:layout="@layout/fragment_dashboard" />
+        tools:layout="@layout/fragment_dashboard" >
+        <action
+            android:id="@+id/action_navigation_dashboard_to_organizerEventDetailsFragment"
+            app:destination="@id/organizerEventDetailsFragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/navigation_notifications"
@@ -28,4 +32,9 @@
         android:name="com.example.dangle_lotto.ui.yourevents.YourEventsFragment"
         android:label="@string/title_your_events"
         tools:layout="@layout/fragment_your_events" />
+    <fragment
+        android:id="@+id/organizerEventDetailsFragment"
+        android:name="com.example.dangle_lotto.ui.dashboard.OrganizerEventDetailsFragment"
+        android:label="fragment_organizer_event_details"
+        tools:layout="@layout/fragment_organizer_event_details" />
 </navigation>

@@ -1,5 +1,6 @@
 package com.example.dangle_lotto;
 
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -76,18 +77,18 @@ public class FirebaseManager {
      * @param uid  string of user id to search for and retrieve all attributes
      * @return Instantiated GeneralUser object with all required attributes
      */
-    public User getUser(String uid){
-        DocumentSnapshot doc = users.document(uid).get().getResult();
-        if (doc.exists()) {
-            Map<String, Object> data = doc.getData();
-            String name = (String) data.get("Name");
-            String email = (String) data.get("Email");
-            Boolean canOrganize = (Boolean) data.get("CanOrganize");
-            String phone = (String) data.get("Phone");
-            String pid = (String) data.get("Picture");
-            return new GeneralUser(uid, name, email, phone, pid, this, Boolean.TRUE.equals(canOrganize));
-        }
-        return null;
+    public void getUser(String uid, OnCompleteListener<DocumentSnapshot> listener){
+        users.document(uid).get().addOnCompleteListener(listener);
+//        if (doc.exists()) {
+//            Map<String, Object> data = doc.getData();
+//            String name = (String) data.get("Name");
+//            String email = (String) data.get("Email");
+//            Boolean canOrganize = (Boolean) data.get("CanOrganize");
+//            String phone = (String) data.get("Phone");
+//            String pid = (String) data.get("Picture");
+//            return new GeneralUser(uid, name, email, phone, pid, this, Boolean.TRUE.equals(canOrganize));
+//        }
+//        return null;
 
     }
     /**
@@ -147,23 +148,23 @@ public class FirebaseManager {
      * Retrieves an event from the database and instantiates an object for it.
      *
      * @param eid  string of user id to search for and retrieve all attributes
-     * @return Instantiated Event object with all required attributes
+     * @param listener listener to handle return of the query
      */
-    public Event getEvent(String eid){
-        DocumentSnapshot doc = events.document(eid).get().getResult();
-        if (doc.exists()) {
-            Map<String, Object> data = doc.getData();
-            assert data != null;
-            String oid = (String) data.get("Organizer");
-            String name = (String) data.get("Name");
-            Timestamp datetime = (Timestamp) data.get("Date");
-            String location = (String) data.get("Location");
-            String description = (String) data.get("Description");
-            int eventSize = (int) data.get("Event Size");
-            String pid = (String) data.get("Picture");
-            return new Event(eid, oid, name, datetime, location, description, pid, eventSize, this);
-        }
-        return null;
+    public void getEvent(String eid, OnCompleteListener<DocumentSnapshot> listener){
+        events.document(eid).get().addOnCompleteListener(listener);
+//        if (doc.exists()) {
+//            Map<String, Object> data = doc.getData();
+//            assert data != null;
+//            String oid = (String) data.get("Organizer");
+//            String name = (String) data.get("Name");
+//            Timestamp datetime = (Timestamp) data.get("Date");
+//            String location = (String) data.get("Location");
+//            String description = (String) data.get("Description");
+//            int eventSize = (int) data.get("Event Size");
+//            String pid = (String) data.get("Picture");
+//            return new Event(eid, oid, name, datetime, location, description, pid, eventSize, this);
+//        }
+//        return null;
     }
 
     /**
@@ -204,13 +205,13 @@ public class FirebaseManager {
      * @param uid  string of user id to search for and retrieve all attributes
      * @return ArrayList of event ids that the user has signed up for
      */
-    public ArrayList<String> getSignedUpEvents(String uid) {
-        QuerySnapshot docs = users.document(uid).collection("SignUps").get().getResult();
-        ArrayList<String> signedUpEvents = new ArrayList<>();
-        for (DocumentSnapshot doc : docs) {
-            signedUpEvents.add(doc.getId());
-        }
-        return signedUpEvents;
+    public void getSignedUpEvents(String uid, OnCompleteListener<QuerySnapshot> listener) {
+        users.document(uid).collection("SignUps").get().addOnCompleteListener(listener);
+//        ArrayList<String> signedUpEvents = new ArrayList<>();
+//        for (DocumentSnapshot doc : docs) {
+//            signedUpEvents.add(doc.getId());
+//        }
+//        return signedUpEvents;
     }
 
     /**
@@ -219,13 +220,13 @@ public class FirebaseManager {
      * @param eid  string of user id to search for and retrieve all attributes
      * @return ArrayList of user ids who have signed up for the event
      */
-    public ArrayList<String> getEventSignUps(String eid) {
-        QuerySnapshot docs = events.document(eid).collection("SignUps").get().getResult();
-        ArrayList<String> eventSignUps = new ArrayList<>();
-        for (DocumentSnapshot doc : docs) {
-            eventSignUps.add(doc.getId());
-        }
-        return eventSignUps;
+    public void getEventSignUps(String eid, OnCompleteListener<QuerySnapshot> listener) {
+        events.document(eid).collection("SignUps").get().addOnCompleteListener(listener);
+//        ArrayList<String> eventSignUps = new ArrayList<>();
+//        for (DocumentSnapshot doc : docs) {
+//            eventSignUps.add(doc.getId());
+//        }
+//        return eventSignUps;
     }
     /**
      * Adds a user to the registered list for an event in the database.
@@ -264,13 +265,13 @@ public class FirebaseManager {
      * @param uid  string of user id to search for and retrieve all attributes
      * @return ArrayList of event ids that the user has signed up for
      */
-    public ArrayList<String> getRegisteredEvents(String uid) {
-        QuerySnapshot docs = users.document(uid).collection("Registered").get().getResult();
-        ArrayList<String> participatedEvents = new ArrayList<>();
-        for (DocumentSnapshot doc : docs) {
-            participatedEvents.add(doc.getId());
-        }
-        return participatedEvents;
+    public void getRegisteredEvents(String uid, OnCompleteListener<QuerySnapshot> listener) {
+        users.document(uid).collection("Registered").get().addOnCompleteListener(listener);
+//        ArrayList<String> participatedEvents = new ArrayList<>();
+//        for (DocumentSnapshot doc : docs) {
+//            participatedEvents.add(doc.getId());
+//        }
+//        return participatedEvents;
     }
 
     /**
@@ -279,13 +280,13 @@ public class FirebaseManager {
      * @param eid  string of user id to search for and retrieve all attributes
      * @return ArrayList of user ids who have signed up for the event
      */
-    public ArrayList<String> getEventRegistrants(String eid) {
-        QuerySnapshot docs = events.document(eid).collection("SignUps").get().getResult();
-        ArrayList<String> eventParticipants = new ArrayList<>();
-        for (DocumentSnapshot doc : docs) {
-            eventParticipants.add(doc.getId());
-        }
-        return eventParticipants;
+    public void getEventRegistrants(String eid, OnCompleteListener<QuerySnapshot> listener) {
+        events.document(eid).collection("SignUps").get().addOnCompleteListener(listener);
+//        ArrayList<String> eventParticipants = new ArrayList<>();
+//        for (DocumentSnapshot doc : docs) {
+//            eventParticipants.add(doc.getId());
+//        }
+//        return eventParticipants;
     }
 
     // implement for chosen and cancelled and stuff

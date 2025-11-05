@@ -76,18 +76,9 @@ public class SignupFragment extends Fragment {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
 
-                        // Optional: set display name
-                        if (user != null) {
-                            UserProfileChangeRequest profileUpdates =
-                                    new UserProfileChangeRequest.Builder()
-                                            .setDisplayName(username)
-                                            .build();
-                            user.updateProfile(profileUpdates);
-                        }
+                        Toast.makeText(getActivity(), "Signup successful! Please log in", Toast.LENGTH_SHORT).show();
 
-                        Toast.makeText(getActivity(), "Signup successful!", Toast.LENGTH_SHORT).show();
-
-                        // Switch to login fragment
+                        // switch to login fragment
                         requireActivity().getSupportFragmentManager()
                                 .beginTransaction()
                                 .replace(R.id.auth_fragment_container, new LoginFragment())
@@ -95,7 +86,7 @@ public class SignupFragment extends Fragment {
 
                     } else {
                         Toast.makeText(getActivity(),
-                                "Signup failed: " + task.getException().getMessage(),
+                                "Signup failed",
                                 Toast.LENGTH_LONG).show();
                     }
                 });

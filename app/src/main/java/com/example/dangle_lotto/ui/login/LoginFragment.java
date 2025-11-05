@@ -76,7 +76,7 @@ public class LoginFragment extends Fragment {
                         startActivity(intent);
                         getActivity().finish();
                     } else {
-                        Toast.makeText(getActivity(), "Login failed: " + task.getException().getMessage(),
+                        Toast.makeText(getActivity(), "Login failed",
                                 Toast.LENGTH_LONG).show();
                     }
                 });

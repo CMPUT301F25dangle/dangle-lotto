@@ -24,17 +24,4 @@ public class LoginActivity extends AppCompatActivity {
         }
         FirebaseApp.initializeApp(this);
     }
-
-    public void onLoginSuccess() {
-        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-        startActivity(intent);
-        finish();
-    }
-
-    public void showSignupFragment() {
-        FragmentTransaction transaction = getSupportFragmentManager().beginTransaction();
-        transaction.replace(R.id.auth_fragment_container, new SignupFragment());
-        transaction.addToBackStack(null);
-        transaction.commit();
-    }
 }

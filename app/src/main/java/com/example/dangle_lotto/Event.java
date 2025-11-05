@@ -1,7 +1,6 @@
 package com.example.dangle_lotto;
 
 import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -51,25 +50,30 @@ public class Event {
     }
 
     private void populateSignUps(){
-        firebaseManager.getEventSignUps(eid, task -> {
-            if (task.isSuccessful()) {
-                for (DocumentSnapshot doc : task.getResult()) {
-                    signUps.add(doc.getId());
-                }
-            }else{
-                System.out.println("Error getting sign ups");
+        firebaseManager.getEventSubcollection(eid, "SignUps", new FirestoreCallback<ArrayList<String>>() {
+            @Override
+            public void onSuccess(ArrayList<String> result) {
+                signUps = result;
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                signUps = null;
             }
         });
     }
     private void populateRegistrants(){
-        firebaseManager.getEventRegistrants(eid, task ->{
-            if (task.isSuccessful()){
-                for (DocumentSnapshot doc : task.getResult()){
-                    registered.add(doc.getId());
-                }
-            }else{
-                System.out.println("Error getting registrants");
+        firebaseManager.getEventSubcollection(eid, "Registrants", new FirestoreCallback<ArrayList<String>>() {
+            @Override
+            public void onSuccess(ArrayList<String> result) {
+                registered = result;
             }
+
+            @Override
+            public void onFailure(Exception e) {
+                signUps = null;
+            }
+
         });
     }
     public String getEid () {

@@ -1,11 +1,9 @@
 package com.example.dangle_lotto;
 
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -95,6 +93,8 @@ public class FirebaseManager {
                 } else {
                     callback.onFailure(new Exception("User not found"));
                 }
+            }else{
+                callback.onFailure(task.getException());
             }
         }).addOnFailureListener(callback::onFailure);
     }
@@ -183,6 +183,34 @@ public class FirebaseManager {
         }).addOnFailureListener(callback::onFailure);
     }
 
+    public void getUserSubcollection(String id, String subcollection, FirestoreCallback<ArrayList<String>> callback){
+        users.document(id).collection(subcollection).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                ArrayList<String> ids = new ArrayList<>();
+                for (DocumentSnapshot doc : task.getResult()) {
+                    ids.add(doc.getId());
+                }
+                callback.onSuccess(ids);
+            }else {
+                callback.onFailure(task.getException());
+            }
+        }).addOnFailureListener(callback::onFailure);
+    }
+
+    public void getEventSubcollection(String id, String subcollection, FirestoreCallback<ArrayList<String>> callback){
+        events.document(id).collection(subcollection).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                ArrayList<String> ids = new ArrayList<>();
+                for (DocumentSnapshot doc : task.getResult()) {
+                    ids.add(doc.getId());
+                }
+                callback.onSuccess(ids);
+            }else {
+                callback.onFailure(task.getException());
+            }
+        }).addOnFailureListener(callback::onFailure);
+    }
+
     /**
      * Adds a user to the sign-up list for an event in the database.
      *
@@ -216,30 +244,6 @@ public class FirebaseManager {
     }
 
     /**
-     * Retrieves a list of events a user has signed up for from the database.
-     *
-     * @param uid  string of user id to search for and retrieve all attributes
-     * @return ArrayList of event ids that the user has signed up for
-     */
-    public void getSignedUpEvents(String uid, OnCompleteListener<QuerySnapshot> listener) {
-        users.document(uid).collection("SignUps").get().addOnCompleteListener(listener);
-//        ArrayList<String> signedUpEvents = new ArrayList<>();
-//        for (DocumentSnapshot doc : docs) {
-//            signedUpEvents.add(doc.getId());
-//        }
-//        return signedUpEvents;
-    }
-
-    /**
-     * Retrieves a list of users who have signed up for an event from the database.
-     *
-     * @param eid  string of user id to search for and retrieve all attributes
-     * @return ArrayList of user ids who have signed up for the event
-     */
-    public void getEventSignUps(String eid, OnCompleteListener<QuerySnapshot> listener) {
-        events.document(eid).collection("SignUps").get().addOnCompleteListener(listener);
-    }
-    /**
      * Adds a user to the registered list for an event in the database.
      *
      * ONLY USE THIS FUNCTION WHEN REGISTERING A NEW USER FOR AN EVENT
@@ -268,36 +272,6 @@ public class FirebaseManager {
         event.deleteRegistered(user.getUid());
         users.document(user.getUid()).collection("Registered").document(event.getEid()).delete();
         events.document(event.getEid()).collection("Registrants").document(user.getUid()).delete();
-    }
-
-    /**
-     * Retrieves a list of events a user has registered for from the database.
-     *
-     * @param uid  string of user id to search for and retrieve all attributes
-     * @return ArrayList of event ids that the user has signed up for
-     */
-    public void getRegisteredEvents(String uid, OnCompleteListener<QuerySnapshot> listener) {
-        users.document(uid).collection("Registered").get().addOnCompleteListener(listener);
-//        ArrayList<String> participatedEvents = new ArrayList<>();
-//        for (DocumentSnapshot doc : docs) {
-//            participatedEvents.add(doc.getId());
-//        }
-//        return participatedEvents;
-    }
-
-    /**
-     * Retrieves a list of users who have registered for an event from the database.
-     *
-     * @param eid  string of user id to search for and retrieve all attributes
-     * @return ArrayList of user ids who have signed up for the event
-     */
-    public void getEventRegistrants(String eid, OnCompleteListener<QuerySnapshot> listener) {
-        events.document(eid).collection("SignUps").get().addOnCompleteListener(listener);
-//        ArrayList<String> eventParticipants = new ArrayList<>();
-//        for (DocumentSnapshot doc : docs) {
-//            eventParticipants.add(doc.getId());
-//        }
-//        return eventParticipants;
     }
 
     // implement for chosen and cancelled and stuff

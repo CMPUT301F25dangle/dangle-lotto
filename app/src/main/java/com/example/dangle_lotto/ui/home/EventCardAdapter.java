@@ -122,8 +122,8 @@ public class EventCardAdapter extends RecyclerView.Adapter<EventCardAdapter.View
          * @param listener The click listener to invoke when the item is clicked.
          */
         public void bind(Event event, OnItemClickListener listener) {
-            textView.setText(event.getTitle());
-            imageView.setImageResource(event.getBanner());
+            textView.setText(event.getName());
+            imageView.setImageResource(R.drawable.event_card_test_image);
             itemView.setOnClickListener(v -> listener.onItemClick(getBindingAdapterPosition()));
         }
     }

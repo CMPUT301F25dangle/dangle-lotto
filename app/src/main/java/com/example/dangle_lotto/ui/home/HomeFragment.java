@@ -14,8 +14,10 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.dangle_lotto.Event;
+import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.databinding.FragmentHomeBinding;
+import com.google.firebase.Timestamp;
 
 import java.util.ArrayList;
 
@@ -30,6 +32,7 @@ public class HomeFragment extends Fragment {
     private FragmentHomeBinding binding;
     private RecyclerView recyclerView;
     private ArrayList<String> selectedFilters = new ArrayList<>();
+    private FirebaseManager firebaseManager = new FirebaseManager();
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -45,7 +48,7 @@ public class HomeFragment extends Fragment {
 
         // temporarily adding for testing
         for (int i = 1; i < 4; i++) {
-            events.add(new Event(String.format("Example %d", i), R.drawable.event_card_test_image));
+            events.add(firebaseManager.createEvent("bruh", "bruh", Timestamp.now(), "bruh", "bruh", 10, "bruh"));
         }
         EventCardAdapter adapter = new EventCardAdapter(events, position -> {
             Event event = events.get(position);

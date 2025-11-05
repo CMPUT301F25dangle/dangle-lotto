@@ -1,5 +1,6 @@
 package com.example.dangle_lotto.ui.home;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -39,6 +40,9 @@ public class HomeFragment extends Fragment {
     private EventCardAdapter adapter;
     private LinearLayoutManager layoutManager;
     private boolean isLoading;
+    private static final int PAGE_SIZE = 4; // or however many events per page
+    private DocumentSnapshot lastVisible = null;
+
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -56,7 +60,7 @@ public class HomeFragment extends Fragment {
         // initializing events list
         events = new ArrayList<>();
 
-        // temporarily adding for testing
+//         temporarily adding for testing
 //        for (int i = 1; i < 4; i++) {
 //            events.add(firebaseManager.createEvent("bruh", "bruh", Timestamp.now(), "bruh", "bruh", 10, "bruh"));
 //        }
@@ -74,31 +78,37 @@ public class HomeFragment extends Fragment {
             @Override
             public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
                 super.onScrolled(recyclerView, dx, dy);
+                // only check when scrolling down
+                if (dy <= 0) return;
 
                 int visibleItemCount = layoutManager.getChildCount();
                 int totalItemCount = layoutManager.getItemCount();
                 int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
-
+                Log.d("Firebase", "Visible: " + visibleItemCount + " Total: " + totalItemCount + " First: " + firstVisibleItemPosition);
                 // check if were near the end
-                if ((visibleItemCount + firstVisibleItemPosition) >= totalItemCount - 3
+                if (!isLoading && (visibleItemCount + firstVisibleItemPosition) >= totalItemCount - 3
                         && firstVisibleItemPosition >= 0) {
+                    Log.d("List Size:", String.valueOf(events.size()));
+//                    Log.d("Firebase", "Loading more events...");
                     loadNextPage();
                 }
             }
         });
 
-        firebaseManager.getEvent("7rHZzxyUqLwcju31Rxe8", new FirestoreCallback<Event>() {
-            @Override
-            public void onSuccess(Event event) {
-                events.add(event);
-                adapter.notifyItemInserted(0);
-            }
+//        firebaseManager.getEvent("7rHZzxyUqLwcju31Rxe8", new FirestoreCallback<Event>() {
+//            @Override
+//            public void onSuccess(Event event) {
+//                events.add(event);
+//                adapter.notifyItemInserted(0);
+//            }
+//
+//            @Override
+//            public void onFailure(Exception e) {
+//                Log.e("Firebase", "Failed to load event", e);
+//            }
+//        });
+        loadFirstPage();
 
-            @Override
-            public void onFailure(Exception e) {
-                Log.e("Firebase", "Failed to load event", e);
-            }
-        });
 
         // initialize button for opening filter dialogue
         binding.filterButton.setOnClickListener(v -> openFilterDialogue());
@@ -141,26 +151,64 @@ public class HomeFragment extends Fragment {
         dialog.show(getParentFragmentManager(), "FilterDialog");
     }
 
+    private void loadFirstPage() {
+        isLoading = true;
+
+        firebaseManager.getEventsQuery(null, PAGE_SIZE, new FirestoreCallback<ArrayList<DocumentSnapshot>>() {
+            @Override
+            public void onSuccess(ArrayList<DocumentSnapshot> result) {
+                int startPos = events.size();
+                for (DocumentSnapshot doc : result) {
+                    events.add(firebaseManager.documentToEvent(doc));
+                }
+                adapter.notifyItemRangeInserted(startPos, result.size());
+                isLoading = false;
+                if (!result.isEmpty()) {
+                    lastVisible = result.get(result.size() - 1);
+                } else {
+                    // No more pages
+                    lastVisible = null;
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.d("Firebase", "Failed to load first page", e);
+                isLoading = false;
+
+            }
+        });
+    }
+
     private void loadNextPage() {
-        Toast.makeText(getContext(), "At the end of the list!", Toast.LENGTH_SHORT).show();
-//        if (isLoading) return;
-//        isLoading = true;
-//
-//        Query query = firebaseManager.getEventsQuery()
-//                .startAfter(lastVisible)
-//                .limit(PAGE_SIZE);
-//
-//        query.get().addOnSuccessListener(queryDocumentSnapshots -> {
-//            if (!queryDocumentSnapshots.isEmpty()) {
-//                lastVisible = queryDocumentSnapshots.getDocuments()
-//                        .get(queryDocumentSnapshots.size() - 1);
-//                for (DocumentSnapshot doc : queryDocumentSnapshots) {
-//                    events.add(new Event(...)); // parse doc
-//                }
-//                adapter.notifyDataSetChanged();
-//            }
-//            isLoading = false;
-//        });
+        if (isLoading || lastVisible == null) return;
+        isLoading = true;
+        Toast.makeText(getContext(), "Loading more events...", Toast.LENGTH_SHORT).show();
+        firebaseManager.getEventsQuery(lastVisible, PAGE_SIZE, new FirestoreCallback<ArrayList<DocumentSnapshot>>() {
+            @Override
+            public void onSuccess(ArrayList<DocumentSnapshot> result) {
+                Log.d("Firebase", "Loaded " + result.size() + " events");
+                int startPos = events.size();
+                for (DocumentSnapshot doc : result) {
+                    events.add(firebaseManager.documentToEvent(doc));
+                }
+                adapter.notifyItemRangeInserted(startPos, result.size());
+                isLoading = false;
+                if (!result.isEmpty()) {
+                    lastVisible = result.get(result.size() - 1);
+                } else {
+                    // No more pages
+                    lastVisible = null;
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.d("Firebase", "Failed to load next page", e);
+                isLoading = false;
+
+            }
+        });
     }
 
 }

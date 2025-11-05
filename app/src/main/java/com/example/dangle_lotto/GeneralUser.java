@@ -24,6 +24,8 @@ public class GeneralUser extends User{
         this.canOrganize = canOrganize;
     }
 
+
+
     public boolean canOrganize() {
         return canOrganize;
     }

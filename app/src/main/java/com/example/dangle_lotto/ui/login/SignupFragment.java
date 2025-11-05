@@ -89,14 +89,8 @@ public class SignupFragment extends Fragment {
                             String uid = user.getUid();
                             String photo_id = "";
                             FirebaseManager firebaseManager = new FirebaseManager();
-                            Boolean canOrganize = Boolean.FALSE;
 
-                            User newUser;
-                            newUser = new GeneralUser(uid, name, email, phone, photo_id, firebaseManager, canOrganize);
-                            db.collection("users").document(uid)
-                                    .set(newUser)
-                                    .addOnSuccessListener(aVoid -> Log.d("Firestore", "User saved successfully"))
-                                    .addOnFailureListener(e -> Log.e("Firestore", "Error saving user", e));
+                            User newUser = firebaseManager.createNewUser(uid, name, email, phone, photo_id, false);
                         }
                         // switch to login fragment
                         requireActivity().getSupportFragmentManager()

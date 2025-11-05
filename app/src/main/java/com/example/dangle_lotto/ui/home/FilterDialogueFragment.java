@@ -91,9 +91,7 @@ public class FilterDialogueFragment extends DialogFragment {
         });
 
         // cancel button that just closes the dialogue fragment
-        binding.dialogueFilterCancelButton.setOnClickListener(v -> {
-            dismiss();
-        });
+        binding.dialogueFilterCancelButton.setOnClickListener(v -> dismiss());
 
         return root;
     }

@@ -61,11 +61,6 @@ public class HomeFragment extends Fragment {
         // initializing events list
         events = new ArrayList<>();
 
-//         temporarily adding for testing
-//        for (int i = 1; i < 4; i++) {
-//            events.add(firebaseManager.createEvent("bruh", "bruh", Timestamp.now(), "bruh", "bruh", 10, "bruh"));
-//        }
-
         // initializing and attaching adapter
          adapter = new EventCardAdapter(events, position -> {
             Event event = events.get(position);
@@ -85,31 +80,18 @@ public class HomeFragment extends Fragment {
                 int visibleItemCount = layoutManager.getChildCount();
                 int totalItemCount = layoutManager.getItemCount();
                 int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
-                Log.d("Firebase", "Visible: " + visibleItemCount + " Total: " + totalItemCount + " First: " + firstVisibleItemPosition);
+                // Log.d("Firebase", "Visible: " + visibleItemCount + " Total: " + totalItemCount + " First: " + firstVisibleItemPosition);
                 // check if were near the end
                 if (!isLoading && (visibleItemCount + firstVisibleItemPosition) >= totalItemCount - 3
                         && firstVisibleItemPosition >= 0) {
-                    Log.d("List Size:", String.valueOf(events.size()));
-//                    Log.d("Firebase", "Loading more events...");
+                    // Log.d("List Size:", String.valueOf(events.size()));
+                    // Log.d("Firebase", "Loading more events...");
                     loadNextPage();
                 }
             }
         });
 
-//        firebaseManager.getEvent("7rHZzxyUqLwcju31Rxe8", new FirestoreCallback<Event>() {
-//            @Override
-//            public void onSuccess(Event event) {
-//                events.add(event);
-//                adapter.notifyItemInserted(0);
-//            }
-//
-//            @Override
-//            public void onFailure(Exception e) {
-//                Log.e("Firebase", "Failed to load event", e);
-//            }
-//        });
         loadFirstPage();
-
 
         // initialize button for opening filter dialogue
         binding.filterButton.setOnClickListener(v -> openFilterDialogue());
@@ -128,7 +110,8 @@ public class HomeFragment extends Fragment {
      */
     private void openEventFragment() {
         NavController navController = NavHostFragment.findNavController(this);
-        navController.navigate(R.id.action_navigation_home_to_placeholderFragment);
+        // When Event Detail fragment is implemented, uncomment below and add navigation id
+        //navController.navigate();
     }
 
     /**
@@ -152,6 +135,9 @@ public class HomeFragment extends Fragment {
         dialog.show(getParentFragmentManager(), "FilterDialog");
     }
 
+    /**
+     * Loads the first page of events by querying firebase
+     */
     private void loadFirstPage() {
         isLoading = true;
 
@@ -181,6 +167,9 @@ public class HomeFragment extends Fragment {
         });
     }
 
+    /**
+     * Loads the next page of events by querying firebase
+     */
     private void loadNextPage() {
         if (isLoading || lastVisible == null) return;
         isLoading = true;

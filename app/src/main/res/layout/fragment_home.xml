@@ -6,6 +6,15 @@
     android:layout_height="match_parent"
     tools:context=".ui.home.HomeFragment">
 
+    <ListView
+        android:id="@+id/list_events"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:divider="?android:listDivider"
+        android:dividerHeight="1dp"
+        android:padding="12dp" />
+
+    <!--
     <TextView
         android:id="@+id/text_home"
         android:layout_width="match_parent"
@@ -19,4 +28,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+        -->
+
 </androidx.constraintlayout.widget.ConstraintLayout>

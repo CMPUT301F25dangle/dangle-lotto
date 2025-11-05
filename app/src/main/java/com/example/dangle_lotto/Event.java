@@ -5,6 +5,8 @@ import com.google.firebase.Timestamp;
 import java.util.ArrayList;
 import java.util.Collections;
 
+import javax.annotation.Nullable;
+
 /**
  * Event — model for an event
  *
@@ -15,6 +17,9 @@ import java.util.Collections;
  * @version 1.0
  * @since 2025-11-01
  */
+
+
+
 public class Event {
     final String eid;
     String description;
@@ -33,7 +38,18 @@ public class Event {
 
     // implement chosen, signups and cancelled later
 
-    FirebaseManager firebaseManager;
+    @Nullable FirebaseManager firebaseManager;
+
+    public Event(String eid, String description, int eventSize, String name, Timestamp deadline, String location, String organizer_id, String photo_id) {
+        this.eid = eid;
+        this.description = description;
+        this.eventSize = eventSize;
+        this.name = name;
+        this.deadline = deadline;
+        this.location = location;
+        this.organizer_id = organizer_id;
+        this.photo_id = photo_id;
+    }
 
     public Event(String eid, String organizer_id, String name, Timestamp deadline, String location, String description, String photo_id, int eventSize, FirebaseManager firebaseManager) {
         this.eid = eid;
@@ -63,7 +79,7 @@ public class Event {
 
     public void setDescription(String description) {
         this.description = description;
-        firebaseManager.updateEvent(this);
+        //firebaseManager.updateEvent(this);
     }
 
     public String getLocation() {
@@ -72,7 +88,7 @@ public class Event {
 
     public void setLocation(String location) {
         this.location = location;
-        firebaseManager.updateEvent(this);
+        //firebaseManager.updateEvent(this);
     }
 
     public Timestamp getDate() {
@@ -81,7 +97,7 @@ public class Event {
 
     public void setDate(Timestamp datetime) {
         this.deadline = datetime;
-        firebaseManager.updateEvent(this);
+        //firebaseManager.updateEvent(this);
     }
 
     public String getName() {
@@ -90,7 +106,7 @@ public class Event {
 
     public void setName(String name) {
         this.name = name;
-        firebaseManager.updateEvent(this);
+        //firebaseManager.updateEvent(this);
     }
 
     public int getEventSize () {
@@ -99,7 +115,7 @@ public class Event {
 
     public void setEventSize(int eventSize) {
         this.eventSize = eventSize;
-        firebaseManager.updateEvent(this);
+        //firebaseManager.updateEvent(this);
     }
 
     public void addRegistered(String uid) {
@@ -192,7 +208,7 @@ public class Event {
     public void addChosen(String uid) {
         if (!chosen.contains(uid)) {
             chosen.add(uid);
-            firebaseManager.updateEvent(this);
+            //firebaseManager.updateEvent(this);
         }
     }
 
@@ -237,7 +253,7 @@ public class Event {
             registered.remove(uid);
             chosen.remove(uid);
             signUps.remove(uid);
-            firebaseManager.updateEvent(this);
+            //firebaseManager.updateEvent(this);
         }
     }
 

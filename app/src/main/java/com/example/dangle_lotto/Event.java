@@ -159,7 +159,7 @@ public class Event {
         return registered.size() >= eventSize;
     }
 
-    // FINALIZE IMPLEMENTATION LATER
+    // FINALIZE IMPLEMENTATION LATER - need to save to firebase?
 //    public ArrayList<String> getCategories() {
 //        return categories;
 //    }

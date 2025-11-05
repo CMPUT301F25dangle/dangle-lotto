@@ -21,6 +21,7 @@ import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.FirestoreCallback;
 import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.databinding.FragmentHomeBinding;
+import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
 

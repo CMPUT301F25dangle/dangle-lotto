@@ -1,5 +1,7 @@
 package com.example.dangle_lotto;
 
+import android.util.Log;
+
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
@@ -28,9 +30,8 @@ public class UserViewModel extends ViewModel {
      * @param user user object
      */
     public void setUser(User user) {
-        this.user.setValue(user);
+        this.user.postValue(user);
     }
-
 
     /**
      * Gets the user object that is currently in the View Model
@@ -39,6 +40,27 @@ public class UserViewModel extends ViewModel {
      */
     public MutableLiveData<User> getUser() {
         return user;
+    }
+
+    public void loadUser(String uid) {
+        // Only fetch if the user hasn't been loaded yet to avoid unnecessary calls
+        if (user.getValue() != null) {
+            return;
+        }
+
+        firebaseManager.getUser(uid, new FirestoreCallback<User>() {
+            @Override
+            public void onSuccess(User result) {
+                Log.d("UserViewModel", "User loaded: " + result.getName());
+                user.setValue(result);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.d("UserViewModel", "User failed to load");
+                user.setValue(null);
+            }
+        });
     }
 
     /**

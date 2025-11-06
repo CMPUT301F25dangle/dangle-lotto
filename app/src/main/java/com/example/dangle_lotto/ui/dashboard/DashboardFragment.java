@@ -62,7 +62,6 @@ public class DashboardFragment extends Fragment {
         binding.dashboardFragmentUsername.setText(user.getName());
         // binding.dashboardFragmentUserPicture.setImageResource(user.getPhotoId());
 
-
         // setting button on click
         binding.dashboardFragmentSettingButton.setOnClickListener(v -> {
             NavController navController = NavHostFragment.findNavController(this);
@@ -88,7 +87,7 @@ public class DashboardFragment extends Fragment {
 
             // open the event fragment
             NavController navController = NavHostFragment.findNavController(this);
-            //navController.navigate();
+            navController.navigate(R.id.action_navigation_dashboard_to_organizerEventDetailsFragment);
         });
         recyclerView.setAdapter(adapter);
 

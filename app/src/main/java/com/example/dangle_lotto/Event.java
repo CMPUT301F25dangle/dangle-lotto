@@ -52,7 +52,7 @@ public class Event {
     }
 
     private void populateList(String subcollection, ArrayList<String> list){
-        firebaseManager.getEventSubcollection(eid, subcollection, new FirestoreCallback<ArrayList<String>>() {
+        firebaseManager.getEventSubcollection(eid, subcollection, new FirebaseCallback<ArrayList<String>>() {
             @Override
             public void onSuccess(ArrayList<String> result) {
                 list.clear();

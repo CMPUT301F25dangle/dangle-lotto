@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 
 import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.databinding.FragmentOrganizerEventDetailsEventBinding;
@@ -22,7 +23,6 @@ public class OrganizerEventDetailsEventFragment extends Fragment {
                              Bundle savedInstanceState) {
         binding = FragmentOrganizerEventDetailsEventBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-
 
         return root;
     }

@@ -31,6 +31,11 @@ public class DashboardFragment extends Fragment {
         dashboardViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
 
         binding.dashboardTestButton.setOnClickListener(v -> {
+            // test event id
+            String eid = "7rHZzxyUqLwcju31Rxe8";
+            Bundle args = new Bundle();
+            args.putString("eid", eid);
+
             NavController navController = NavHostFragment.findNavController(this);
             navController.navigate(R.id.action_navigation_dashboard_to_organizerEventDetailsFragment);
         });

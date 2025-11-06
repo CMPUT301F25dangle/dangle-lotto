@@ -28,12 +28,16 @@ public class OrganizerEventDetailsFragment extends Fragment {
     private Button entrantsButton;
     private Button mapButton;
     private Button[] buttons;
+    private String eid;
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         binding = FragmentOrganizerEventDetailsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+
+        // pull eid
+        eid = getArguments() != null ? getArguments().getString("eid") : null;
 
         // making back button actually take u to previous fragment
         binding.organizerEventDetailsBackButton.setOnClickListener(v -> {
@@ -52,6 +56,10 @@ public class OrganizerEventDetailsFragment extends Fragment {
 
         // default selection & fragment
         eventButton.setSelected(true);
+        Fragment first = new OrganizerEventDetailsEventFragment();
+        Bundle firstArgs = new Bundle();
+        firstArgs.putString("eid", eid);
+        first.setArguments(firstArgs);
         getChildFragmentManager().beginTransaction()
                 .replace(R.id.organizer_event_view_display, new OrganizerEventDetailsEventFragment())
                 .commit();
@@ -99,6 +107,11 @@ public class OrganizerEventDetailsFragment extends Fragment {
         }
 
         if (fragment != null) {
+            // pass eid to clicked tab
+            Bundle args = new Bundle();
+            args.putString("eid", eid);
+            fragment.setArguments(args);
+
             getChildFragmentManager().beginTransaction()
                     .replace(R.id.organizer_event_view_display, fragment)
                     .commit();

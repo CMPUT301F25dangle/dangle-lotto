@@ -40,6 +40,13 @@ public class FirebaseManager {
         events = db.collection("events");
     }
 
+    /**
+     * Signing in a user with email and password. Send uid to callback function if successful.
+     *
+     * @param email  Email of the user
+     * @param password  Password of the user
+     * @param callback  Callback function to call when user is created
+     */
     public void signIn(String email, String password, FirebaseCallback<String> callback){
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
@@ -60,6 +67,19 @@ public class FirebaseManager {
                 });
     }
 
+    /**
+     * Create new user in the database and instantiates a user object with all required attributes.
+     * <p>
+     * Pass null into phone and photo_id if user has decided not to provide that information.
+     *
+     * @param email  Email of the user
+     * @param password  Password of the user
+     * @param name  Name of the user
+     * @param phone  Phone number of the user - set null if not provided
+     * @param photo_id  Photo id for user profile picture - set null if not provided
+     * @param canOrganize  Boolean value indicating whether the user can organize events
+     * @param callback  Callback function to call when user is created
+     */
     public void signUp(String email, String password, String name, String phone, String photo_id, boolean canOrganize, FirebaseCallback<String> callback){
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {

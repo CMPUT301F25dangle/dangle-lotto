@@ -2,6 +2,7 @@ package com.example.dangle_lotto.ui.dashboard;
 
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -84,15 +85,13 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
                     return;
                 }
 
-                final int total = uids.size();
-                final int[] done = {0};
-
                 for (String uid : uids) {
                     firebase.getUser(uid, new FirebaseCallback<User>() {
                         @Override
                         public void onSuccess(User user) {
                             entrantNames.add(user.getName() + " (" + user.getEmail() + ")");
                             finishOne();
+                            Log.d("OrganizerEventDetailsEntrantsFragment", "Entrant: " + user.getName());
                         }
 
                         @Override
@@ -103,14 +102,11 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
                         }
 
                         private void finishOne() {
-                            done[0]++;
-                            if (done[0] == total) {
-                                if (adapter != null) adapter.notifyDataSetChanged();
-                                if (progress != null) progress.setVisibility(View.GONE);
-                                boolean isEmpty = entrantNames.isEmpty();
-                                if (emptyView != null) emptyView.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
-                                if (listView != null) listView.setVisibility(isEmpty ? View.INVISIBLE : View.VISIBLE);
-                            }
+                            if (adapter != null) adapter.notifyDataSetChanged();
+                            if (progress != null) progress.setVisibility(View.GONE);
+                            boolean isEmpty = entrantNames.isEmpty();
+                            if (emptyView != null) emptyView.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+                            if (listView != null) listView.setVisibility(isEmpty ? View.INVISIBLE : View.VISIBLE);
                         }
                     });
                 }
@@ -121,6 +117,7 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
                 if (progress != null) progress.setVisibility(View.GONE);
                 if (emptyView != null) emptyView.setVisibility(View.VISIBLE);
                 if (listView != null) listView.setVisibility(View.INVISIBLE);
+                Log.d("OrganizerEventDetailsEntrantsFragment", "Error getting entrants: " + e);
             }
         });
     }

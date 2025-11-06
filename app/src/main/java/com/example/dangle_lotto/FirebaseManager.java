@@ -4,6 +4,7 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -20,7 +21,7 @@ public class FirebaseManager {
     }
     /**
      * Adds a new user to the database and instantiates a user object with all required attributes.
-     *
+     * <p>
      * Pass null into phone and pid if user has decided not to provide that information.
      *
      * @param uid  user id. is a string provided by firebase auth that can uniquely identify a user
@@ -31,7 +32,7 @@ public class FirebaseManager {
      * @param canOrganize  Boolean value indicating whether the user can organize events
      * @return Instantiated GeneralUser object with all required attributes
      */
-    public User createNewUser(String uid, String name, String email, String phone, String pid, boolean canOrganize){
+    public GeneralUser createNewUser(String uid, String name, String email, String phone, String pid, boolean canOrganize){
         Map<String, Object> data = Map.of(
                 "Name", name,
                 "Email", email,
@@ -46,7 +47,7 @@ public class FirebaseManager {
 
     /**
      * Updates a user's information in the database.
-     *
+     * <p>
      * Is the update method for all users in general. canOrganize does NOT get updated here for
      * GeneralUser and will be handled separately in admin related functions
      *
@@ -152,6 +153,20 @@ public class FirebaseManager {
         events.document(eid).delete();
     }
 
+    public Event documentToEvent(DocumentSnapshot doc) {
+        return new Event(
+                doc.getId(),
+                doc.getString("Organizer"),
+                doc.getString("Name"),
+                doc.getTimestamp("Date"),
+                doc.getString("Location"),
+                doc.getString("Description"),
+                doc.getString("Picture"),
+                Objects.requireNonNull(doc.getLong("Event Size")).intValue(),
+                this
+        );
+    }
+
     /**
      * Retrieves an event from the database and instantiates an object for it.
      *
@@ -163,17 +178,7 @@ public class FirebaseManager {
             if (task.isSuccessful()) {
                 DocumentSnapshot doc = task.getResult();
                 if (doc.exists()) {
-                    Map<String, Object> data = doc.getData();
-                    assert data != null;
-                    String name = (String) data.get("Name");
-                    Timestamp datetime = (Timestamp) data.get("Date");
-                    String location = (String) data.get("Location");
-                    String description = (String) data.get("Description");
-                    int eventSize = ((Long) Objects.requireNonNull(data.get("Event Size"))).intValue();
-                    String organizer = (String) data.get("Organizer");
-                    String pid = (String) data.get("Picture");
-                    Event event = new Event(eid, organizer, name, datetime, location, description, pid, eventSize, this);
-                    callback.onSuccess(event);
+                    callback.onSuccess(documentToEvent(doc));
                 } else {
                     callback.onFailure(new Exception("Event not found"));
                 }
@@ -183,8 +188,27 @@ public class FirebaseManager {
         }).addOnFailureListener(callback::onFailure);
     }
 
-    public void getUserSubcollection(String id, String subcollection, FirestoreCallback<ArrayList<String>> callback){
-        users.document(id).collection(subcollection).get().addOnCompleteListener(task -> {
+    /**
+     * Retrieves a subcollection of an event from the database. Calls the provided callback function when event has been received.
+     *
+     * Usage: getUserSubcollection(uid, "collection name", new FirestoreCallback<ArrayList<String>>() {
+     *      @Override
+     *      public void onSuccess(ArrayList<String> result) {
+     *          // define what to do with result
+     *      }
+     *
+     *      @Override
+     *       public void onFailure(Exception e) {
+     *                 // define what to do on failure case
+     *             }
+     *         });
+     *
+     * @param uid  string of user id to search for and retrieve all attributes
+     * @param subcollection  string of subcollection to retrieve
+     * @param callback callback function to call when event is retrieved
+     */
+    public void getUserSubcollection(String uid, String subcollection, FirestoreCallback<ArrayList<String>> callback){
+        users.document(uid).collection(subcollection).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 ArrayList<String> ids = new ArrayList<>();
                 for (DocumentSnapshot doc : task.getResult()) {
@@ -197,8 +221,27 @@ public class FirebaseManager {
         }).addOnFailureListener(callback::onFailure);
     }
 
-    public void getEventSubcollection(String id, String subcollection, FirestoreCallback<ArrayList<String>> callback){
-        events.document(id).collection(subcollection).get().addOnCompleteListener(task -> {
+    /**
+     * Retrieves a subcollection of an event from the database. Calls the provided callback function when event has been received.
+     *
+     * Usage: getEventSubcollection(eid, "collection name", new FirestoreCallback<ArrayList<String>>() {
+     *      @Override
+     *      public void onSuccess(ArrayList<String> result) {
+     *          // define what to do with result
+     *      }
+     *
+     *      @Override
+     *       public void onFailure(Exception e) {
+     *                 // define what to do on failure case
+     *             }
+     *         });
+     *
+     * @param eid  string of user id to search for and retrieve all attributes
+     * @param subcollection  string of subcollection to retrieve
+     * @param callback callback function to call when event is retrieved
+     */
+    public void getEventSubcollection(String eid, String subcollection, FirestoreCallback<ArrayList<String>> callback){
+        events.document(eid).collection(subcollection).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 ArrayList<String> ids = new ArrayList<>();
                 for (DocumentSnapshot doc : task.getResult()) {
@@ -212,66 +255,28 @@ public class FirebaseManager {
     }
 
     /**
-     * Adds a user to the sign-up list for an event in the database.
-     *
-     * Only adds if user is not yet in the list, otherwise throws an exception.
-     * ONLY USE THIS FUNCTION WHEN ADDING A NEW USER TO AN EVENT
+     * Adds a user to the requested list for an event in the database.
      *
      * @param user  User object containing all required attributes
      * @param event  Event object containing all required attributes
      */
-    public void userSignUp(User user, Event event) {
-        Map<String, Object> data = Map.of(
-                "SignUpTime", Timestamp.now()
-        );
-        event.addSignUp(user.getUid());
-        users.document(user.getUid()).collection("SignUps").document(event.getEid()).set(data);
-        events.document(event.getEid()).collection("SignUps").document(user.getUid()).set(data);
-    }
-    /**
-     * Deletes a user from the sign-up list for an event in the database.
-     *
-     * Only deletes if user is already in the list, otherwise throws an exception.
-     * ONLY USE THIS FUNCTION WHEN DELETING A USER FROM EVENT.
-     *
-     * @param user  User object containing all required attributes
-     * @param event  Event object containing all required attributes
-     */
-    public void userCancelSignUp(User user, Event event) {
-        event.cancelSignUp(user.getUid());
-        users.document(user.getUid()).collection("SignUps").document(event.getEid()).delete();
-        events.document(event.getEid()).collection("SignUps").document(user.getUid()).delete();
-    }
-
-    /**
-     * Adds a user to the registered list for an event in the database.
-     *
-     * ONLY USE THIS FUNCTION WHEN REGISTERING A NEW USER FOR AN EVENT
-     *
-     * @param user  User object containing all required attributes
-     * @param event  Event object containing all required attributes
-     */
-    public void userRegister(User user, Event event){
+    public void userAddStatus(User user, Event event, String subcollection){
         // add register time to user's event document and event's signup document
         Map<String, Object> data = Map.of(
                 "RegisterTime", Timestamp.now()
                 );
-        event.addRegistered(user.getUid());
         users.document(user.getUid()).collection("Registered").document(event.getEid()).set(data);
         events.document(event.getEid()).collection("Registrants").document(user.getUid()).set(data);
     }
     /**
-     * Removes a user from the registered list for an event in the database.
-     *
-     * ONLY USE THIS FUNCTION WHEN UNREGISTERING A NEW USER FOR AN EVENT
+     * Removes a user from the requested list for an event in the database.
      *
      * @param user  User object containing all required attributes
      * @param event  Event object containing all required attributes
      */
-    public void userUnregister(User user, Event event) {
-        event.deleteRegistered(user.getUid());
-        users.document(user.getUid()).collection("Registered").document(event.getEid()).delete();
-        events.document(event.getEid()).collection("Registrants").document(user.getUid()).delete();
+    public void userRemoveStatus(User user, Event event, String subcollection) {
+        users.document(user.getUid()).collection(subcollection).document(event.getEid()).delete();
+        events.document(event.getEid()).collection(subcollection).document(user.getUid()).delete();
     }
 
     // implement for chosen and cancelled and stuff
@@ -286,5 +291,25 @@ public class FirebaseManager {
 //    public void userCancelEvent(User user, Event event);
 //
 //    public void userReinstateEvent(User user, Event event);
+
+
+    // Querying
+    public void getEventsQuery(DocumentSnapshot lastVisible, int numEvents, FirestoreCallback<ArrayList<DocumentSnapshot>> callback){
+        Query query = events.orderBy("Date", Query.Direction.DESCENDING).limit(numEvents);
+
+        if (lastVisible != null) query = query.startAfter(lastVisible);
+        query.get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        ArrayList<DocumentSnapshot> events = new ArrayList<>();
+                        for (DocumentSnapshot doc : task.getResult()) {
+                            events.add(doc);
+                        }
+                        callback.onSuccess(events);
+                    }else{
+                        callback.onFailure(task.getException());
+                    }
+                }).addOnFailureListener(callback::onFailure);
+    }
+
 
 }

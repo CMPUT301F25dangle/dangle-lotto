@@ -29,18 +29,19 @@
         tools:layout="@layout/fragment_notifications" />
 
     <fragment
-<<<<<<< HEAD
-        android:id="@+id/navigation_your_events"
-        android:name="com.example.dangle_lotto.ui.yourevents.YourEventsFragment"
-        android:label="@string/title_your_events"
-        tools:layout="@layout/fragment_your_events" />
-=======
         android:id="@+id/event_detail_fragment"
         android:name="com.example.dangle_lotto.ui.detail.EventDetailFragment"
         android:label="@string/title_detail"
         tools:layout="@layout/fragment_event_detail" >
 
+
+
     </fragment>
 
->>>>>>> 5fab051 (First push - adding event details fragment)
+
+    <fragment
+        android:id="@+id/navigation_your_events"
+        android:name="com.example.dangle_lotto.ui.yourevents.YourEventsFragment"
+        android:label="@string/title_your_events"
+        tools:layout="@layout/fragment_your_events" />
 </navigation>

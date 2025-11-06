@@ -8,17 +8,24 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
+import com.google.firebase.Timestamp;
 
 import com.example.dangle_lotto.Event;
+import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentEventDetailBinding;
 
+import java.text.DateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class EventDetailFragment extends Fragment {
 
@@ -26,7 +33,17 @@ public class EventDetailFragment extends Fragment {
 
     private FragmentEventDetailBinding binding;
 
-    private boolean isSignedUp =  false;
+    private boolean isSignedUp = false;
+
+    private boolean isChosen = false;
+
+    private boolean isRegistered = false;
+
+    private boolean isWaiting = false;
+
+    private boolean isCancelled = false;
+
+    private boolean postDraw = false;
 
     private Event selectedEvent;
 
@@ -42,8 +59,17 @@ public class EventDetailFragment extends Fragment {
         UserViewModel userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
         selectedEvent = userViewModel.getSelectedHomeEvent().getValue();
 
-        final TextView textView = binding.tvTitle;
+        // Sets the Event Title
+        final TextView textView = binding.eventTitle;
         textView.setText(selectedEvent.getName());
+
+        // Sets the Event Description
+        final TextView textView1 = binding.eventDescription;
+        textView1.setText(selectedEvent.getDescription());
+
+        // Sets the Deadline
+        final TextView textView2 = binding.eventDate;
+        textView2.setText("Deadline: "+ Converting_Timestamp_to_String(selectedEvent.getDate()));
 
         return root;
     }
@@ -52,23 +78,94 @@ public class EventDetailFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        if(savedInstanceState != null){
-            isSignedUp = savedInstanceState.getBoolean("isSignedUp", false);
-        }
+        EventDetailViewModel vm = new ViewModelProvider(this).get(EventDetailViewModel.class);
 
-        updateSignUpButton();
+        if(savedInstanceState != null){
+            isSignedUp = savedInstanceState.getBoolean("isRegistered", false);
+            isWaiting = isSignedUp;
+        }
+        logState("render");
+        updateSignUpButton(isChosen,isRegistered,isWaiting,isCancelled, isSignedUp);
 
         binding.btnSignUp.setOnClickListener(v -> {
-            isSignedUp =! isSignedUp;
-            updateSignUpButton();
+            if (!postDraw) {
+                // BEFORE lottery
+                isSignedUp = !isSignedUp;
+            }
+            else {
+                // AFTER lottery:
+                if (isChosen) {
+                    // When chosen, user can select to be an attendee or cancel
+                    showTwoButton();
+                    return;
+                }
+                else {
+                    if(!isSignedUp && !isCancelled){
+                        isWaiting = !isWaiting;
+                    }
+                }
+            }
+            logState("render");
+            updateSignUpButton(isChosen, isRegistered, isWaiting, isCancelled, isSignedUp);
         });
 
+        // Accept chosen spot
+        binding.btnAccept.setOnClickListener(v -> {
+            isRegistered = true;
+            isChosen = false;
+            isWaiting = false;
+            isCancelled = false;
+            isSignedUp = false;
+            updateSignUpButton(isChosen, isRegistered, isWaiting, isCancelled, isSignedUp);
+        });
+
+        // Decline chosen spot
+        binding.btnDecline.setOnClickListener(v -> {
+            isRegistered = false;
+            isChosen = false;
+            isWaiting = false;
+            isCancelled = true;
+            isSignedUp = false;
+            updateSignUpButton(isChosen, isRegistered, isWaiting, isCancelled, isSignedUp);
+        });
+
+        // Displays Term of Services
         binding.btnHelp.setOnClickListener(v -> showTermsDialog());
+
+        // Goes Back to home
+        binding.btnBack.setOnClickListener(v ->
+                NavHostFragment.findNavController(this).navigateUp()
+        );
     }
 
-    private void updateSignUpButton(){
-        binding.btnSignUp.setText(isSignedUp?"Unregister":"Sign up");
+    private void updateSignUpButton(boolean isChosen, boolean isRegistered, boolean isWaiting,
+                                    boolean isCancelled, boolean isSignedUp){
 
+
+        // Before lottery
+        if(!postDraw) {
+            showSingleButton(isSignedUp ? "Unregister" : "Register");
+            return;
+            }
+        // after the lottery
+        if(isCancelled){
+            showMessage("Maybe Next time...");
+            return;
+            }
+
+        if(isRegistered){
+            showMessage("See you soon!");
+            return;
+        }
+
+        // Accept/Decline in the same bottom slot
+        if (isChosen) {
+            showTwoButton();
+
+            return;
+        }
+
+        showSingleButton(isWaiting ? "Leave Waitlist" : "Join Waitlist");
     }
 
     private void showTermsDialog(){
@@ -78,6 +175,45 @@ public class EventDetailFragment extends Fragment {
                         "\n\nBy continuing, you agree to these terms.")
                 .setPositiveButton("OK", (d,w)->d.dismiss())
                 .show();
+    }
+
+    private void showSingleButton(String text){
+        binding.btnSignUp.setText(text);
+        binding.btnSignUp.setEnabled(true);
+
+        binding.btnSignUp.setVisibility(View.VISIBLE);
+        binding.lotteryResponse.setVisibility(View.GONE);
+        binding.bottomMessage.setVisibility(View.GONE);
+    }
+
+    private void showTwoButton(){
+        binding.btnSignUp.setVisibility(View.GONE);
+        binding.lotteryResponse.setVisibility(View.VISIBLE);
+        binding.bottomMessage.setVisibility(View.GONE);
+    }
+
+    private void showMessage(String text) {
+        binding.bottomMessage.setText(text);
+        binding.bottomMessage.setVisibility(View.VISIBLE);
+
+        binding.btnSignUp.setVisibility(View.GONE);
+        binding.lotteryResponse.setVisibility(View.GONE);
+    }
+
+    private String Converting_Timestamp_to_String(@Nullable com.google.firebase.Timestamp ts) {
+        if (ts == null) return "";
+        java.util.Date d = ts.toDate();
+        java.text.DateFormat df = android.text.format.DateFormat.getMediumDateFormat(requireContext());
+        java.text.DateFormat tf = android.text.format.DateFormat.getTimeFormat(requireContext());
+        return df.format(d) + " " + tf.format(d);
+    }
+
+    private void logState(String tag) {
+        android.util.Log.d("EventDetail", tag + " postDraw=" + postDraw
+                + " chosen=" + isChosen
+                + " registered=" + isRegistered
+                + " cancelled=" + isCancelled
+                + " waiting=" + isWaiting);
     }
 
     @Override

@@ -24,12 +24,10 @@ public class GeneralUser extends User{
         this.canOrganize = canOrganize;
     }
 
+
+
     public boolean canOrganize() {
         return canOrganize;
-    }
-
-    public void getRegistered(OnCompleteListener<QuerySnapshot> listener) {
-        firebaseManager.getRegisteredEvents(uid, listener);
     }
 
     public boolean isAdmin(){

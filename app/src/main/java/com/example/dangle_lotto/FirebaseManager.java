@@ -263,10 +263,10 @@ public class FirebaseManager {
     public void userAddStatus(User user, Event event, String subcollection){
         // add register time to user's event document and event's signup document
         Map<String, Object> data = Map.of(
-                "RegisterTime", Timestamp.now()
+                "Timestamp", Timestamp.now()
                 );
-        users.document(user.getUid()).collection("Registered").document(event.getEid()).set(data);
-        events.document(event.getEid()).collection("Registrants").document(user.getUid()).set(data);
+        users.document(user.getUid()).collection(subcollection).document(event.getEid()).set(data);
+        events.document(event.getEid()).collection(subcollection).document(user.getUid()).set(data);
     }
     /**
      * Removes a user from the requested list for an event in the database.

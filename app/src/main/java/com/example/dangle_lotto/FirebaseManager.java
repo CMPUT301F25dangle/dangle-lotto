@@ -313,6 +313,7 @@ public class FirebaseManager {
                 }).addOnFailureListener(callback::onFailure);
     }
 
+    // Querying for users organized events
     public void getOrganizedEventsQuery(DocumentSnapshot lastVisible, String uid, int numEvents, FirestoreCallback<ArrayList<DocumentSnapshot>> callback) {
         Log.d("Firebase", "Getting organized events for user " + uid);
         Query query = events.whereEqualTo("Organizer", uid).orderBy("Date", Query.Direction.DESCENDING).limit(numEvents);

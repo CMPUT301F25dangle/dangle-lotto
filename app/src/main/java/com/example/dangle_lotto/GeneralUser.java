@@ -24,6 +24,10 @@ public class GeneralUser extends User{
         this.canOrganize = canOrganize;
     }
 
+    public void delete() {
+        firebaseManager.deleteUser(uid);
+    }
+
     public boolean canOrganize() {
         return canOrganize;
     }

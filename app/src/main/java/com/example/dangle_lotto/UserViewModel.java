@@ -19,7 +19,7 @@ import java.util.ArrayList;
  */
 public class UserViewModel extends ViewModel {
     private final FirebaseManager firebaseManager = new FirebaseManager();
-    private final MutableLiveData<User> user = new MutableLiveData<>();
+    private final MutableLiveData<GeneralUser> user = new MutableLiveData<GeneralUser>();
     private final MutableLiveData<ArrayList<Event>> homeEvents = new MutableLiveData<>();
     private final MutableLiveData<Event> selectedHomeEvent = new MutableLiveData<>();
     private final MutableLiveData<ArrayList<Event>> yourEvents = new MutableLiveData<>();
@@ -32,7 +32,7 @@ public class UserViewModel extends ViewModel {
      *
      * @param user user object
      */
-    public void setUser(User user) {
+    public void setUser(GeneralUser user) {
         this.user.postValue(user);
     }
 
@@ -41,7 +41,7 @@ public class UserViewModel extends ViewModel {
      *
      * @return user object
      */
-    public LiveData<User> getUser() {
+    public LiveData<GeneralUser> getUser() {
         return user;
     }
 
@@ -51,9 +51,9 @@ public class UserViewModel extends ViewModel {
             return;
         }
 
-        firebaseManager.getUser(uid, new FirebaseCallback<User>() {
+        firebaseManager.getUser(uid, new FirebaseCallback<GeneralUser>() {
             @Override
-            public void onSuccess(User result) {
+            public void onSuccess(GeneralUser result) {
                 Log.d("UserViewModel", "User loaded: " + result.getName());
                 user.setValue(result);
             }

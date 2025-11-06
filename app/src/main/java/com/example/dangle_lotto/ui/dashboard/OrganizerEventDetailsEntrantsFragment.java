@@ -15,8 +15,9 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.dangle_lotto.Event;
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.FirebaseCallback;
-import com.example.dangle_lotto.User;
+import com.example.dangle_lotto.GeneralUser;
 import com.example.dangle_lotto.UserViewModel;
+import com.example.dangle_lotto.User;
 import com.example.dangle_lotto.databinding.FragmentOrganizerEventDetailsEntrantsBinding;
 
 import java.util.ArrayList;
@@ -97,9 +98,9 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
                 }
 
                 for (String uid : uids) {
-                    firebase.getUser(uid, new FirebaseCallback<User>() {
+                    firebase.getUser(uid, new FirebaseCallback<GeneralUser>() {
                         @Override
-                        public void onSuccess(User user) {
+                        public void onSuccess(GeneralUser user) {
                             entrantNames.add(user.getName() + " (" + user.getEmail() + ")");
                             finishOne();
                             Log.d("OrganizerEventDetailsEntrantsFragment", "Entrant: " + user.getName());

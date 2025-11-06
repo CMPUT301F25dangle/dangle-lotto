@@ -156,7 +156,7 @@ public class FirebaseManager {
      * @param uid  string of user id to search for and retrieve all attributes
      * @param callback  callback function to call when user is retrieved
      */
-    public void getUser(String uid, FirebaseCallback<User> callback) {
+    public void getUser(String uid, FirebaseCallback<GeneralUser> callback) {
         users.document(uid).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 DocumentSnapshot doc = task.getResult();

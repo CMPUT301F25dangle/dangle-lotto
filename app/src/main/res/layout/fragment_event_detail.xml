@@ -149,7 +149,11 @@
                         android:text="View profile"
                         android:textStyle="bold"
                         android:textColor="?attr/colorPrimary"
-                        android:paddingTop="2dp" />
+                        android:paddingTop="2dp"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackgroundBorderless"
+                        />
                 </LinearLayout>
             </LinearLayout>
 

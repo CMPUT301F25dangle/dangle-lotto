@@ -32,7 +32,7 @@ public class FirebaseManager {
      * @param canOrganize  Boolean value indicating whether the user can organize events
      * @return Instantiated GeneralUser object with all required attributes
      */
-    public User createNewUser(String uid, String name, String email, String phone, String pid, boolean canOrganize){
+    public GeneralUser createNewUser(String uid, String name, String email, String phone, String pid, boolean canOrganize){
         Map<String, Object> data = Map.of(
                 "Name", name,
                 "Email", email,
@@ -188,8 +188,27 @@ public class FirebaseManager {
         }).addOnFailureListener(callback::onFailure);
     }
 
-    public void getUserSubcollection(String id, String subcollection, FirestoreCallback<ArrayList<String>> callback){
-        users.document(id).collection(subcollection).get().addOnCompleteListener(task -> {
+    /**
+     * Retrieves a subcollection of an event from the database. Calls the provided callback function when event has been received.
+     *
+     * Usage: getUserSubcollection(uid, "collection name", new FirestoreCallback<ArrayList<String>>() {
+     *      @Override
+     *      public void onSuccess(ArrayList<String> result) {
+     *          // define what to do with result
+     *      }
+     *
+     *      @Override
+     *       public void onFailure(Exception e) {
+     *                 // define what to do on failure case
+     *             }
+     *         });
+     *
+     * @param uid  string of user id to search for and retrieve all attributes
+     * @param subcollection  string of subcollection to retrieve
+     * @param callback callback function to call when event is retrieved
+     */
+    public void getUserSubcollection(String uid, String subcollection, FirestoreCallback<ArrayList<String>> callback){
+        users.document(uid).collection(subcollection).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 ArrayList<String> ids = new ArrayList<>();
                 for (DocumentSnapshot doc : task.getResult()) {
@@ -202,8 +221,27 @@ public class FirebaseManager {
         }).addOnFailureListener(callback::onFailure);
     }
 
-    public void getEventSubcollection(String id, String subcollection, FirestoreCallback<ArrayList<String>> callback){
-        events.document(id).collection(subcollection).get().addOnCompleteListener(task -> {
+    /**
+     * Retrieves a subcollection of an event from the database. Calls the provided callback function when event has been received.
+     *
+     * Usage: getEventSubcollection(eid, "collection name", new FirestoreCallback<ArrayList<String>>() {
+     *      @Override
+     *      public void onSuccess(ArrayList<String> result) {
+     *          // define what to do with result
+     *      }
+     *
+     *      @Override
+     *       public void onFailure(Exception e) {
+     *                 // define what to do on failure case
+     *             }
+     *         });
+     *
+     * @param eid  string of user id to search for and retrieve all attributes
+     * @param subcollection  string of subcollection to retrieve
+     * @param callback callback function to call when event is retrieved
+     */
+    public void getEventSubcollection(String eid, String subcollection, FirestoreCallback<ArrayList<String>> callback){
+        events.document(eid).collection(subcollection).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 ArrayList<String> ids = new ArrayList<>();
                 for (DocumentSnapshot doc : task.getResult()) {
@@ -217,66 +255,28 @@ public class FirebaseManager {
     }
 
     /**
-     * Adds a user to the sign-up list for an event in the database.
-     * <p>
-     * Only adds if user is not yet in the list, otherwise throws an exception.
-     * ONLY USE THIS FUNCTION WHEN ADDING A NEW USER TO AN EVENT
+     * Adds a user to the requested list for an event in the database.
      *
      * @param user  User object containing all required attributes
      * @param event  Event object containing all required attributes
      */
-    public void userSignUp(User user, Event event) {
-        Map<String, Object> data = Map.of(
-                "SignUpTime", Timestamp.now()
-        );
-        event.addSignUp(user.getUid());
-        users.document(user.getUid()).collection("SignUps").document(event.getEid()).set(data);
-        events.document(event.getEid()).collection("SignUps").document(user.getUid()).set(data);
-    }
-    /**
-     * Deletes a user from the sign-up list for an event in the database.
-     * <p>
-     * Only deletes if user is already in the list, otherwise throws an exception.
-     * ONLY USE THIS FUNCTION WHEN DELETING A USER FROM EVENT.
-     *
-     * @param user  User object containing all required attributes
-     * @param event  Event object containing all required attributes
-     */
-    public void userCancelSignUp(User user, Event event) {
-        event.cancelSignUp(user.getUid());
-        users.document(user.getUid()).collection("SignUps").document(event.getEid()).delete();
-        events.document(event.getEid()).collection("SignUps").document(user.getUid()).delete();
-    }
-
-    /**
-     * Adds a user to the registered list for an event in the database.
-     * <p>
-     * ONLY USE THIS FUNCTION WHEN REGISTERING A NEW USER FOR AN EVENT
-     *
-     * @param user  User object containing all required attributes
-     * @param event  Event object containing all required attributes
-     */
-    public void userRegister(User user, Event event){
+    public void userAddStatus(User user, Event event, String subcollection){
         // add register time to user's event document and event's signup document
         Map<String, Object> data = Map.of(
                 "RegisterTime", Timestamp.now()
                 );
-        event.addRegistered(user.getUid());
         users.document(user.getUid()).collection("Registered").document(event.getEid()).set(data);
         events.document(event.getEid()).collection("Registrants").document(user.getUid()).set(data);
     }
     /**
-     * Removes a user from the registered list for an event in the database.
-     * <p>
-     * ONLY USE THIS FUNCTION WHEN UNREGISTERING A NEW USER FOR AN EVENT
+     * Removes a user from the requested list for an event in the database.
      *
      * @param user  User object containing all required attributes
      * @param event  Event object containing all required attributes
      */
-    public void userUnregister(User user, Event event) {
-        event.deleteRegistered(user.getUid());
-        users.document(user.getUid()).collection("Registered").document(event.getEid()).delete();
-        events.document(event.getEid()).collection("Registrants").document(user.getUid()).delete();
+    public void userRemoveStatus(User user, Event event, String subcollection) {
+        users.document(user.getUid()).collection(subcollection).document(event.getEid()).delete();
+        events.document(event.getEid()).collection(subcollection).document(user.getUid()).delete();
     }
 
     // implement for chosen and cancelled and stuff

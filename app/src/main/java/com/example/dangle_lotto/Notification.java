@@ -1,7 +1,16 @@
 package com.example.dangle_lotto;
 
 import java.util.Date;
-
+/**
+ * Notification
+ *
+ * Contains methods to get notification information.
+ *
+ *
+ * @author Annie Ding
+ * @version 1.0
+ * @since 2025-11-01
+ */
 public class Notification {
     private String nid;
     private String message;

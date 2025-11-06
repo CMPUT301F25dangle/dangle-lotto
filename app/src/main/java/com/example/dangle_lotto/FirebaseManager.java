@@ -4,10 +4,11 @@ import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.Map;
+import java.util.Objects;
 
 public class FirebaseManager {
     private final FirebaseFirestore db;
@@ -20,7 +21,7 @@ public class FirebaseManager {
     }
     /**
      * Adds a new user to the database and instantiates a user object with all required attributes.
-     *
+     * <p>
      * Pass null into phone and pid if user has decided not to provide that information.
      *
      * @param uid  user id. is a string provided by firebase auth that can uniquely identify a user
@@ -31,7 +32,7 @@ public class FirebaseManager {
      * @param canOrganize  Boolean value indicating whether the user can organize events
      * @return Instantiated GeneralUser object with all required attributes
      */
-    public User createNewUser(String uid, String name, String email, String phone, String pid, boolean canOrganize){
+    public GeneralUser createNewUser(String uid, String name, String email, String phone, String pid, boolean canOrganize){
         Map<String, Object> data = Map.of(
                 "Name", name,
                 "Email", email,
@@ -46,7 +47,7 @@ public class FirebaseManager {
 
     /**
      * Updates a user's information in the database.
-     *
+     * <p>
      * Is the update method for all users in general. canOrganize does NOT get updated here for
      * GeneralUser and will be handled separately in admin related functions
      *
@@ -76,20 +77,29 @@ public class FirebaseManager {
      * @param uid  string of user id to search for and retrieve all attributes
      * @return Instantiated GeneralUser object with all required attributes
      */
-    public User getUser(String uid){
-        DocumentSnapshot doc = users.document(uid).get().getResult();
-        if (doc.exists()) {
-            Map<String, Object> data = doc.getData();
-            String name = (String) data.get("Name");
-            String email = (String) data.get("Email");
-            Boolean canOrganize = (Boolean) data.get("CanOrganize");
-            String phone = (String) data.get("Phone");
-            String pid = (String) data.get("Picture");
-            return new GeneralUser(uid, name, email, phone, pid, this, Boolean.TRUE.equals(canOrganize));
-        }
-        return null;
-
+    public void getUser(String uid, FirestoreCallback<User> callback) {
+        users.document(uid).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot doc = task.getResult();
+                if (doc.exists()) {
+                    Map<String, Object> data = doc.getData();
+                    assert data != null;
+                    String name = (String) data.get("Name");
+                    String email = (String) data.get("Email");
+                    Boolean canOrganize = (Boolean) data.get("CanOrganize");
+                    String phone = (String) data.get("Phone");
+                    String pid = (String) data.get("Picture");
+                    GeneralUser user = new GeneralUser(uid, name, email, phone, pid, this, Boolean.TRUE.equals(canOrganize));
+                    callback.onSuccess(user);
+                } else {
+                    callback.onFailure(new Exception("User not found"));
+                }
+            }else{
+                callback.onFailure(task.getException());
+            }
+        }).addOnFailureListener(callback::onFailure);
     }
+
     /**
      * Adds a new event to the database and instantiates an object for it.
      *
@@ -143,149 +153,130 @@ public class FirebaseManager {
         events.document(eid).delete();
     }
 
+    public Event documentToEvent(DocumentSnapshot doc) {
+        return new Event(
+                doc.getId(),
+                doc.getString("Organizer"),
+                doc.getString("Name"),
+                doc.getTimestamp("Date"),
+                doc.getString("Location"),
+                doc.getString("Description"),
+                doc.getString("Picture"),
+                Objects.requireNonNull(doc.getLong("Event Size")).intValue(),
+                this
+        );
+    }
+
     /**
      * Retrieves an event from the database and instantiates an object for it.
      *
      * @param eid  string of user id to search for and retrieve all attributes
-     * @return Instantiated Event object with all required attributes
+     * @param callback callback function to call when event is retrieved
      */
-    public Event getEvent(String eid){
-        DocumentSnapshot doc = events.document(eid).get().getResult();
-        if (doc.exists()) {
-            Map<String, Object> data = doc.getData();
-            assert data != null;
-            String oid = (String) data.get("Organizer");
-            String name = (String) data.get("Name");
-            Timestamp datetime = (Timestamp) data.get("Date");
-            String location = (String) data.get("Location");
-            String description = (String) data.get("Description");
-            int eventSize = (int) data.get("Event Size");
-            String pid = (String) data.get("Picture");
-            return new Event(eid, oid, name, datetime, location, description, pid, eventSize, this);
-        }
-        return null;
+    public void getEvent(String eid, FirestoreCallback<Event> callback){
+        events.document(eid).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot doc = task.getResult();
+                if (doc.exists()) {
+                    callback.onSuccess(documentToEvent(doc));
+                } else {
+                    callback.onFailure(new Exception("Event not found"));
+                }
+            }else {
+                callback.onFailure(task.getException());
+            }
+        }).addOnFailureListener(callback::onFailure);
     }
 
     /**
-     * Adds a user to the sign-up list for an event in the database.
+     * Retrieves a subcollection of an event from the database. Calls the provided callback function when event has been received.
      *
-     * Only adds if user is not yet in the list, otherwise throws an exception.
-     * ONLY USE THIS FUNCTION WHEN ADDING A NEW USER TO AN EVENT
+     * Usage: getUserSubcollection(uid, "collection name", new FirestoreCallback<ArrayList<String>>() {
+     *      @Override
+     *      public void onSuccess(ArrayList<String> result) {
+     *          // define what to do with result
+     *      }
      *
-     * @param user  User object containing all required attributes
-     * @param event  Event object containing all required attributes
-     */
-    public void userSignUp(User user, Event event) {
-        Map<String, Object> data = Map.of(
-                "SignUpTime", Timestamp.now()
-        );
-        event.addSignUp(user.getUid());
-        users.document(user.getUid()).collection("SignUps").document(event.getEid()).set(data);
-        events.document(event.getEid()).collection("SignUps").document(user.getUid()).set(data);
-    }
-    /**
-     * Deletes a user from the sign-up list for an event in the database.
-     *
-     * Only deletes if user is already in the list, otherwise throws an exception.
-     * ONLY USE THIS FUNCTION WHEN DELETING A USER FROM EVENT.
-     *
-     * @param user  User object containing all required attributes
-     * @param event  Event object containing all required attributes
-     */
-    public void userCancelSignUp(User user, Event event) {
-        event.cancelSignUp(user.getUid());
-        users.document(user.getUid()).collection("SignUps").document(event.getEid()).delete();
-        events.document(event.getEid()).collection("SignUps").document(user.getUid()).delete();
-    }
-
-    /**
-     * Retrieves a list of events a user has signed up for from the database.
+     *      @Override
+     *       public void onFailure(Exception e) {
+     *                 // define what to do on failure case
+     *             }
+     *         });
      *
      * @param uid  string of user id to search for and retrieve all attributes
-     * @return ArrayList of event ids that the user has signed up for
+     * @param subcollection  string of subcollection to retrieve
+     * @param callback callback function to call when event is retrieved
      */
-    public ArrayList<String> getSignedUpEvents(String uid) {
-        QuerySnapshot docs = users.document(uid).collection("SignUps").get().getResult();
-        ArrayList<String> signedUpEvents = new ArrayList<>();
-        for (DocumentSnapshot doc : docs) {
-            signedUpEvents.add(doc.getId());
-        }
-        return signedUpEvents;
+    public void getUserSubcollection(String uid, String subcollection, FirestoreCallback<ArrayList<String>> callback){
+        users.document(uid).collection(subcollection).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                ArrayList<String> ids = new ArrayList<>();
+                for (DocumentSnapshot doc : task.getResult()) {
+                    ids.add(doc.getId());
+                }
+                callback.onSuccess(ids);
+            }else {
+                callback.onFailure(task.getException());
+            }
+        }).addOnFailureListener(callback::onFailure);
     }
 
     /**
-     * Retrieves a list of users who have signed up for an event from the database.
+     * Retrieves a subcollection of an event from the database. Calls the provided callback function when event has been received.
+     *
+     * Usage: getEventSubcollection(eid, "collection name", new FirestoreCallback<ArrayList<String>>() {
+     *      @Override
+     *      public void onSuccess(ArrayList<String> result) {
+     *          // define what to do with result
+     *      }
+     *
+     *      @Override
+     *       public void onFailure(Exception e) {
+     *                 // define what to do on failure case
+     *             }
+     *         });
      *
      * @param eid  string of user id to search for and retrieve all attributes
-     * @return ArrayList of user ids who have signed up for the event
+     * @param subcollection  string of subcollection to retrieve
+     * @param callback callback function to call when event is retrieved
      */
-    public ArrayList<String> getEventSignUps(String eid) {
-        QuerySnapshot docs = events.document(eid).collection("SignUps").get().getResult();
-        ArrayList<String> eventSignUps = new ArrayList<>();
-        for (DocumentSnapshot doc : docs) {
-            eventSignUps.add(doc.getId());
-        }
-        return eventSignUps;
+    public void getEventSubcollection(String eid, String subcollection, FirestoreCallback<ArrayList<String>> callback){
+        events.document(eid).collection(subcollection).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                ArrayList<String> ids = new ArrayList<>();
+                for (DocumentSnapshot doc : task.getResult()) {
+                    ids.add(doc.getId());
+                }
+                callback.onSuccess(ids);
+            }else {
+                callback.onFailure(task.getException());
+            }
+        }).addOnFailureListener(callback::onFailure);
     }
+
     /**
-     * Adds a user to the registered list for an event in the database.
-     *
-     * ONLY USE THIS FUNCTION WHEN REGISTERING A NEW USER FOR AN EVENT
+     * Adds a user to the requested list for an event in the database.
      *
      * @param user  User object containing all required attributes
      * @param event  Event object containing all required attributes
      */
-    public void userRegister(User user, Event event){
+    public void userAddStatus(User user, Event event, String subcollection){
         // add register time to user's event document and event's signup document
         Map<String, Object> data = Map.of(
                 "RegisterTime", Timestamp.now()
                 );
-        event.addRegistered(user.getUid());
         users.document(user.getUid()).collection("Registered").document(event.getEid()).set(data);
         events.document(event.getEid()).collection("Registrants").document(user.getUid()).set(data);
     }
     /**
-     * Removes a user from the registered list for an event in the database.
-     *
-     * ONLY USE THIS FUNCTION WHEN UNREGISTERING A NEW USER FOR AN EVENT
+     * Removes a user from the requested list for an event in the database.
      *
      * @param user  User object containing all required attributes
      * @param event  Event object containing all required attributes
      */
-    public void userUnregister(User user, Event event) {
-        event.deleteRegistered(user.getUid());
-        users.document(user.getUid()).collection("Registered").document(event.getEid()).delete();
-        events.document(event.getEid()).collection("Registrants").document(user.getUid()).delete();
-    }
-
-    /**
-     * Retrieves a list of events a user has registered for from the database.
-     *
-     * @param uid  string of user id to search for and retrieve all attributes
-     * @return ArrayList of event ids that the user has signed up for
-     */
-    public ArrayList<String> getRegisteredEvents(String uid) {
-        QuerySnapshot docs = users.document(uid).collection("Registered").get().getResult();
-        ArrayList<String> participatedEvents = new ArrayList<>();
-        for (DocumentSnapshot doc : docs) {
-            participatedEvents.add(doc.getId());
-        }
-        return participatedEvents;
-    }
-
-    /**
-     * Retrieves a list of users who have registered for an event from the database.
-     *
-     * @param eid  string of user id to search for and retrieve all attributes
-     * @return ArrayList of user ids who have signed up for the event
-     */
-    public ArrayList<String> getEventRegistrants(String eid) {
-        QuerySnapshot docs = events.document(eid).collection("SignUps").get().getResult();
-        ArrayList<String> eventParticipants = new ArrayList<>();
-        for (DocumentSnapshot doc : docs) {
-            eventParticipants.add(doc.getId());
-        }
-        return eventParticipants;
+    public void userRemoveStatus(User user, Event event, String subcollection) {
+        users.document(user.getUid()).collection(subcollection).document(event.getEid()).delete();
+        events.document(event.getEid()).collection(subcollection).document(user.getUid()).delete();
     }
 
     // implement for chosen and cancelled and stuff
@@ -300,5 +291,25 @@ public class FirebaseManager {
 //    public void userCancelEvent(User user, Event event);
 //
 //    public void userReinstateEvent(User user, Event event);
+
+
+    // Querying
+    public void getEventsQuery(DocumentSnapshot lastVisible, int numEvents, FirestoreCallback<ArrayList<DocumentSnapshot>> callback){
+        Query query = events.orderBy("Date", Query.Direction.DESCENDING).limit(numEvents);
+
+        if (lastVisible != null) query = query.startAfter(lastVisible);
+        query.get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        ArrayList<DocumentSnapshot> events = new ArrayList<>();
+                        for (DocumentSnapshot doc : task.getResult()) {
+                            events.add(doc);
+                        }
+                        callback.onSuccess(events);
+                    }else{
+                        callback.onFailure(task.getException());
+                    }
+                }).addOnFailureListener(callback::onFailure);
+    }
+
 
 }

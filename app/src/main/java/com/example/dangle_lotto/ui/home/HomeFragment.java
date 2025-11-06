@@ -1,128 +1,204 @@
 package com.example.dangle_lotto.ui.home;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.BaseAdapter;
-import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
-import androidx.navigation.NavDirections;
+import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.dangle_lotto.Event;
 import com.example.dangle_lotto.FirebaseManager;
+import com.example.dangle_lotto.FirestoreCallback;
 import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.databinding.FragmentHomeBinding;
-import com.example.dangle_lotto.Event;
-import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.UUID;
 
+/**
+ * HomeFragment - Fragment shows events that user can click for more info. Allows allows user to open a filter.
+ *
+ * @author Aditya Soni
+ * @version 1.0
+ * @since 2025-10-25
+ */
 public class HomeFragment extends Fragment {
-
     private FragmentHomeBinding binding;
-    private EventsAdapter adapter;
-
-    // --- Minimal adapter for a two-line row (expects row_event.xml) ---
-    static class EventsAdapter extends BaseAdapter {
-        private final List<Event> data = new ArrayList<>();
-
-        void submit(List<Event> items) {
-            data.clear();
-            if (items != null) data.addAll(items);
-            notifyDataSetChanged();
-        }
+    private RecyclerView recyclerView;
+    private ArrayList<String> selectedFilters = new ArrayList<>();
+    private FirebaseManager firebaseManager = new FirebaseManager();
+    private ArrayList<Event> events;
+    private EventCardAdapter adapter;
+    private LinearLayoutManager layoutManager;
+    private boolean isLoading;
+    private static final int PAGE_SIZE = 4; // or however many events per page
+    private DocumentSnapshot lastVisible = null;
 
 
-
-        @Override public int getCount() { return data.size(); }
-        @Override public Event getItem(int position) { return data.get(position); }
-        @Override public long getItemId(int position) { return position; }
-
-        @Override
-        public View getView(int position, View convertView, ViewGroup parent) {
-            View v = (convertView != null)
-                    ? convertView
-                    : LayoutInflater.from(parent.getContext())
-                            .inflate(R.layout.row_event, parent, false);
-
-            TextView tvTitle = v.findViewById(R.id.tv_title);
-
-            Event e = getItem(position);
-            tvTitle.setText(getItem(position).getName());
-            return v;
-        }
-    }
-
-    @Nullable
-    @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
-                             @Nullable ViewGroup container,
-                             @Nullable Bundle savedInstanceState) {
-        HomeViewModel homeViewModel = new ViewModelProvider(this).get(HomeViewModel.class);
+                             ViewGroup container, Bundle savedInstanceState) {
+        HomeViewModel homeViewModel =
+                new ViewModelProvider(this).get(HomeViewModel.class);
+
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        // --- ListView setup ---
-        ListView list = binding.listEvents;
-        EventsAdapter adapter = new EventsAdapter();
-        list.setAdapter(adapter);
+        // initializing recycler view
+        recyclerView = binding.homeEventRecyclerView;
+        layoutManager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(layoutManager);
 
-        // Keep the original "observe text from ViewModel" behavior:
-        // We’ll display it as a non-clickable header above the list.
-        TextView header = new TextView(requireContext());
-        int pad = (int) (16 * getResources().getDisplayMetrics().density);
-        header.setPadding(pad, pad, pad, pad);
-        header.setTextSize(16f);
-        list.addHeaderView(header, null, false);
-        homeViewModel.getText().observe(getViewLifecycleOwner(), header::setText);
+        // initializing events list
+        events = new ArrayList<>();
 
-        List<Event> mock = new ArrayList<>();
-        mock.add(new Event(
-                UUID.randomUUID().toString(),
-                "Snacks, games, and networking.",
-                20,
-                "CMPUT Club Mixer",
-                com.google.firebase.Timestamp.now(),
-                "Student Union Building",
-                "org_123",
-                "photo_001"
-        ));
-        mock.add(new Event(
-                UUID.randomUUID().toString(),
-                "Lightning talks + Q&A.",
-                50,
-                "Tech Talk Night",
-                com.google.firebase.Timestamp.now(),
-                "CSC Atrium",
-                "org_456",
-                "photo_002"
-        ));
-        adapter.submit(mock);
-
-
-        // Inside onCreateView(...) after list.setAdapter(adapter)
-        binding.listEvents.setOnItemLongClickListener((parent, view, position, id) -> {
-            // Navigate WITHOUT passing arguments
-            NavHostFragment.findNavController(this)
-                    .navigate(R.id.action_home_to_eventDetail);
-            return true;
+        // initializing and attaching adapter
+         adapter = new EventCardAdapter(events, position -> {
+            Event event = events.get(position);
+            openEventFragment();
         });
+        recyclerView.setAdapter(adapter);
+
+        // detects when user reaches end
+        isLoading = false;
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                // only check when scrolling down
+                if (dy <= 0) return;
+
+                int visibleItemCount = layoutManager.getChildCount();
+                int totalItemCount = layoutManager.getItemCount();
+                int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
+                // Log.d("Firebase", "Visible: " + visibleItemCount + " Total: " + totalItemCount + " First: " + firstVisibleItemPosition);
+                // check if were near the end
+                if (!isLoading && (visibleItemCount + firstVisibleItemPosition) >= totalItemCount - 3
+                        && firstVisibleItemPosition >= 0) {
+                    // Log.d("List Size:", String.valueOf(events.size()));
+                    // Log.d("Firebase", "Loading more events...");
+                    loadNextPage();
+                }
+            }
+        });
+
+        loadFirstPage();
+
+        // initialize button for opening filter dialogue
+        binding.filterButton.setOnClickListener(v -> openFilterDialogue());
+
         return root;
     }
-
 
     @Override
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
     }
+
+    /**
+     * Opens the event that is requested using nav controller
+     */
+    private void openEventFragment() {
+        NavController navController = NavHostFragment.findNavController(this);
+        // When Event Detail fragment is implemented, uncomment below and add navigation id
+        //navController.navigate();
+    }
+
+    /**
+     * Opens the filter dialogue
+     *
+     * <p>Sets filters in the dialogue, and apply listener</p>
+     */
+    private void openFilterDialogue() {
+        FilterDialogueFragment dialog = new FilterDialogueFragment();
+
+        // set the selected filter on the dialogue
+        dialog.setPreselectedCategories(selectedFilters);
+
+        // set listener on dialogue to use filters
+        dialog.setOnFilterSelectedListener(filters -> {
+            selectedFilters = new ArrayList<>(filters);
+
+            // update UI based on filters
+        });
+
+        dialog.show(getParentFragmentManager(), "FilterDialog");
+    }
+
+    /**
+     * Loads the first page of events by querying firebase
+     */
+    private void loadFirstPage() {
+        isLoading = true;
+
+        firebaseManager.getEventsQuery(null, PAGE_SIZE, new FirestoreCallback<ArrayList<DocumentSnapshot>>() {
+            @Override
+            public void onSuccess(ArrayList<DocumentSnapshot> result) {
+                int startPos = events.size();
+                for (DocumentSnapshot doc : result) {
+                    events.add(firebaseManager.documentToEvent(doc));
+                }
+                adapter.notifyItemRangeInserted(startPos, result.size());
+                isLoading = false;
+                if (!result.isEmpty()) {
+                    lastVisible = result.get(result.size() - 1);
+                } else {
+                    // No more pages
+                    lastVisible = null;
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.d("Firebase", "Failed to load first page", e);
+                isLoading = false;
+
+            }
+        });
+    }
+
+    /**
+     * Loads the next page of events by querying firebase
+     */
+    private void loadNextPage() {
+        if (isLoading || lastVisible == null) return;
+        isLoading = true;
+        Toast.makeText(getContext(), "Loading more events...", Toast.LENGTH_SHORT).show();
+        firebaseManager.getEventsQuery(lastVisible, PAGE_SIZE, new FirestoreCallback<ArrayList<DocumentSnapshot>>() {
+            @Override
+            public void onSuccess(ArrayList<DocumentSnapshot> result) {
+                Log.d("Firebase", "Loaded " + result.size() + " events");
+                int startPos = events.size();
+                for (DocumentSnapshot doc : result) {
+                    events.add(firebaseManager.documentToEvent(doc));
+                }
+                adapter.notifyItemRangeInserted(startPos, result.size());
+                isLoading = false;
+                if (!result.isEmpty()) {
+                    lastVisible = result.get(result.size() - 1);
+                } else {
+                    // No more pages
+                    lastVisible = null;
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.d("Firebase", "Failed to load next page", e);
+                isLoading = false;
+
+            }
+        });
+    }
+
 }

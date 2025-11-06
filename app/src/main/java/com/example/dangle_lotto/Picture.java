@@ -12,7 +12,7 @@ import java.util.Date;
  * @since 2025-11-01
  */
 public class Picture {
-    private String pid;
+    private final String pid;
     private Date dateAdded;
     private String url;
 

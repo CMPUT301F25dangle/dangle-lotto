@@ -20,6 +20,7 @@ import com.example.dangle_lotto.Event;
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.FirestoreCallback;
 import com.example.dangle_lotto.R;
+import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentHomeBinding;
 import com.google.firebase.firestore.DocumentSnapshot;
 
@@ -37,6 +38,7 @@ public class HomeFragment extends Fragment {
     private RecyclerView recyclerView;
     private ArrayList<String> selectedFilters = new ArrayList<>();
     private FirebaseManager firebaseManager = new FirebaseManager();
+    private UserViewModel userViewModel;
     private ArrayList<Event> events;
     private EventCardAdapter adapter;
     private LinearLayoutManager layoutManager;
@@ -44,14 +46,13 @@ public class HomeFragment extends Fragment {
     private static final int PAGE_SIZE = 4; // or however many events per page
     private DocumentSnapshot lastVisible = null;
 
-
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        HomeViewModel homeViewModel =
-                new ViewModelProvider(this).get(HomeViewModel.class);
-
         binding = FragmentHomeBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+
+        // initializing view model
+        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
         // initializing recycler view
         recyclerView = binding.homeEventRecyclerView;
@@ -59,11 +60,19 @@ public class HomeFragment extends Fragment {
         recyclerView.setLayoutManager(layoutManager);
 
         // initializing events list
-        events = new ArrayList<>();
+        if (userViewModel.getHomeEvents().getValue() != null) {
+            events = userViewModel.getHomeEvents().getValue();
+        } else {
+            events = new ArrayList<>();
+        }
 
         // initializing and attaching adapter
          adapter = new EventCardAdapter(events, position -> {
-            Event event = events.get(position);
+            // update the view model
+            userViewModel.setSelectedHomeEventIndex(position);
+            Log.d("HomeFragment", "Selected event at position " + userViewModel.getSelectedHomeEventIndex().getValue());
+
+            // open the event fragment
             openEventFragment();
         });
         recyclerView.setAdapter(adapter);
@@ -80,18 +89,16 @@ public class HomeFragment extends Fragment {
                 int visibleItemCount = layoutManager.getChildCount();
                 int totalItemCount = layoutManager.getItemCount();
                 int firstVisibleItemPosition = layoutManager.findFirstVisibleItemPosition();
-                // Log.d("Firebase", "Visible: " + visibleItemCount + " Total: " + totalItemCount + " First: " + firstVisibleItemPosition);
-                // check if were near the end
                 if (!isLoading && (visibleItemCount + firstVisibleItemPosition) >= totalItemCount - 3
                         && firstVisibleItemPosition >= 0) {
-                    // Log.d("List Size:", String.valueOf(events.size()));
-                    // Log.d("Firebase", "Loading more events...");
                     loadNextPage();
                 }
             }
         });
 
-        loadFirstPage();
+        if (events.isEmpty()) {
+            loadFirstPage();
+        }
 
         // initialize button for opening filter dialogue
         binding.filterButton.setOnClickListener(v -> openFilterDialogue());
@@ -103,6 +110,9 @@ public class HomeFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+
+        // update the view model
+        userViewModel.setHomeEvents(events);
     }
 
     /**
@@ -148,6 +158,7 @@ public class HomeFragment extends Fragment {
                 for (DocumentSnapshot doc : result) {
                     events.add(firebaseManager.documentToEvent(doc));
                 }
+
                 adapter.notifyItemRangeInserted(startPos, result.size());
                 isLoading = false;
                 if (!result.isEmpty()) {
@@ -182,6 +193,7 @@ public class HomeFragment extends Fragment {
                 for (DocumentSnapshot doc : result) {
                     events.add(firebaseManager.documentToEvent(doc));
                 }
+
                 adapter.notifyItemRangeInserted(startPos, result.size());
                 isLoading = false;
                 if (!result.isEmpty()) {

@@ -269,7 +269,7 @@ public class FirebaseManager {
 
     /**
      * Retrieves a subcollection of an event from the database. Calls the provided callback function when event has been received.
-     *
+     * <p>
      * Usage: getUserSubcollection(uid, "collection name", new FirestoreCallback<ArrayList<String>>() {
      *      @Override
      *      public void onSuccess(ArrayList<String> result) {
@@ -302,7 +302,7 @@ public class FirebaseManager {
 
     /**
      * Retrieves a subcollection of an event from the database. Calls the provided callback function when event has been received.
-     *
+     * <p>
      * Usage: getEventSubcollection(eid, "collection name", new FirestoreCallback<ArrayList<String>>() {
      *      @Override
      *      public void onSuccess(ArrayList<String> result) {
@@ -392,5 +392,21 @@ public class FirebaseManager {
                 }).addOnFailureListener(callback::onFailure);
     }
 
+    // Querying for users organized events
+    public void getOrganizedEventsQuery(DocumentSnapshot lastVisible, String uid, int numEvents, FirebaseCallback<ArrayList<DocumentSnapshot>> callback) {
+        Query query = events.whereEqualTo("Organizer", uid).orderBy("Date", Query.Direction.DESCENDING).limit(numEvents);
 
+        if (lastVisible != null) query = query.startAfter(lastVisible);
+        query.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                ArrayList<DocumentSnapshot> events = new ArrayList<>();
+                for (DocumentSnapshot doc : task.getResult()) {
+                    events.add(doc);
+                }
+                callback.onSuccess(events);
+            } else {
+                callback.onFailure(task.getException());
+            }
+        }).addOnFailureListener(callback::onFailure);
+    }
 }

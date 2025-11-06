@@ -1,4 +1,4 @@
-package com.example.dangle_lotto.ui.yourevents;
+package com.example.dangle_lotto.ui.dashboard;
 
 import android.os.Bundle;
 
@@ -8,19 +8,19 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.example.dangle_lotto.databinding.FragmentYourEventsBinding;
-import com.example.dangle_lotto.ui.dashboard.OrganizerEventDetailsEventFragment;
+import com.example.dangle_lotto.R;
+import com.example.dangle_lotto.databinding.FragmentUserSettingBinding;
 
 /**
  *
  */
-public class YourEventsFragment extends Fragment {
-    private FragmentYourEventsBinding binding;
+public class UserSettingFragment extends Fragment {
+    private FragmentUserSettingBinding binding;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
-        binding = FragmentYourEventsBinding.inflate(inflater, container, false);
+        binding = FragmentUserSettingBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
         return root;

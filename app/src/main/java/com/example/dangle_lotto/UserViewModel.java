@@ -51,7 +51,7 @@ public class UserViewModel extends ViewModel {
             return;
         }
 
-        firebaseManager.getUser(uid, new FirestoreCallback<User>() {
+        firebaseManager.getUser(uid, new FirebaseCallback<User>() {
             @Override
             public void onSuccess(User result) {
                 Log.d("UserViewModel", "User loaded: " + result.getName());
@@ -96,6 +96,7 @@ public class UserViewModel extends ViewModel {
     public void setSelectedHomeEvent(Event event) {
         selectedHomeEvent.setValue(event);
     }
+
     /**
      * Gets the index of the event that is currently selected in the Home Fragment
      *
@@ -182,7 +183,7 @@ public class UserViewModel extends ViewModel {
      *
      * @return Event that is currently selected
      */
-    LiveData<Event> getSelectedOrganizedEvent() {
+    public LiveData<Event> getSelectedOrganizedEvent() {
         return selectedOrganizedEvent;
     }
 }

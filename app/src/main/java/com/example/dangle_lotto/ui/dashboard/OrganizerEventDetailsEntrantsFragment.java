@@ -9,15 +9,15 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
 
+import com.example.dangle_lotto.Event;
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.User;
+import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentOrganizerEventDetailsEntrantsBinding;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
@@ -27,32 +27,43 @@ import java.util.ArrayList;
  */
 public class OrganizerEventDetailsEntrantsFragment extends Fragment {
     private FragmentOrganizerEventDetailsEntrantsBinding binding;
+    private UserViewModel userViewModel;
     private FirebaseManager firebase;
+    private Event event;
     private ArrayAdapter<String> adapter;
     private ArrayList<String> entrantNames = new ArrayList<>();
     private ListView listView;
     private View progress;
     private View emptyView;
-    private String eid() {
-        return getArguments() != null ? getArguments().getString("eid") : null;
-    }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        // initializing binding
         binding = FragmentOrganizerEventDetailsEntrantsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
+        // initializing view model
+        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
+
+        // getting event from view model
+        event = userViewModel.getSelectedOrganizedEvent().getValue();
+
+        // initializing firebase
         firebase = new FirebaseManager();
 
+        // initializing views
         listView = binding.entrantsListView;
         progress = binding.progress;
         emptyView = binding.emptyView;
 
+        // initializing adapter and setting to list view
         adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, entrantNames);
         listView.setAdapter(adapter);
         listView.setEmptyView(emptyView);
 
+        // loading entrants and adding to array list
         loadEntrants();
         return root;
     }
@@ -66,7 +77,7 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
         entrantNames.clear();
         if (adapter != null) adapter.notifyDataSetChanged();
 
-        String eventId = eid();
+        String eventId = event.getEid();
         if (eventId == null) {
             if (progress != null) progress.setVisibility(View.GONE);
             if (emptyView != null) emptyView.setVisibility(View.VISIBLE);

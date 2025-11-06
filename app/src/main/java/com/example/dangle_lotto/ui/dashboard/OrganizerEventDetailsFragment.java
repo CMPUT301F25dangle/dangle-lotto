@@ -12,7 +12,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+import com.example.dangle_lotto.Event;
 import com.example.dangle_lotto.R;
+import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentOrganizerEventDetailsBinding;
 
 /**
@@ -24,6 +26,8 @@ import com.example.dangle_lotto.databinding.FragmentOrganizerEventDetailsBinding
  */
 public class OrganizerEventDetailsFragment extends Fragment {
     private FragmentOrganizerEventDetailsBinding binding;
+    private UserViewModel userViewModel;
+    private Event event;
     private Button eventButton;
     private Button entrantsButton;
     private Button mapButton;
@@ -32,10 +36,12 @@ public class OrganizerEventDetailsFragment extends Fragment {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
+
+        // initializing binding
         binding = FragmentOrganizerEventDetailsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        // making back button actually take u to previous fragment
+        // making back button actually take you to previous fragment
         binding.organizerEventDetailsBackButton.setOnClickListener(v -> {
             NavController navController = NavHostFragment.findNavController(this);
             navController.popBackStack();

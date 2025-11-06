@@ -67,10 +67,9 @@ public class HomeFragment extends Fragment {
         }
 
         // initializing and attaching adapter
-         adapter = new EventCardAdapter(events, position -> {
+        adapter = new EventCardAdapter(events, position -> {
             // update the view model
-            userViewModel.setSelectedHomeEventIndex(position);
-            Log.d("HomeFragment", "Selected event at position " + userViewModel.getSelectedHomeEventIndex().getValue());
+            userViewModel.setSelectedHomeEvent(events.get(position));
 
             // open the event fragment
             openEventFragment();
@@ -120,8 +119,8 @@ public class HomeFragment extends Fragment {
      */
     private void openEventFragment() {
         NavController navController = NavHostFragment.findNavController(this);
-        // When Event Detail fragment is implemented, uncomment below and add navigation id
-        //navController.navigate();
+
+        //navController.navigate(R.id.action_home_to_eventDetail);
     }
 
     /**

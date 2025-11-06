@@ -29,6 +29,9 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
     private FirebaseManager firebase;
     private ArrayAdapter<String> adapter;
     private ArrayList<String> entrantNames = new ArrayList<>();
+    private ListView listView;
+    private View progress;
+    private View emptyView;
     private String eid() {
         return getArguments() != null ? getArguments().getString("eid") : null;
     }
@@ -40,49 +43,91 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
         View root = binding.getRoot();
 
         firebase = new FirebaseManager();
-        ListView listView = binding.entrantsListView;
 
-        adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1,entrantNames);
+        listView = binding.entrantsListView;
+        progress = binding.progress;
+        emptyView = binding.emptyView;
+
+        adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_1, entrantNames);
         listView.setAdapter(adapter);
+        listView.setEmptyView(emptyView);
 
         loadEntrants();
         return root;
-
     }
 
     private void loadEntrants() {
+        // UI: start loading
+        if (progress != null) progress.setVisibility(View.VISIBLE);
+        if (emptyView != null) emptyView.setVisibility(View.GONE);
+        if (listView != null) listView.setVisibility(View.INVISIBLE);
+
+        entrantNames.clear();
+        if (adapter != null) adapter.notifyDataSetChanged();
+
         String eventId = eid();
-        if (eventId == null) return;
+        if (eventId == null) {
+            if (progress != null) progress.setVisibility(View.GONE);
+            if (emptyView != null) emptyView.setVisibility(View.VISIBLE);
+            if (listView != null) listView.setVisibility(View.INVISIBLE);
+            return;
+        }
 
-        firebase.getEventSignUps(eventId, task -> {
-            if (!task.isSuccessful()) return;
-            QuerySnapshot qs = task.getResult();
-            if (qs == null || qs.isEmpty()) return;
+        // Pull UIDs from events/{eid}/Register (entrants live here)
+        firebase.getEventSubcollection(eventId, "Register", new FirestoreCallback<ArrayList<String>>() {
+            @Override
+            public void onSuccess(ArrayList<String> uids) {
+                if (uids == null || uids.isEmpty()) {
+                    if (progress != null) progress.setVisibility(View.GONE);
+                    if (emptyView != null) emptyView.setVisibility(View.VISIBLE);
+                    if (listView != null) listView.setVisibility(View.INVISIBLE);
+                    return;
+                }
 
-            final int total = qs.size();
-            final int[] count = {0};
+                final int total = uids.size();
+                final int[] done = {0};
 
-            for (DocumentSnapshot doc : qs.getDocuments()) {
-                String uid = doc.getId();
-                firebase.getUser(uid, new FirestoreCallback<User>() {
-                    @Override
-                    public void onSuccess(User user) {
-                        entrantNames.add(user.getName() + " (" + user.getEmail() + ")");
-                        count[0]++;
-                        checkDone(count[0], total);
-                    }
+                for (String uid : uids) {
+                    firebase.getUser(uid, new FirestoreCallback<User>() {
+                        @Override
+                        public void onSuccess(User user) {
+                            entrantNames.add(user.getName() + " (" + user.getEmail() + ")");
+                            finishOne();
+                        }
 
-                    @Override
-                    public void onFailure(Exception e) {
-                        count[0]++;
-                        checkDone(count[0], total);
-                    }
+                        @Override
+                        public void onFailure(Exception e) {
+                            // Fallback to UID so the entrant is still visible
+                            entrantNames.add(uid);
+                            finishOne();
+                        }
 
-                    private void checkDone(int done, int total) {
-                        if (done == total) adapter.notifyDataSetChanged();
-                    }
-                });
+                        private void finishOne() {
+                            done[0]++;
+                            if (done[0] == total) {
+                                if (adapter != null) adapter.notifyDataSetChanged();
+                                if (progress != null) progress.setVisibility(View.GONE);
+                                boolean isEmpty = entrantNames.isEmpty();
+                                if (emptyView != null) emptyView.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
+                                if (listView != null) listView.setVisibility(isEmpty ? View.INVISIBLE : View.VISIBLE);
+                            }
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                if (progress != null) progress.setVisibility(View.GONE);
+                if (emptyView != null) emptyView.setVisibility(View.VISIBLE);
+                if (listView != null) listView.setVisibility(View.INVISIBLE);
             }
         });
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
     }
 }

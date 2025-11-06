@@ -61,7 +61,7 @@ public class OrganizerEventDetailsFragment extends Fragment {
         firstArgs.putString("eid", eid);
         first.setArguments(firstArgs);
         getChildFragmentManager().beginTransaction()
-                .replace(R.id.organizer_event_view_display, new OrganizerEventDetailsEventFragment())
+                .replace(R.id.organizer_event_view_display, first)  // <-- use 'first' that has eid
                 .commit();
 
         return root;

@@ -37,7 +37,10 @@ public class DashboardFragment extends Fragment {
             args.putString("eid", eid);
 
             NavController navController = NavHostFragment.findNavController(this);
-            navController.navigate(R.id.action_navigation_dashboard_to_organizerEventDetailsFragment);
+            navController.navigate(
+                    R.id.action_navigation_dashboard_to_organizerEventDetailsFragment,
+                    args
+            );
         });
 
         return root;

@@ -1,4 +1,4 @@
-package com.example.dangle_lotto.ui.home;
+package com.example.dangle_lotto.ui;
 import com.example.dangle_lotto.Event;
 
 import com.example.dangle_lotto.R;

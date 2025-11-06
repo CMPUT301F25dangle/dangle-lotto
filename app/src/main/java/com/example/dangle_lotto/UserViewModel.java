@@ -2,6 +2,7 @@ package com.example.dangle_lotto;
 
 import android.util.Log;
 
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
@@ -19,12 +20,12 @@ import java.util.ArrayList;
 public class UserViewModel extends ViewModel {
     private final FirebaseManager firebaseManager = new FirebaseManager();
     private final MutableLiveData<User> user = new MutableLiveData<>();
-    private final MutableLiveData<ArrayList<Event>> yourEvents = new MutableLiveData<>();
-    private boolean yourEventsLoaded = false;
-    private final MutableLiveData<ArrayList<Event>> organizedEvents = new MutableLiveData<>();
-    private boolean organizedEventsLoaded = false;
     private final MutableLiveData<ArrayList<Event>> homeEvents = new MutableLiveData<>();
-    private final MutableLiveData<Integer> selectedHomeEventIndex = new MutableLiveData<>();
+    private final MutableLiveData<Event> selectedHomeEvent = new MutableLiveData<>();
+    private final MutableLiveData<ArrayList<Event>> yourEvents = new MutableLiveData<>();
+    private final MutableLiveData<Event> selectedYourEvent = new MutableLiveData<>();
+    private final MutableLiveData<ArrayList<Event>> organizedEvents = new MutableLiveData<>();
+    private final MutableLiveData<Event> selectedOrganizedEvent = new MutableLiveData<>();
 
     /**
      * Sets the user object
@@ -40,7 +41,7 @@ public class UserViewModel extends ViewModel {
      *
      * @return user object
      */
-    public MutableLiveData<User> getUser() {
+    public LiveData<User> getUser() {
         return user;
     }
 
@@ -83,26 +84,38 @@ public class UserViewModel extends ViewModel {
      *
      * @return Arraylist of events that are currently in the Home Fragment
      */
-    public MutableLiveData<ArrayList<Event>> getHomeEvents() {
+    public LiveData<ArrayList<Event>> getHomeEvents() {
         return homeEvents;
     }
 
     /**
      * Sets the index of the event that is currently selected in the Home Fragment
      *
-     * @param index Index of selected event
+     * @param event Index of selected event
      */
-    public void setSelectedHomeEventIndex(int index) {
-        selectedHomeEventIndex.setValue(index);
+    public void setSelectedHomeEvent(Event event) {
+        selectedHomeEvent.setValue(event);
     }
-
     /**
      * Gets the index of the event that is currently selected in the Home Fragment
      *
      * @return Index
      */
-    public MutableLiveData<Integer> getSelectedHomeEventIndex() {
-        return selectedHomeEventIndex;
+    public LiveData<Event> getSelectedHomeEvent() {
+        return selectedHomeEvent;
+    }
+
+    /**
+     * Sets the events that are currently in the Your Events Fragment
+     *
+     * @param events Arraylist of events that you want to save in the View Model
+     */
+    public void setYourEvents(ArrayList<Event> events) {
+        if (events != null) {
+            yourEvents.setValue(events);
+        } else {
+            yourEvents.setValue(new ArrayList<>());
+        }
     }
 
     /**
@@ -110,30 +123,40 @@ public class UserViewModel extends ViewModel {
      *
      * @return Arraylist of events that the user has signed up for in some way
      */
-    public MutableLiveData<ArrayList<Event>> getYourEvents() {
+    public LiveData<ArrayList<Event>> getYourEvents() {
         return yourEvents;
     }
 
     /**
-     * Fetches users yourEvents data from firebase if it hasn't already been fetched.
-     * <p>
-     * Sets boolean to false, so that this can only occur once in an instance of the app running.
+     * Sets the event that is currently selected in the Your Events Fragment
+     *
+     * @param event Event that is currently selected
      */
-    public void loadYourEvents() {
-        if (!yourEventsLoaded) {
-            // fetch yourEvents from firebase and if successful then use
-            // yourEvents.postValue(some data) to update yourEvents in the View Model
-            // and set yourEventsLoaded to true
-        }
+    public void setSelectedYourEvent(Event event) {
+        selectedYourEvent.setValue(event);
     }
 
-    public void addYourEvent(Event event) {
-        ArrayList<Event> currentList = getYourEvents().getValue();
-        if (currentList == null) {
-            currentList = new ArrayList<>();
+    /**
+     * Gets the event that is currently selected in the Your Events Fragment
+     *
+     * @return Event that is currently selected
+     */
+    public LiveData<Event> getSelectedYourEvent() {
+        return selectedYourEvent;
+    }
+
+
+    /**
+     * Sets the events that are currently in the Organized Fragment
+     *
+     * @param events Arraylist of events that you want to save in the View
+     */
+    public void setOrganizedEvents(ArrayList<Event> events) {
+        if (events != null) {
+            organizedEvents.setValue(events);
+        } else {
+            organizedEvents.setValue(new ArrayList<>());
         }
-        currentList.add(event);
-        getYourEvents().setValue(currentList);
     }
 
     /**
@@ -141,21 +164,25 @@ public class UserViewModel extends ViewModel {
      *
      * @return Arraylist of events that the user has organized
      */
-    public MutableLiveData<ArrayList<Event>> getOrganizedEvents() {
+    public LiveData<ArrayList<Event>> getOrganizedEvents() {
         return organizedEvents;
     }
 
     /**
-     * Fetches users organizedEvents data from firebase if it hasn't already been fetched.
-     * <p>
-     * Sets boolean to false, so that this can only occur once in an instance of the app running.
+     * Sets event that is currently selected in the Dashboard Fragment
+     *
+     * @param event Event that is currently selected
      */
-    public void loadOrganizedEvents() {
-        if (!organizedEventsLoaded) {
-            // fetch organizedEvents from firebase and if successful then use
-            // organizedEvents.postValue(some data) to update organizedEvents in the View Model
-            // and set organizedEventsLoaded to true
-        }
+    public void setSelectedOrganizedEvent(Event event) {
+        selectedOrganizedEvent.setValue(event);
     }
 
+    /**
+     * Gets event that is currently selected in the Dashboard Fragment
+     *
+     * @return Event that is currently selected
+     */
+    LiveData<Event> getSelectedOrganizedEvent() {
+        return selectedOrganizedEvent;
+    }
 }

@@ -1,5 +1,7 @@
 package com.example.dangle_lotto;
 
+import android.util.Log;
+
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -190,7 +192,7 @@ public class FirebaseManager {
 
     /**
      * Retrieves a subcollection of an event from the database. Calls the provided callback function when event has been received.
-     *
+     * <p>
      * Usage: getUserSubcollection(uid, "collection name", new FirestoreCallback<ArrayList<String>>() {
      *      @Override
      *      public void onSuccess(ArrayList<String> result) {
@@ -223,7 +225,7 @@ public class FirebaseManager {
 
     /**
      * Retrieves a subcollection of an event from the database. Calls the provided callback function when event has been received.
-     *
+     * <p>
      * Usage: getEventSubcollection(eid, "collection name", new FirestoreCallback<ArrayList<String>>() {
      *      @Override
      *      public void onSuccess(ArrayList<String> result) {
@@ -311,5 +313,23 @@ public class FirebaseManager {
                 }).addOnFailureListener(callback::onFailure);
     }
 
+    public void getOrganizedEventsQuery(DocumentSnapshot lastVisible, String uid, int numEvents, FirestoreCallback<ArrayList<DocumentSnapshot>> callback) {
+        Log.d("Firebase", "Getting organized events for user " + uid);
+        Query query = events.whereEqualTo("Organizer", uid).orderBy("Date", Query.Direction.DESCENDING).limit(numEvents);
 
+        if (lastVisible != null) query = query.startAfter(lastVisible);
+        query.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                Log.d("Firebase", "Found " + task.getResult().size() + " organized events");
+                ArrayList<DocumentSnapshot> events = new ArrayList<>();
+                for (DocumentSnapshot doc : task.getResult()) {
+                    Log.d("Firebase", "Doc ID: " + doc.getId() + ", Data: " + doc.getData());
+                    events.add(doc);
+                }
+                callback.onSuccess(events);
+            } else {
+                callback.onFailure(task.getException());
+            }
+        }).addOnFailureListener(callback::onFailure);
+    }
 }

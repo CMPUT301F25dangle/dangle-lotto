@@ -6,17 +6,55 @@
     android:layout_height="match_parent"
     tools:context=".ui.dashboard.DashboardFragment">
 
+    <ImageButton
+        android:id="@+id/dashboard_fragment_setting_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:layout_marginEnd="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:src="@drawable/outline_settings_24"
+        android:background="@android:color/transparent"/>
+
+    <ImageView
+        android:id="@+id/dashboard_fragment_user_picture"
+        android:layout_width="90dp"
+        android:layout_height="90dp"
+        android:layout_margin="16dp"
+        android:layout_marginBottom="100dp"
+        app:layout_constraintBottom_toTopOf="@+id/dashboard_fragment_username"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/dashboard_fragment_setting_button"
+        app:layout_constraintVertical_bias="0.1"
+        app:layout_constraintVertical_chainStyle="packed"
+        android:src="@drawable/event_card_test_image"
+        android:scaleType="centerCrop"/>
+
     <TextView
-        android:id="@+id/text_dashboard"
+        android:id="@+id/dashboard_fragment_username"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="8dp"
-        android:layout_marginTop="8dp"
         android:layout_marginEnd="8dp"
         android:textAlignment="center"
         android:textSize="40sp"
+        android:text="Username"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/dashboard_fragment_user_picture"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/dashboard_fragment_recycler_view"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:padding="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/dashboard_fragment_username" />
+
+
 </androidx.constraintlayout.widget.ConstraintLayout>

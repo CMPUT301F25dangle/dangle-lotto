@@ -66,6 +66,7 @@ public class Event {
 
         });
     }
+
     public String getEid () {
         return eid;
     }

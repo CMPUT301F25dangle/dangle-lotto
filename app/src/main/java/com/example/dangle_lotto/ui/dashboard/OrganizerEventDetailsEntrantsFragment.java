@@ -12,7 +12,7 @@ import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.example.dangle_lotto.FirebaseManager;
-import com.example.dangle_lotto.FirestoreCallback;
+import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.User;
 import com.example.dangle_lotto.databinding.FragmentOrganizerEventDetailsEntrantsBinding;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -74,7 +74,7 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
         }
 
         // Pull UIDs from events/{eid}/Register (entrants live here)
-        firebase.getEventSubcollection(eventId, "Register", new FirestoreCallback<ArrayList<String>>() {
+        firebase.getEventSubcollection(eventId, "Register", new FirebaseCallback<ArrayList<String>>() {
             @Override
             public void onSuccess(ArrayList<String> uids) {
                 if (uids == null || uids.isEmpty()) {
@@ -88,7 +88,7 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
                 final int[] done = {0};
 
                 for (String uid : uids) {
-                    firebase.getUser(uid, new FirestoreCallback<User>() {
+                    firebase.getUser(uid, new FirebaseCallback<User>() {
                         @Override
                         public void onSuccess(User user) {
                             entrantNames.add(user.getName() + " (" + user.getEmail() + ")");

@@ -11,6 +11,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.example.dangle_lotto.Event;
@@ -27,31 +28,23 @@ public class EventDetailFragment extends Fragment {
 
     private boolean isSignedUp =  false;
 
+    private Event selectedEvent;
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-
-        UserViewModel userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
-
-        ArrayList<Event> Events = userViewModel.getHomeEvents().getValue();
-
-        int index = userViewModel.getSelectedHomeEventIndex().getValue();
-
-        Log.d(Events);
-
-       // Event event = Events.get(index);
-
-
-
+        // initialized binding
         binding = FragmentEventDetailBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        /*
-         final TextView textView = binding.textEventDetail;
-         EventDetailViewModel.getText().observe(getViewLifecycleOwner(), textView::setText);
-        */
+        // initialize view model
+        UserViewModel userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
+        selectedEvent = userViewModel.getSelectedHomeEvent().getValue();
+
+        final TextView textView = binding.tvTitle;
+        textView.setText(selectedEvent.getName());
+
         return root;
     }
 

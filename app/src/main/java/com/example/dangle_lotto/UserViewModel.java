@@ -2,6 +2,7 @@ package com.example.dangle_lotto;
 
 import android.util.Log;
 
+import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
@@ -24,7 +25,7 @@ public class UserViewModel extends ViewModel {
     private final MutableLiveData<ArrayList<Event>> organizedEvents = new MutableLiveData<>();
     private boolean organizedEventsLoaded = false;
     private final MutableLiveData<ArrayList<Event>> homeEvents = new MutableLiveData<>();
-    private final MutableLiveData<Integer> selectedHomeEventIndex = new MutableLiveData<>();
+    private final MutableLiveData<Event> selectedHomeEvent = new MutableLiveData<>();
 
     /**
      * Sets the user object
@@ -40,8 +41,7 @@ public class UserViewModel extends ViewModel {
      *
      * @return user object
      */
-    public MutableLiveData<User> getUser() {
-
+    public LiveData<User> getUser() {
         return user;
     }
 
@@ -84,26 +84,25 @@ public class UserViewModel extends ViewModel {
      *
      * @return Arraylist of events that are currently in the Home Fragment
      */
-    public MutableLiveData<ArrayList<Event>> getHomeEvents() {
+    public LiveData<ArrayList<Event>> getHomeEvents() {
         return homeEvents;
     }
 
     /**
      * Sets the index of the event that is currently selected in the Home Fragment
      *
-     * @param index Index of selected event
+     * @param event Index of selected event
      */
-    public void setSelectedHomeEventIndex(int index) {
-        selectedHomeEventIndex.setValue(index);
+    public void setSelectedHomeEvent(Event event) {
+        selectedHomeEvent.setValue(event);
     }
-
     /**
      * Gets the index of the event that is currently selected in the Home Fragment
      *
      * @return Index
      */
-    public MutableLiveData<Integer> getSelectedHomeEventIndex() {
-        return selectedHomeEventIndex;
+    public LiveData<Event> getSelectedHomeEvent() {
+        return selectedHomeEvent;
     }
 
     /**
@@ -111,7 +110,7 @@ public class UserViewModel extends ViewModel {
      *
      * @return Arraylist of events that the user has signed up for in some way
      */
-    public MutableLiveData<ArrayList<Event>> getYourEvents() {
+    public LiveData<ArrayList<Event>> getYourEvents() {
         return yourEvents;
     }
 
@@ -128,14 +127,14 @@ public class UserViewModel extends ViewModel {
         }
     }
 
-    public void addYourEvent(Event event) {
-        ArrayList<Event> currentList = getYourEvents().getValue();
-        if (currentList == null) {
-            currentList = new ArrayList<>();
-        }
-        currentList.add(event);
-        getYourEvents().setValue(currentList);
-    }
+//    public void addYourEvent(Event event) {
+//        ArrayList<Event> currentList = getYourEvents().getValue();
+//        if (currentList == null) {
+//            currentList = new ArrayList<>();
+//        }
+//        currentList.add(event);
+//        getYourEvents().setValue(currentList);
+//    }
 
     /**
      * Gets organizedEvents that are currently in the View Model

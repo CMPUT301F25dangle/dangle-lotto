@@ -69,8 +69,7 @@ public class HomeFragment extends Fragment {
         // initializing and attaching adapter
          adapter = new EventCardAdapter(events, position -> {
             // update the view model
-            userViewModel.setSelectedHomeEventIndex(position);
-            Log.d("HomeFragment", "Selected event at position " + userViewModel.getSelectedHomeEventIndex().getValue());
+            userViewModel.setSelectedHomeEvent(events.get(position));
 
             // open the event fragment
             openEventFragment();

@@ -1,6 +1,11 @@
 package com.example.dangle_lotto;
 
+import android.content.Intent;
+import android.widget.Toast;
+
 import com.google.firebase.Timestamp;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -12,12 +17,66 @@ import java.util.Objects;
 
 public class FirebaseManager {
     private final FirebaseFirestore db;
+    private final FirebaseAuth mAuth;
     private final CollectionReference users;
     private final CollectionReference events;
     public FirebaseManager() {
         db = FirebaseFirestore.getInstance();
+        mAuth = FirebaseAuth.getInstance();
         users = db.collection("users");
         events = db.collection("events");
+    }
+
+    public FirebaseManager(boolean useEmulator){
+        db = FirebaseFirestore.getInstance();
+        if (useEmulator) {
+            db.useEmulator("10.0.2.2", 8080);
+        }
+        mAuth = FirebaseAuth.getInstance();
+        if (useEmulator) {
+            mAuth.useEmulator("10.0.2.2", 9099);
+        }
+        users = db.collection("users");
+        events = db.collection("events");
+    }
+
+    public void signIn(String email, String password, FirebaseCallback<String> callback){
+        mAuth.signInWithEmailAndPassword(email, password)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                        String uid;
+                        if (user != null) {
+                            uid = user.getUid();
+
+                        } else {
+                            uid = null;
+                        }
+                        callback.onSuccess(uid);
+                    } else {
+                        callback.onFailure(task.getException());
+                    }
+                    callback.onComplete();
+                });
+    }
+
+    public void signUp(String email, String password, String name, String phone, String photo_id, boolean canOrganize, FirebaseCallback<String> callback){
+        mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        FirebaseUser user = mAuth.getCurrentUser();
+                        if (user != null){
+                            String uid = user.getUid();
+                            this.createNewUser(uid, name, email, phone, photo_id, canOrganize);
+                            callback.onSuccess(uid);
+                        }else{
+                            callback.onFailure(new Exception("User not found"));
+                        }
+                    }else{
+                        callback.onFailure(task.getException());
+                    }
+                    callback.onComplete();
+                });
     }
     /**
      * Adds a new user to the database and instantiates a user object with all required attributes.
@@ -77,7 +136,7 @@ public class FirebaseManager {
      * @param uid  string of user id to search for and retrieve all attributes
      * @return Instantiated GeneralUser object with all required attributes
      */
-    public void getUser(String uid, FirestoreCallback<User> callback) {
+    public void getUser(String uid, FirebaseCallback<User> callback) {
         users.document(uid).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 DocumentSnapshot doc = task.getResult();
@@ -173,7 +232,7 @@ public class FirebaseManager {
      * @param eid  string of user id to search for and retrieve all attributes
      * @param callback callback function to call when event is retrieved
      */
-    public void getEvent(String eid, FirestoreCallback<Event> callback){
+    public void getEvent(String eid, FirebaseCallback<Event> callback){
         events.document(eid).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 DocumentSnapshot doc = task.getResult();
@@ -207,7 +266,7 @@ public class FirebaseManager {
      * @param subcollection  string of subcollection to retrieve
      * @param callback callback function to call when event is retrieved
      */
-    public void getUserSubcollection(String uid, String subcollection, FirestoreCallback<ArrayList<String>> callback){
+    public void getUserSubcollection(String uid, String subcollection, FirebaseCallback<ArrayList<String>> callback){
         users.document(uid).collection(subcollection).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 ArrayList<String> ids = new ArrayList<>();
@@ -240,7 +299,7 @@ public class FirebaseManager {
      * @param subcollection  string of subcollection to retrieve
      * @param callback callback function to call when event is retrieved
      */
-    public void getEventSubcollection(String eid, String subcollection, FirestoreCallback<ArrayList<String>> callback){
+    public void getEventSubcollection(String eid, String subcollection, FirebaseCallback<ArrayList<String>> callback){
         events.document(eid).collection(subcollection).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 ArrayList<String> ids = new ArrayList<>();
@@ -294,7 +353,7 @@ public class FirebaseManager {
 
 
     // Querying
-    public void getEventsQuery(DocumentSnapshot lastVisible, int numEvents, FirestoreCallback<ArrayList<DocumentSnapshot>> callback){
+    public void getEventsQuery(DocumentSnapshot lastVisible, int numEvents, FirebaseCallback<ArrayList<DocumentSnapshot>> callback){
         Query query = events.orderBy("Date", Query.Direction.DESCENDING).limit(numEvents);
 
         if (lastVisible != null) query = query.startAfter(lastVisible);

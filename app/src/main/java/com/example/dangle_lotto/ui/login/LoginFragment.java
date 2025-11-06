@@ -15,10 +15,14 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.example.dangle_lotto.FirebaseCallback;
+import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.MainActivity;
 import com.example.dangle_lotto.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+
+import java.util.Objects;
 
 public class LoginFragment extends Fragment {
 
@@ -26,7 +30,7 @@ public class LoginFragment extends Fragment {
     private Button btnLogin;
     private CheckBox cbRememberMe;
     private TextView tvToSignUp;
-    private FirebaseAuth mAuth;
+    private FirebaseManager firebaseManager;
 
     public LoginFragment() {
         // Required empty public constructor
@@ -44,7 +48,7 @@ public class LoginFragment extends Fragment {
         btnLogin = view.findViewById(R.id.btnLogin);
         tvToSignUp = view.findViewById(R.id.tvGoToSignup);
 
-        mAuth = FirebaseAuth.getInstance();
+        firebaseManager = new FirebaseManager();
 
         btnLogin.setOnClickListener(v -> loginUser());
         tvToSignUp.setOnClickListener(v -> switchToSignUp());
@@ -68,28 +72,26 @@ public class LoginFragment extends Fragment {
 
         btnLogin.setEnabled(false);
 
-        mAuth.signInWithEmailAndPassword(email, password)
-                .addOnCompleteListener(task -> {
-                    btnLogin.setEnabled(true);
-                    if (task.isSuccessful()) {
-                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-                        String uid;
-                        if (user != null) {
-                            uid = user.getUid();
+        firebaseManager.signIn(email, password, new FirebaseCallback<String>(){
+            @Override
+            public void onComplete() {
+                btnLogin.setEnabled(true);
+            }
 
-                        } else {
-                            uid = null;
-                        }
-                        Toast.makeText(getActivity(), "Login successful", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(getActivity(), MainActivity.class);
-                        intent.putExtra("UID", uid);
-                        startActivity(intent);
-                        getActivity().finish();
-                    } else {
-                        Toast.makeText(getActivity(), "Login failed",
-                                Toast.LENGTH_LONG).show();
-                    }
-                });
+            @Override
+            public void onSuccess(String result) {
+                Toast.makeText(getActivity(), "Login successful", Toast.LENGTH_SHORT).show();
+                Intent intent = new Intent(getActivity(), MainActivity.class);
+                intent.putExtra("UID", result);
+                startActivity(intent);
+                requireActivity().finish();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(getActivity(), "Login failed", Toast.LENGTH_LONG).show();
+            }
+        });
     }
 
     private void switchToSignUp() {

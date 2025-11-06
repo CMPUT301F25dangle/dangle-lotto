@@ -4,16 +4,87 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     tools:context="ui.create_event.CreateEventFragment">
 
+    <LinearLayout
+        android:id="@+id/status_bar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/light_blue"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:focusable="true"
+            android:text="@string/cancel"
+            android:textSize="40sp"
+            android:textColor="@color/black"
+            android:paddingStart="20dp"
+            android:clickable="true"
+            android:layout_weight="1">
+        </TextView>
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:focusable="true"
+            android:text="Done"
+            android:textSize="40sp"
+            android:textColor="@color/black"
+            android:textAlignment="textEnd"
+            android:paddingEnd="20dp"
+            android:clickable="true"
+            android:layout_weight="1">
+        </TextView>
+    </LinearLayout>
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Create Event"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:text="Event Name"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        android:paddingTop="10sp"
+        android:paddingLeft="20sp"
+        android:id="@+id/event_name_hint"
         app:layout_constraintLeft_toLeftOf="parent"
-    />
+        app:layout_constraintTop_toBottomOf="@+id/status_bar">
+    </TextView>
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/event_name_input"
+        android:layout_width="380dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        app:boxBackgroundMode="outline"
+        android:background="@color/white"
+        style="@style/InputBoxOutlined"
+        app:hintEnabled="false"
+        app:hintAnimationEnabled="false"
+        app:layout_constraintTop_toBottomOf="@+id/event_name_hint"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:maxLines="1"
+            android:inputType="text"
+            android:singleLine="true" />
+
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <View
+        android:layout_width="380dp"
+        android:layout_height="200dp"
+        android:background="@color/light_blue"
+        android:id="@+id/banner"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/event_name_input"
+        >
+    </View>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

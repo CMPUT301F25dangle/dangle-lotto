@@ -2,6 +2,7 @@ package com.example.dangle_lotto.ui.detail;
 
 import android.app.AlertDialog;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -12,7 +13,11 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
+import com.example.dangle_lotto.Event;
+import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentEventDetailBinding;
+
+import java.util.ArrayList;
 
 public class EventDetailFragment extends Fragment {
 
@@ -20,23 +25,25 @@ public class EventDetailFragment extends Fragment {
 
     private FragmentEventDetailBinding binding;
 
-    // Mock Data
-    private String title = "Event Name";
-    private String deadline = "Nov 24, 11pm";
-    private String description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, " +
-            "sed do eiusmod tempor incididunt ut labore...";
-    private int signedUp = 10;
-    private Integer capacity = 50; // set to null for uncapped
-    private boolean isSignedUp = false;
-    // ----------------------------
+    private boolean isSignedUp =  false;
 
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        EventDetailViewModel EventDetailViewModel =
-                new ViewModelProvider(this).get(EventDetailViewModel.class);
+
+        UserViewModel userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
+
+        ArrayList<Event> Events = userViewModel.getHomeEvents().getValue();
+
+        int index = userViewModel.getSelectedHomeEventIndex().getValue();
+
+        Log.d(Events);
+
+       // Event event = Events.get(index);
+
+
 
         binding = FragmentEventDetailBinding.inflate(inflater, container, false);
         View root = binding.getRoot();

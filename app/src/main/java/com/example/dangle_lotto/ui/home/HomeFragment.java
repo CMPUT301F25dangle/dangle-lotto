@@ -120,8 +120,8 @@ public class HomeFragment extends Fragment {
      */
     private void openEventFragment() {
         NavController navController = NavHostFragment.findNavController(this);
-        // When Event Detail fragment is implemented, uncomment below and add navigation id
-        //navController.navigate();
+
+        navController.navigate(R.id.action_home_to_eventDetail);
     }
 
     /**

@@ -41,6 +41,7 @@ public class UserViewModel extends ViewModel {
      * @return user object
      */
     public MutableLiveData<User> getUser() {
+
         return user;
     }
 

@@ -154,7 +154,7 @@ public class FirebaseManager {
      * Retrieves a user from the database and instantiates an object for them
      *
      * @param uid  string of user id to search for and retrieve all attributes
-     * @return Instantiated GeneralUser object with all required attributes
+     * @param callback  callback function to call when user is retrieved
      */
     public void getUser(String uid, FirebaseCallback<User> callback) {
         users.document(uid).get().addOnCompleteListener(task -> {
@@ -338,20 +338,22 @@ public class FirebaseManager {
      *
      * @param user  User object containing all required attributes
      * @param event  Event object containing all required attributes
+     * @param subcollection  string of subcollection to retrieve
      */
     public void userAddStatus(User user, Event event, String subcollection){
         // add register time to user's event document and event's signup document
         Map<String, Object> data = Map.of(
                 "RegisterTime", Timestamp.now()
                 );
-        users.document(user.getUid()).collection("Registered").document(event.getEid()).set(data);
-        events.document(event.getEid()).collection("Registrants").document(user.getUid()).set(data);
+        users.document(user.getUid()).collection(subcollection).document(event.getEid()).set(data);
+        events.document(event.getEid()).collection(subcollection).document(user.getUid()).set(data);
     }
     /**
      * Removes a user from the requested list for an event in the database.
      *
      * @param user  User object containing all required attributes
      * @param event  Event object containing all required attributes
+     * @param subcollection  string of subcollection to retrieve
      */
     public void userRemoveStatus(User user, Event event, String subcollection) {
         users.document(user.getUid()).collection(subcollection).document(event.getEid()).delete();

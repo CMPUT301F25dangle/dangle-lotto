@@ -135,7 +135,6 @@ public class Event {
             throw new IllegalArgumentException("User is already registered");
         }else{
             registered.add(uid);
-
         }
     }
 

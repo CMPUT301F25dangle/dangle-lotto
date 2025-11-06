@@ -21,8 +21,10 @@ public class UserViewModel extends ViewModel {
     private final MutableLiveData<User> user = new MutableLiveData<>();
     private final MutableLiveData<ArrayList<Event>> yourEvents = new MutableLiveData<>();
     private boolean yourEventsLoaded = false;
-    private final MutableLiveData<ArrayList<Event>> organizedEvents = new MutableLiveData<>();;
+    private final MutableLiveData<ArrayList<Event>> organizedEvents = new MutableLiveData<>();
     private boolean organizedEventsLoaded = false;
+    private final MutableLiveData<ArrayList<Event>> homeEvents = new MutableLiveData<>();
+    private final MutableLiveData<Integer> selectedHomeEventIndex = new MutableLiveData<>();
 
     /**
      * Sets the user object
@@ -61,6 +63,46 @@ public class UserViewModel extends ViewModel {
                 user.setValue(null);
             }
         });
+    }
+
+    /**
+     * Sets the events that are currently in the Home Fragment
+     *
+     * @param events Arraylist of events that you want to save in the View Model
+     */
+    public void setHomeEvents(ArrayList<Event> events) {
+        if (events != null) {
+            homeEvents.setValue(events);
+        } else {
+            homeEvents.setValue(new ArrayList<>());
+        }
+    }
+
+    /**
+     * Get the events that are saved in the View Model
+     *
+     * @return Arraylist of events that are currently in the Home Fragment
+     */
+    public MutableLiveData<ArrayList<Event>> getHomeEvents() {
+        return homeEvents;
+    }
+
+    /**
+     * Sets the index of the event that is currently selected in the Home Fragment
+     *
+     * @param index Index of selected event
+     */
+    public void setSelectedHomeEventIndex(int index) {
+        selectedHomeEventIndex.setValue(index);
+    }
+
+    /**
+     * Gets the index of the event that is currently selected in the Home Fragment
+     *
+     * @return Index
+     */
+    public MutableLiveData<Integer> getSelectedHomeEventIndex() {
+        return selectedHomeEventIndex;
     }
 
     /**

@@ -49,6 +49,9 @@ dependencies {
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
 
+    // javadocs
+    implementation(files("C:/Users/adi4s/AppData/Local/Android/Sdk/platforms/android-36/android.jar"))
+
     // Import the Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
     // Firebase Auth

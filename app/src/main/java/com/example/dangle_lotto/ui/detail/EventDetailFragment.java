@@ -18,6 +18,7 @@ import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
 import com.example.dangle_lotto.FirebaseManager;
+import com.example.dangle_lotto.User;
 import com.google.firebase.Timestamp;
 
 import com.example.dangle_lotto.Event;
@@ -87,16 +88,15 @@ public class EventDetailFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        final User currentUser = userViewModel.getUser().getValue();
+
         if(savedInstanceState != null){
             isSignedUp = savedInstanceState.getBoolean("isSignedUp", false);
             isWaiting = isSignedUp;
         }
 
         // Checks if post draw conditions are met, people already drew for lottery
-        if(!selectedEvent.getChosen().isEmpty()){
-            postDraw = true;
-        }
-
+        postDraw = !selectedEvent.getChosen().isEmpty();
 
         //logState("render");
         updateSignUpButton(isChosen,isAttendee,isWaiting,isCancelled, isSignedUp);
@@ -105,6 +105,16 @@ public class EventDetailFragment extends Fragment {
             if (!postDraw) {
                 // BEFORE lottery
                 isSignedUp = !isSignedUp;
+                if (isSignedUp) {
+                    selectedEvent.addSignUp(currentUser);
+                } else {
+                    selectedEvent.deleteSignUp(currentUser);
+                }
+
+                isWaiting   = isSignedUp;
+                isAttendee  = false;
+                isChosen    = false;
+                isCancelled = false;
             }
             else {
                 // AFTER lottery:
@@ -113,12 +123,18 @@ public class EventDetailFragment extends Fragment {
                     showTwoButton();
                     return;
                 }
-                else {
-                    if(!isSignedUp && !isCancelled){
-                        isWaiting = !isWaiting;
+
+                if(!isAttendee && !isCancelled){
+                    isWaiting = !isWaiting;
+                    if (isWaiting){
+                        selectedEvent.addSignUp(currentUser);
                     }
+                    else{
+                        selectedEvent.deleteSignUp(currentUser);
+                        }
                 }
             }
+
             //logState("render");
             updateSignUpButton(isChosen, isAttendee, isWaiting, isCancelled, isSignedUp);
         });

@@ -505,7 +505,6 @@ public class Event {
             ArrayList<String> temp = new ArrayList<>(registered);
             for (String user : temp) {
                 addChosen(user);
-                Log.d("BUTFUCK", user);
             }
         } else if (chosen.size() + signUps.size() < eventSize) {
             ArrayList<String> shuffled = new ArrayList<>(registered);

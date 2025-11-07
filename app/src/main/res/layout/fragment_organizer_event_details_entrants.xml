@@ -70,10 +70,10 @@
 
     <ListView
         android:id="@+id/entrantsListView"
-        android:layout_width="411dp"
-        android:layout_height="660dp"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
         android:dividerHeight="8dp"
-        android:padding="20dp"
+        android:paddingHorizontal="20dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/filterGroup" />
 

@@ -13,34 +13,28 @@
         android:layout_height="wrap_content"
         android:background="@color/light_blue"
         android:orientation="horizontal"
+        android:paddingVertical="8dp"
         app:layout_constraintTop_toTopOf="parent">
 
-        <TextView
+        <Button
             android:id="@+id/create_event_cancel"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:focusable="true"
-            android:paddingStart="20dp"
-            android:paddingVertical="8dp"
             android:text="Cancel"
-            android:textColor="@color/black"
             android:textSize="24sp"
-            android:clickable="true"/>
+            android:textColor="@color/black"
+            android:background="?attr/selectableItemBackground"/>
 
-        <TextView
+        <Button
             android:id="@+id/create_event_done"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:focusable="true"
-            android:paddingEnd="20dp"
-            android:paddingVertical="8dp"
             android:text="Done"
-            android:textAlignment="textEnd"
-            android:textColor="@color/black"
             android:textSize="24sp"
-            android:clickable="true"/>
+            android:textColor="@color/black"
+            android:background="?attr/selectableItemBackground"/>
     </LinearLayout>
 
     <TextView
@@ -49,7 +43,7 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="12dp"
-        android:text="Event Name"
+        android:text="@string/event_name"
         android:textColor="@color/black"
         android:textSize="18sp"
         app:layout_constraintTop_toBottomOf="@id/create_event_status_bar"
@@ -60,8 +54,10 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
-        android:hint="Enter event name"
+        android:hint="@string/enter_event_name"
+        android:autofillHints="name"
         android:padding="10dp"
+        android:inputType="text"
         app:layout_constraintTop_toBottomOf="@id/create_event_name_hint"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
@@ -86,7 +82,7 @@
         android:layout_marginTop="8dp"
         android:layout_marginHorizontal="16dp"
         android:backgroundTint="@color/dark_blue"
-        android:text="Upload Poster"
+        android:text="@string/upload_poster"
         android:textColor="@color/white"
         app:layout_constraintTop_toBottomOf="@id/create_event_banner"
         app:layout_constraintStart_toStartOf="parent"
@@ -107,7 +103,7 @@
             android:id="@+id/cb_max_entrants"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Maximum Entrants"
+            android:text="@string/maximum_entrants"
             android:checked="false"/>
 
         <EditText
@@ -129,7 +125,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:text="Deadline"
+        android:text="@string/deadline"
         android:textColor="@color/black"
         android:textSize="16sp"
         app:layout_constraintTop_toBottomOf="@id/create_event_enter_maxentrants_layout"

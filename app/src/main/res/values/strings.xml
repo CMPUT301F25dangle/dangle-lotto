@@ -6,4 +6,11 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="title_your_events">Your Events</string>
     <string name="cancel">Cancel</string>
+    <string name="create_event_cancel_string">Cancel</string>
+    <string name="done">Done</string>
+    <string name="event_name">Event Name</string>
+    <string name="enter_event_name">Enter event name</string>
+    <string name="upload_poster">Upload Poster</string>
+    <string name="maximum_entrants">Maximum Entrants</string>
+    <string name="deadline">Deadline</string>
 </resources>

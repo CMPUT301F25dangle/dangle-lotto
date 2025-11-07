@@ -1,6 +1,7 @@
 package com.example.dangle_lotto.ui.create_event;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,8 +39,8 @@ import java.util.TimeZone;
  */
 public class CreateEventFragment extends Fragment {
     private FragmentCreateEventBinding binding;
-    private TextView cancel;
-    private TextView done;
+    private Button cancel;
+    private Button done;
     private EditText nameInput;
     private Button uploadBanner;
     private CheckBox enableMaxEntrants;
@@ -121,7 +122,9 @@ public class CreateEventFragment extends Fragment {
         // Get actual text from EditText
         String name = nameInput.getText().toString();
         String description = descriptionInput.getText().toString();
-        int maxEntrants = Integer.parseInt(maxEntrantsInput.getText().toString());
+        if (enableMaxEntrants.isChecked()) {
+            maxEntrants = Integer.parseInt(maxEntrantsInput.getText().toString());
+        }
         String date = dateInput.getText().toString();
         String time = timeInput.getText().toString();
 

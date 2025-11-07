@@ -48,6 +48,23 @@ public class FirebaseManager {
     }
 
     /**
+     * Returns a reference to the database.
+     *
+     * @return  Reference to db
+     */
+    public FirebaseFirestore getDb() {
+        return db;
+    }
+    /**
+     * Returns a reference to the authentication.
+     *
+     * @return  Reference to auth
+     */
+    public FirebaseAuth getAuth() {
+        return mAuth;
+    }
+
+    /**
      * Signing in a user with email and password. Send uid to callback function if successful.
      *
      * @param email  Email of the user

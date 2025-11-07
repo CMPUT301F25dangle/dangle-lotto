@@ -500,7 +500,8 @@ public class Event {
         if (!chosen.isEmpty()) return;
 
         if (registered.size() <= eventSize) {
-            for (String user : registered) addChosen(user);
+            ArrayList<String> temp = new ArrayList<>(registered);
+            for (String user : temp) addChosen(user);
         } else if (chosen.size() + signUps.size() < eventSize) {
             ArrayList<String> shuffled = new ArrayList<>(registered);
             Collections.shuffle(shuffled);

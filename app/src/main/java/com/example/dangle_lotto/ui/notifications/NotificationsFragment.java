@@ -5,6 +5,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 
@@ -15,49 +16,67 @@ import androidx.lifecycle.ViewModelProvider;
 import com.example.dangle_lotto.Event;
 import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.FirebaseManager;
+import com.example.dangle_lotto.GeneralUser;
 import com.example.dangle_lotto.Notification;
 import com.example.dangle_lotto.R;
+import com.example.dangle_lotto.User;
+import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentNotificationsBinding;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class NotificationsFragment extends Fragment {
+    private UserViewModel userViewModel;
+
+    private GeneralUser user;
 
     private FragmentNotificationsBinding binding;
     private ListView notificationListView;
     private FirebaseManager firebaseManager;
 
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
+        // initializing view model
+        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
         binding = FragmentNotificationsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
+        // initialize listview and firebase manager
         notificationListView = binding.notificationLv;
         firebaseManager = new FirebaseManager();
 
-        List<Notification> notifications = new ArrayList<>();
+        // list of all notifications related to a user
+        List<Notification> totalNotifications = new ArrayList<>();
 
-
-        NotificationAdapter adapter = new NotificationAdapter(requireContext(), notifications);
+        // set adapter for notification list view
+        NotificationAdapter adapter = new NotificationAdapter(requireContext(), totalNotifications);
         notificationListView.setAdapter(adapter);
 
+        // get current user object from viewmodel
+        user = userViewModel.getUser().getValue();
+
+        ArrayList<String> chosenEventsList = user.chosenEvents();
+
+        Log.d("NotificationsFragment", "User chosen events: " + chosenEventsList);
 
 
-        eventGrabber("7rHZzxyUqLwcju31Rxe8", firebaseManager, "Sex", new FirebaseCallback<Notification>() {
-            @Override
-            public void onSuccess(Notification notification) {
-                notifications.add(notification);
-                adapter.notifyDataSetChanged();
-            }
+        for (String eid : chosenEventsList) {
+            eventGrabber(eid, firebaseManager, "Chosen", new FirebaseCallback<Notification>() {
+                @Override
+                public void onSuccess(Notification notification) {
+                    totalNotifications.add(notification);
+                    adapter.notifyDataSetChanged();
+                }
 
-            @Override
-            public void onFailure(Exception e) {
-                Log.e("NotificationsFragment", "Failed to get notification", e);
-            }
-        });
-
+                @Override
+                public void onFailure(Exception e) {
+                    Log.e("NotificationsFragment", "Failed to get notification", e);
+                }
+            });
+        }
 
         return root;
     }
@@ -76,13 +95,6 @@ public class NotificationsFragment extends Fragment {
                 callback.onFailure(e);
             }
         });
-    }
-
-
-
-    public Notification notiCreater(String name, String status) {
-        Notification notification = new Notification(name, status);
-        return notification;
     }
 
     @Override

@@ -32,9 +32,13 @@ import java.util.Date;
 import java.util.List;
 
 /**
+ * Event Detail - Gives necessary information about an event
+ * such as Organizer name, Deadline to signup, event description, event poster
+ * , spots available
  *
- * @para
- *
+ * @author Cainan
+ * @version 1.0
+ * @since 2025-11-07
  */
 
 public class EventDetailFragment extends Fragment {
@@ -51,6 +55,8 @@ public class EventDetailFragment extends Fragment {
 
 
     /**
+     *
+     * Inflate and puts necessary information on startup of fragment view
      *
      * @param inflater The LayoutInflater object that can be used to inflate
      * any views in the fragment,
@@ -87,7 +93,7 @@ public class EventDetailFragment extends Fragment {
 
         // Sets the Deadline
         final TextView textView2 = binding.eventDate;
-        textView2.setText("Deadline: "+ Converting_Timestamp_to_String(selectedEvent.getDate()));
+        textView2.setText("Deadline: "+ formatTimestamp(selectedEvent.getDate()));
 
         // Sets the Organizers name
         final TextView textView3 = binding.organizerName;
@@ -96,14 +102,21 @@ public class EventDetailFragment extends Fragment {
 
         // Getting number of entrants when loading fragment
         final int eventLimit = selectedEvent.getEventSize();
-        final int entrants = selectedEvent.getSignUps().size();
+        final int spotsRemaining = selectedEvent.getChosen().size();
         final TextView textView4 = binding.eventSpots;
-        textView4.setText("Entrants: "+entrants+"/"+eventLimit);
+        if(eventLimit > 0){
+            textView4.setText("Spots Remaining: "+spotsRemaining+"/"+eventLimit);
+        }
+        else {
+            textView4.setText("Attendees: "+spotsRemaining);
+        }
 
         return root;
     }
 
     /**
+     *
+     * Handles the interactive wiring and live updates
      *
      * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
      * @param savedInstanceState If non-null, this fragment is being re-constructed
@@ -142,13 +155,8 @@ public class EventDetailFragment extends Fragment {
                 isSignedUp = !isSignedUp;
                 if (isSignedUp) {
                     safeAddSignUp(currentUser);
-                    int updated_entrants = selectedEvent.getSignUps().size();
-                    textView4.setText("Entrants: "+updated_entrants+"/"+eventLimit);
-
                 } else {
                     safeRemoveSignUp(currentUser);
-                    int updated_entrants = selectedEvent.getSignUps().size();
-                    textView4.setText("Entrants: "+updated_entrants+"/"+eventLimit);
                 }
             } else {
                 // AFTER lottery
@@ -177,6 +185,14 @@ public class EventDetailFragment extends Fragment {
             // Move them to REGISTERED definitively
             safeAddRegistered(currentUser);
             updateSignUpButton(isChosen, isAttendee, isWaiting, isCancelled, isSignedUp);
+            // After accepting the lottery offer it will update
+            final int updated_chosen = selectedEvent.getChosen().size();
+            if(eventLimit > 0){
+                textView4.setText("Spots Remaining: "+updated_chosen+"/"+eventLimit);
+            }
+            else {
+                textView4.setText("Attendees: "+entrants);
+            }
         });
 
         // Decline chosen spot
@@ -190,6 +206,7 @@ public class EventDetailFragment extends Fragment {
             safeAddCancelled(currentUser);
 
             updateSignUpButton(isChosen, isAttendee, isWaiting, isCancelled, isSignedUp);
+
         });
 
         // Displays Term of Services
@@ -202,6 +219,10 @@ public class EventDetailFragment extends Fragment {
     }
 
     /**
+     *
+     * Updates Signup Button based on states: if need to sign up for event, be put on the waiting
+     * list, if entrant is chosen by lottery -> if accept/decline offer
+     *
      *
      * @param isChosen
      * @param isRegistered
@@ -242,7 +263,7 @@ public class EventDetailFragment extends Fragment {
     }
 
     /**
-     *
+     * Displays terms of Service
      */
     private void showTermsDialog(){
         new AlertDialog.Builder(requireContext())
@@ -254,7 +275,7 @@ public class EventDetailFragment extends Fragment {
     }
 
     /**
-     *
+     * Makes the single button visible to screen, and takes an input to put on button
      * @param text
      */
 
@@ -268,7 +289,7 @@ public class EventDetailFragment extends Fragment {
     }
 
     /**
-     *
+     * Makes the two button accept and decline visible to the screen
      */
     private void showTwoButton(){
         binding.btnSignUp.setVisibility(View.GONE);
@@ -277,7 +298,7 @@ public class EventDetailFragment extends Fragment {
     }
 
     /**
-     *
+     * Shows message
      * @param text
      */
 
@@ -290,12 +311,12 @@ public class EventDetailFragment extends Fragment {
     }
 
     /**
-     *
+     * Converts firebase timestamp to string
      * @param ts
      * @return
      */
 
-    private String Converting_Timestamp_to_String(@Nullable com.google.firebase.Timestamp ts) {
+    private String formatTimestamp(@Nullable com.google.firebase.Timestamp ts) {
         if (ts == null) return "";
         java.util.Date d = ts.toDate();
         java.text.DateFormat df = android.text.format.DateFormat.getMediumDateFormat(requireContext());
@@ -304,40 +325,36 @@ public class EventDetailFragment extends Fragment {
     }
 
 
-    private void logState(String tag) {
-        android.util.Log.d("EventDetail", tag + " postDraw=" + postDraw
-                + " chosen=" + isChosen
-                + " attendee=" + isAttendee
-                + " cancelled=" + isCancelled
-                + " waiting=" + isWaiting);
-    }
-
     /**
-     *
+     * Gets user id from user class
      * @param u
      * @return
      */
     private String uid(User u){ return u.getUid(); }
+
+    /**
+     * Helper function to get add status from firebase
+     * @param u
+     * @param list
+     */
     private void friendlyAdd(User u, String list) {
         firebaseManager.userAddStatus(u, selectedEvent, list);
     }
+
+    /**
+     * Helper function to get removal status from firebase
+     * @param u
+     * @param list
+     */
+
     private void friendlyRemoval(User u, String list)  {
         firebaseManager.userRemoveStatus(u, selectedEvent, list);
     }
 
-    private void removeFromAll(Event e, User u) {
-        String id = uid(u);
-        e.getRegistered().remove(id);
-        e.getChosen().remove(id);
-        e.getSignUps().remove(id);
-        e.getCancelled().remove(id);
-
-        // mirror to Firebase (idempotent server-side)
-        friendlyRemoval(u, "Register");
-        friendlyRemoval(u, "Chosen");
-        friendlyRemoval(u, "SignUps");
-        friendlyRemoval(u, "Cancelled");
-    }
+    /**
+     * Safely Adds user to sign up
+     * @param u
+     */
 
     private void safeAddSignUp(User u) {
         String id = uid(u);
@@ -346,11 +363,16 @@ public class EventDetailFragment extends Fragment {
             selectedEvent.getSignUps().add(id);
             friendlyAdd(u, "SignUps");
         }
-        // make sure user is not in other lists (no-op if absent)
+        // make sure user is not in other lists
         selectedEvent.getRegistered().remove(id); friendlyRemoval(u, "Register");
         selectedEvent.getChosen().remove(id);     friendlyRemoval(u, "Chosen");
         selectedEvent.getCancelled().remove(id);  friendlyRemoval(u, "Cancelled");
     }
+
+    /**
+     * Safely removes User from sign up
+     * @param u
+     */
 
     private void safeRemoveSignUp(User u) {
         String id = uid(u);
@@ -358,6 +380,11 @@ public class EventDetailFragment extends Fragment {
             friendlyRemoval(u, "SignUps");
         }
     }
+
+    /**
+     * Safely add user to registered while removing them from other lists
+     * @param u
+     */
 
     private void safeAddRegistered(User u) {
         String id = uid(u);
@@ -371,12 +398,22 @@ public class EventDetailFragment extends Fragment {
         selectedEvent.getCancelled().remove(id); friendlyRemoval(u, "Cancelled");
     }
 
+    /**
+     * Safely removes user from registered list
+     * @param u
+     */
+
     private void safeRemoveRegistered(User u) {
         String id = uid(u);
         if (selectedEvent.getRegistered().remove(id)) {
             friendlyRemoval(u, "Register");
         }
     }
+
+    /**
+     *  Safely adds user to cancelled list
+     * @param u
+     */
 
     private void safeAddCancelled(User u) {
         String id = uid(u);
@@ -390,15 +427,19 @@ public class EventDetailFragment extends Fragment {
         selectedEvent.getSignUps().remove(id);    friendlyRemoval(u, "SignUps");
     }
 
+    /**
+     * Safely removes user from chosen
+     * @param u
+     */
+
     private void safeRemoveChosen(User u) {
         String id = uid(u);
         if (selectedEvent.getChosen().remove(id)) {
             friendlyRemoval(u, "Chosen");
         }
     }
-
     /**
-     *
+     * Destroys view
      */
     @Override
     public void onDestroyView() {

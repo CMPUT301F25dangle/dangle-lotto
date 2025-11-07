@@ -7,35 +7,45 @@
     android:background="@color/white"
     tools:context="ui.create_event.CreateEventFragment">
 
-    <LinearLayout
-        android:id="@+id/create_event_status_bar"
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/header_container"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:background="@color/light_blue"
-        android:orientation="horizontal"
-        android:paddingVertical="8dp"
+        android:elevation="10dp"
         app:layout_constraintTop_toTopOf="parent">
 
         <Button
             android:id="@+id/create_event_cancel"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Cancel"
-            android:textSize="24sp"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:background="@android:color/transparent"
+            android:text="@string/cancel_create_event"
             android:textColor="@color/black"
-            android:background="?attr/selectableItemBackground"/>
+            android:textSize="24sp"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginStart="16dp" />
 
         <Button
             android:id="@+id/create_event_done"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Done"
-            android:textSize="24sp"
+            android:layout_width="wrap_content"
+            android:layout_height="48dp"
+            android:background="@android:color/transparent"
+            android:text="@string/done_create_event"
             android:textColor="@color/black"
-            android:background="?attr/selectableItemBackground"/>
-    </LinearLayout>
+            android:textSize="24sp"
+            android:clickable="true"
+            android:focusable="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            android:layout_marginEnd="16dp" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
         android:id="@+id/create_event_name_hint"
@@ -46,8 +56,8 @@
         android:text="@string/event_name"
         android:textColor="@color/black"
         android:textSize="18sp"
-        app:layout_constraintTop_toBottomOf="@id/create_event_status_bar"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/header_container" />
 
     <EditText
         android:id="@+id/create_event_name_input"
@@ -55,68 +65,63 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
         android:hint="@string/enter_event_name"
-        android:autofillHints="name"
-        android:padding="10dp"
         android:inputType="text"
-        app:layout_constraintTop_toBottomOf="@id/create_event_name_hint"
+        android:padding="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/create_event_name_hint" />
 
     <ImageView
         android:id="@+id/create_event_banner"
         android:layout_width="0dp"
         android:layout_height="200dp"
-        android:layout_marginTop="12dp"
         android:layout_marginHorizontal="16dp"
-        android:scaleType="centerCrop"
+        android:layout_marginTop="12dp"
         android:background="@color/light_blue"
+        android:contentDescription="@string/todo"
+        android:scaleType="centerCrop"
         android:src="@drawable/event_card_test_image"
-        app:layout_constraintTop_toBottomOf="@id/create_event_name_input"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/create_event_name_input" />
 
     <Button
         android:id="@+id/create_event_banner_button"
         android:layout_width="0dp"
         android:layout_height="60dp"
-        android:layout_marginTop="8dp"
         android:layout_marginHorizontal="16dp"
+        android:layout_marginTop="8dp"
         android:backgroundTint="@color/dark_blue"
         android:text="@string/upload_poster"
         android:textColor="@color/white"
-        app:layout_constraintTop_toBottomOf="@id/create_event_banner"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/create_event_banner" />
 
     <LinearLayout
-        android:id="@+id/create_event_enter_maxentrants_layout"
+        android:id="@+id/create_event_enter_max_entrants_layout"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="12dp"
         android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/create_event_banner_button"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/create_event_banner_button">
 
         <CheckBox
             android:id="@+id/cb_max_entrants"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="@string/maximum_entrants"
-            android:checked="false"/>
+            android:text="@string/maximum_entrants" />
 
         <EditText
             android:id="@+id/create_event_input_maxEntrants"
             android:layout_width="60dp"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
-            android:inputType="number"
-            android:focusable="false"
-            android:clickable="false"
-            android:cursorVisible="false"
-            android:longClickable="false"
-            android:gravity="center" />
+            android:gravity="center"
+            android:inputType="number" />
     </LinearLayout>
 
     <TextView
@@ -128,8 +133,8 @@
         android:text="@string/deadline"
         android:textColor="@color/black"
         android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@id/create_event_enter_maxentrants_layout"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/create_event_enter_max_entrants_layout" />
 
     <LinearLayout
         android:id="@+id/create_event_date_picker_layout"
@@ -138,30 +143,28 @@
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="6dp"
         android:orientation="horizontal"
-        app:layout_constraintTop_toBottomOf="@id/create_event_deadline_label"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/create_event_deadline_label">
 
         <EditText
             android:id="@+id/create_event_input_date"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="Apr 1, 2025"
-            android:inputType="text"
-            android:padding="8dp"
-            android:gravity="center" />
+            android:gravity="center"
+            android:inputType="date"
+            android:padding="8dp" />
 
         <EditText
             android:id="@+id/create_event_input_time"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
             android:layout_marginStart="8dp"
-            android:hint="9:41 AM"
+            android:layout_weight="1"
+            android:gravity="center"
             android:inputType="text"
-            android:padding="8dp"
-            android:gravity="center" />
+            android:padding="8dp" />
     </LinearLayout>
 
     <TextView
@@ -170,11 +173,11 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
-        android:text="Event Description"
+        android:text="@string/event_description"
         android:textColor="@color/black"
         android:textSize="16sp"
-        app:layout_constraintTop_toBottomOf="@id/create_event_date_picker_layout"
-        app:layout_constraintStart_toStartOf="parent" />
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/create_event_date_picker_layout" />
 
     <EditText
         android:id="@+id/create_event_input_description"
@@ -183,12 +186,12 @@
         android:layout_marginHorizontal="16dp"
         android:layout_marginTop="4dp"
         android:gravity="top|start"
-        android:hint="Describe your event..."
+        android:hint="@string/describe_your_event"
         android:inputType="textMultiLine"
         android:padding="10dp"
-        app:layout_constraintTop_toBottomOf="@id/create_event_description_label"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@id/create_event_description_label" />
 
     <CheckBox
         android:id="@+id/cb_enable_geolocation"
@@ -196,8 +199,28 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
         android:layout_marginTop="12dp"
-        android:text="Require Geolocation"
-        app:layout_constraintTop_toBottomOf="@id/create_event_input_description"
-        app:layout_constraintStart_toStartOf="parent" />
+        android:text="@string/require_geolocation"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/create_event_input_description" />
 
+    <EditText
+        android:id="@+id/create_event_categories_input"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:hint="@string/enter_categories_separated_by_string"
+        android:inputType="text"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/cb_enable_geolocation" />
+
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Make QR Code"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/create_event_input_description"
+        android:id="@+id/create_event_qr_generate"
+        android:layout_margin="20dp"
+        android:backgroundTint="@color/light_blue"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -13,4 +13,11 @@
     <string name="upload_poster">Upload Poster</string>
     <string name="maximum_entrants">Maximum Entrants</string>
     <string name="deadline">Deadline</string>
+    <string name="cancel_create_event">Cancel</string>
+    <string name="done_create_event">Done</string>
+    <string name="todo">TODO</string>
+    <string name="event_description">Event Description</string>
+    <string name="describe_your_event">Describe your event...</string>
+    <string name="require_geolocation">Require Geolocation</string>
+    <string name="enter_categories_separated_by_string">Enter categories separated by string</string>
 </resources>

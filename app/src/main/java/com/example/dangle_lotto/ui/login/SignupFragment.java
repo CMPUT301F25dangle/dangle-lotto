@@ -2,7 +2,6 @@ package com.example.dangle_lotto.ui.login;
 
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -10,19 +9,11 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
 import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.FirebaseManager;
-import com.example.dangle_lotto.GeneralUser;
 import com.example.dangle_lotto.R;
-import com.example.dangle_lotto.User;
-import com.example.dangle_lotto.ui.login.LoginFragment;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
-import com.google.firebase.auth.UserProfileChangeRequest;
-import com.google.firebase.firestore.FirebaseFirestore;
 
 public class SignupFragment extends Fragment {
 
@@ -41,9 +32,9 @@ public class SignupFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_signup, container, false);
 
-        etSignupName = view.findViewById(R.id.etSignupName);
-        etSignupEmail = view.findViewById(R.id.etSignupEmail);
-        etSignupPhone = view.findViewById(R.id.etSignupPhone);
+        etSignupName = view.findViewById(R.id.settings_fragment_username);
+        etSignupEmail = view.findViewById(R.id.settings_fragment_email);
+        etSignupPhone = view.findViewById(R.id.settings_fragment_phone_number);
         etSignupPassword = view.findViewById(R.id.etSignupPassword);
         btnSignUp = view.findViewById(R.id.btnSignUp);
 

@@ -11,6 +11,13 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.dangle_lotto.databinding.ActivityMainBinding;
 
+/**
+ * MainActivity - Main activity for the app.
+ *
+ * @author Everyone
+ * @version 1.5
+ * @since 2025-10-25
+ */
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
@@ -21,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        // initialize binding
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -36,8 +44,10 @@ public class MainActivity extends AppCompatActivity {
                 R.id.navigation_home, R.id.navigation_your_events, R.id.navigation_dashboard, R.id.navigation_notifications)
                 .build();
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_main);
+
         //NavigationUI.setupActionBarWithNavController(this, navController, appBarConfiguration);
         NavigationUI.setupWithNavController(binding.navView, navController);
+
         // Clicking bottom nav button opens that fragment and pops fragments off of it
         binding.navView.setOnItemSelectedListener(item -> {
             navController.popBackStack(item.getItemId(), false);

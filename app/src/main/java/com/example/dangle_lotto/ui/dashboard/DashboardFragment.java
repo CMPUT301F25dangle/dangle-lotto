@@ -27,8 +27,17 @@ import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
 
+/**
+ * DashboardFragment - Fragment shows events that user has organized.
+ * <p>
+ * User can click on an event to see the organizer view. User can also click settings button, or
+ * create a new event from this fragment.
+ *
+ * @author Aditya Soni
+ * @version 1.0
+ * @since 2025-11-05
+ */
 public class DashboardFragment extends Fragment {
-
     private FragmentDashboardBinding binding;
     private UserViewModel userViewModel;
     private FirebaseManager firebaseManager = new FirebaseManager();

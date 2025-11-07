@@ -96,7 +96,7 @@ public class EventDetailFragment extends Fragment {
 
         // Getting number of entrants when loading fragment
         final int eventLimit = selectedEvent.getEventSize();
-        final int entrants = selectedEvent.getSignUps().toArray().length;
+        final int entrants = selectedEvent.getSignUps().size();
         final TextView textView4 = binding.eventSpots;
         textView4.setText("Entrants: "+entrants+"/"+eventLimit);
 
@@ -115,6 +115,11 @@ public class EventDetailFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         final User currentUser = userViewModel.getUser().getValue();
+        final int eventLimit = selectedEvent.getEventSize();
+        final int entrants = selectedEvent.getSignUps().size();
+        final TextView textView4 = binding.eventSpots;
+
+
 
         if(savedInstanceState != null){
             isSignedUp = savedInstanceState.getBoolean("isSignedUp", false);
@@ -123,63 +128,68 @@ public class EventDetailFragment extends Fragment {
 
         // Checks if post draw conditions are met, people already drew for lottery
         postDraw = !selectedEvent.getChosen().isEmpty();
+        isSignedUp = !selectedEvent.getSignUps().isEmpty();
 
         //logState("render");
         updateSignUpButton(isChosen,isAttendee,isWaiting,isCancelled, isSignedUp);
 
         binding.btnSignUp.setOnClickListener(v -> {
+
+            if (currentUser == null) { showMessage("Please sign in first."); return; }
+
             if (!postDraw) {
-                // BEFORE lottery
+                // BEFORE lottery: toggle SignUps
                 isSignedUp = !isSignedUp;
                 if (isSignedUp) {
-                    selectedEvent.addSignUp(currentUser);
+                    safeAddSignUp(currentUser);
+                    int updated_entrants = selectedEvent.getSignUps().size();
+                    textView4.setText("Entrants: "+updated_entrants+"/"+eventLimit);
+
                 } else {
-                    selectedEvent.deleteSignUp(currentUser);
+                    safeRemoveSignUp(currentUser);
+                    int updated_entrants = selectedEvent.getSignUps().size();
+                    textView4.setText("Entrants: "+updated_entrants+"/"+eventLimit);
                 }
-            }
-            else {
-                // AFTER lottery:
-                if (isChosen) {
-                    // When chosen, user can select to be an attendee or cancel
-                    showTwoButton();
-                    return;
-                }
+            } else {
+                // AFTER lottery
+                if (isChosen) { showTwoButton(); return; }
 
-                if(!isAttendee && !isCancelled){
+                if (!isAttendee && !isCancelled) {
                     isWaiting = !isWaiting;
-                    if (isWaiting){
-                        selectedEvent.addRegistered(currentUser);
+                    if (isWaiting) {
+                        safeAddRegistered(currentUser);   // join waitlist
+                    } else {
+                        safeRemoveRegistered(currentUser); // leave waitlist
                     }
-                    else{
-                        selectedEvent.deleteRegistered(currentUser);
-                        }
                 }
             }
 
-            //logState("render");
             updateSignUpButton(isChosen, isAttendee, isWaiting, isCancelled, isSignedUp);
         });
 
+
         // Accept chosen spot
         binding.btnAccept.setOnClickListener(v -> {
-            isAttendee = true;
-            isChosen = false;
-            isWaiting = false;
-            isCancelled = false;
-            isSignedUp = false;
+
+            if (currentUser == null) { showMessage("Please sign in first."); return; }
+
+            isAttendee = true; isChosen = false; isWaiting = false; isCancelled = false; isSignedUp = false;
+            // Move them to REGISTERED definitively
+            safeAddRegistered(currentUser);
             updateSignUpButton(isChosen, isAttendee, isWaiting, isCancelled, isSignedUp);
         });
 
         // Decline chosen spot
         binding.btnDecline.setOnClickListener(v -> {
-            isAttendee = false;
-            isChosen = false;
-            isWaiting = false;
-            isCancelled = true;
-            isSignedUp = false;
+
+            if (currentUser == null) { showMessage("Please sign in first."); return; }
+
+            isAttendee = false; isChosen = false; isWaiting = false; isCancelled = true; isSignedUp = false;
+
+            safeRemoveChosen(currentUser);
+            safeAddCancelled(currentUser);
+
             updateSignUpButton(isChosen, isAttendee, isWaiting, isCancelled, isSignedUp);
-            selectedEvent.deleteChosen(currentUser);
-            selectedEvent.addCancelled(currentUser);
         });
 
         // Displays Term of Services
@@ -205,6 +215,9 @@ public class EventDetailFragment extends Fragment {
         // Before lottery
         if(!postDraw) {
             showSingleButton(isSignedUp ? "Unregister" : "Register");
+
+
+
             return;
             }
         // after the lottery
@@ -297,6 +310,91 @@ public class EventDetailFragment extends Fragment {
                 + " attendee=" + isAttendee
                 + " cancelled=" + isCancelled
                 + " waiting=" + isWaiting);
+    }
+
+    /**
+     *
+     * @param u
+     * @return
+     */
+    private String uid(User u){ return u.getUid(); }
+    private void friendlyAdd(User u, String list) {
+        firebaseManager.userAddStatus(u, selectedEvent, list);
+    }
+    private void friendlyRemoval(User u, String list)  {
+        firebaseManager.userRemoveStatus(u, selectedEvent, list);
+    }
+
+    private void removeFromAll(Event e, User u) {
+        String id = uid(u);
+        e.getRegistered().remove(id);
+        e.getChosen().remove(id);
+        e.getSignUps().remove(id);
+        e.getCancelled().remove(id);
+
+        // mirror to Firebase (idempotent server-side)
+        friendlyRemoval(u, "Register");
+        friendlyRemoval(u, "Chosen");
+        friendlyRemoval(u, "SignUps");
+        friendlyRemoval(u, "Cancelled");
+    }
+
+    private void safeAddSignUp(User u) {
+        String id = uid(u);
+        if (!selectedEvent.getSignUps().contains(id)) {
+            // Ensure exclusivity, but safely
+            selectedEvent.getSignUps().add(id);
+            friendlyAdd(u, "SignUps");
+        }
+        // make sure user is not in other lists (no-op if absent)
+        selectedEvent.getRegistered().remove(id); friendlyRemoval(u, "Register");
+        selectedEvent.getChosen().remove(id);     friendlyRemoval(u, "Chosen");
+        selectedEvent.getCancelled().remove(id);  friendlyRemoval(u, "Cancelled");
+    }
+
+    private void safeRemoveSignUp(User u) {
+        String id = uid(u);
+        if (selectedEvent.getSignUps().remove(id)) {
+            friendlyRemoval(u, "SignUps");
+        }
+    }
+
+    private void safeAddRegistered(User u) {
+        String id = uid(u);
+        if (!selectedEvent.getRegistered().contains(id)) {
+            selectedEvent.getRegistered().add(id);
+            friendlyAdd(u, "Register");
+        }
+        // remove from lists that must be exclusive
+        selectedEvent.getSignUps().remove(id); friendlyRemoval(u, "SignUps");
+        selectedEvent.getChosen().remove(id);  friendlyRemoval(u, "Chosen");
+        selectedEvent.getCancelled().remove(id); friendlyRemoval(u, "Cancelled");
+    }
+
+    private void safeRemoveRegistered(User u) {
+        String id = uid(u);
+        if (selectedEvent.getRegistered().remove(id)) {
+            friendlyRemoval(u, "Register");
+        }
+    }
+
+    private void safeAddCancelled(User u) {
+        String id = uid(u);
+        if (!selectedEvent.getCancelled().contains(id)) {
+            selectedEvent.getCancelled().add(id);
+            friendlyAdd(u, "Cancelled");
+        }
+        // remove from others
+        selectedEvent.getRegistered().remove(id); friendlyRemoval(u, "Register");
+        selectedEvent.getChosen().remove(id);     friendlyRemoval(u, "Chosen");
+        selectedEvent.getSignUps().remove(id);    friendlyRemoval(u, "SignUps");
+    }
+
+    private void safeRemoveChosen(User u) {
+        String id = uid(u);
+        if (selectedEvent.getChosen().remove(id)) {
+            friendlyRemoval(u, "Chosen");
+        }
     }
 
     /**

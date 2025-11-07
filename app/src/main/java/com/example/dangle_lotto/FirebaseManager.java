@@ -269,8 +269,9 @@ public class FirebaseManager {
 
     /**
      * Retrieves a subcollection of an event from the database. Calls the provided callback function when event has been received.
-     * <p>
-     * Usage: getUserSubcollection(uid, "collection name", new FirestoreCallback<ArrayList<String>>() {
+     *
+     * Usage: getUserSubcollection(uid, "collection name", new FirebaseCallback&lt;ArrayList&lt;String&gt;&gt;() {
+     * <pre>{@code
      *      @Override
      *      public void onSuccess(ArrayList<String> result) {
      *          // define what to do with result
@@ -281,7 +282,7 @@ public class FirebaseManager {
      *                 // define what to do on failure case
      *             }
      *         });
-     *
+     *  }</pre>
      * @param uid  string of user id to search for and retrieve all attributes
      * @param subcollection  string of subcollection to retrieve
      * @param callback callback function to call when event is retrieved
@@ -302,8 +303,9 @@ public class FirebaseManager {
 
     /**
      * Retrieves a subcollection of an event from the database. Calls the provided callback function when event has been received.
-     * <p>
-     * Usage: getEventSubcollection(eid, "collection name", new FirestoreCallback<ArrayList<String>>() {
+     *
+     * <pre>{@code
+     * Usage: getEventSubcollection(eid, "collection name", new FirebaseCallback&lt;ArrayList&lt;String&gt;&gt;() {
      *      @Override
      *      public void onSuccess(ArrayList<String> result) {
      *          // define what to do with result
@@ -314,7 +316,7 @@ public class FirebaseManager {
      *                 // define what to do on failure case
      *             }
      *         });
-     *
+     * }</pre>
      * @param eid  string of user id to search for and retrieve all attributes
      * @param subcollection  string of subcollection to retrieve
      * @param callback callback function to call when event is retrieved

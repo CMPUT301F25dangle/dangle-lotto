@@ -48,6 +48,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+//    implementation(files("/home/mahdlinux/Android/Sdk/platforms/android-34/android.jar"))
 
     // Import the Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
@@ -76,3 +77,4 @@ dependencies {
 }
 
 apply(plugin = "com.google.gms.google-services")
+

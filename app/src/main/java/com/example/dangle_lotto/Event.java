@@ -66,6 +66,7 @@ public class Event {
 
         });
     }
+
     public String getEid () {
         return eid;
     }
@@ -190,7 +191,7 @@ public class Event {
         if (!registered.contains(user.getUid())){
             throw new IllegalArgumentException("User is not registered");
         } else {
-            registered.remove(user.getUid());
+            chosen.remove(user.getUid());
             firebaseManager.userRemoveStatus(user, this, "Register");
         }
     }

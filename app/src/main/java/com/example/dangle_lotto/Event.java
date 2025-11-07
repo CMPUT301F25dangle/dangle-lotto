@@ -35,7 +35,7 @@ public class Event {
 
     FirebaseManager firebaseManager;
 
-    public Event(String eid, String organizer_id, String name, Timestamp deadline, String location, String description, String photo_id, int eventSize, FirebaseManager firebaseManager) {
+    public Event(String eid, String organizer_id, String name, Timestamp deadline, String location, String description, String photo_id, int eventSize, ArrayList<String> categories, FirebaseManager firebaseManager) {
         this.eid = eid;
         this.organizer_id = organizer_id;
         this.name = name;
@@ -44,6 +44,7 @@ public class Event {
         this.description = description;
         this.photo_id = photo_id;
         this.eventSize = eventSize;
+        this.categories = categories;
         this.firebaseManager = firebaseManager;
         this.populateList("Register", registered);
         this.populateList("Chosen", chosen);
@@ -121,6 +122,21 @@ public class Event {
         firebaseManager.updateEvent(this);
     }
 
+    public ArrayList<String> getCategories() {
+        return categories;
+    }
+
+    public void addCategory(String category) {
+        categories.add(category);
+        firebaseManager.updateEvent(this);
+    }
+
+    public void removeCategory(String category) {
+        categories.remove(category);
+        firebaseManager.updateEvent(this);
+    }
+
+
     public ArrayList<String> getRegistered() {
         return registered;
     }
@@ -140,6 +156,7 @@ public class Event {
     public ArrayList<String> getCancelled() {
         return cancelled;
     }
+
 
 
     public void addRegistered(User user) {

@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.dangle_lotto.Event;
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.FirebaseCallback;
+import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentHomeBinding;
 import com.example.dangle_lotto.ui.EventCardAdapter;
@@ -72,7 +73,7 @@ public class HomeFragment extends Fragment {
 
             // open the event fragment
             NavController navController = NavHostFragment.findNavController(this);
-            //navController.navigate(R.id.action_home_to_eventDetail);
+            navController.navigate(R.id.action_home_to_eventDetail);
         });
         recyclerView.setAdapter(adapter);
 

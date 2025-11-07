@@ -21,6 +21,7 @@ public class Event {
     final String eid;
     String description;
     int eventSize;
+    int maxEntrants;
     String name;
     Timestamp deadline;
     String location;
@@ -37,7 +38,24 @@ public class Event {
 
     FirebaseManager firebaseManager;
 
-    public Event(String eid, String organizer_id, String name, Timestamp deadline, String location, String description, String photo_id, int eventSize, ArrayList<String> categories, FirebaseManager firebaseManager) {
+    /**
+     * Constructor for Event object. Also populates the required lists for use.
+     *
+     * @param eid event id
+     * @param organizer_id organizer id for the event
+     * @param name name of the event
+     * @param deadline date of the draw
+     * @param location where the event is happening
+     * @param description description of event
+     * @param photo_id photo id
+     * @param eventSize max number of ppl who can attend events
+     * @param categories list of categories that the event elongs to
+     * @param firebaseManager reference to firebasemanager
+     *
+     */
+    public Event(String eid, String organizer_id, String name, Timestamp deadline, String location,
+                 String description, String photo_id, int eventSize, ArrayList<String> categories,
+                 FirebaseManager firebaseManager) {
         this.eid = eid;
         this.organizer_id = organizer_id;
         this.name = name;
@@ -54,6 +72,13 @@ public class Event {
         this.populateList("Cancelled", cancelled);
     }
 
+    /**
+     * Asynchronously populate the lists of entrants based on their status
+     *
+     * @param subcollection subcollection to pull from
+     * @param list list of status to add to
+     *
+     */
     private void populateList(String subcollection, ArrayList<String> list){
         firebaseManager.getEventSubcollection(eid, subcollection, new FirebaseCallback<ArrayList<String>>() {
             @Override
@@ -291,12 +316,25 @@ public class Event {
         if (registered.isEmpty()) {
             throw new IllegalArgumentException("Event has no registered users");
         }
+        if (!chosen.isEmpty()){
+            return;
+        }
         // if all ppl who registered can go (there is less than the max on the event)
         if (registered.size() <= eventSize) {
             for (String user : registered) {
                 addChosen(user);
             }
-        }else{
+            // if we have less than the max of the event across signups and chosen, draw more people from registerd
+        }else if (chosen.size()+signUps.size() < eventSize){
+            ArrayList<String> shuffled = new ArrayList<>(registered);
+            Collections.shuffle(shuffled);
+
+            for (int i = 0; i < eventSize - chosen.size() - signUps.size(); i++) {
+                addChosen(shuffled.get(i));
+            }
+
+        }
+        else{
             ArrayList<String> shuffled = new ArrayList<>(registered);
             Collections.shuffle(shuffled);
             for (int i = 0; i < eventSize; i++) {

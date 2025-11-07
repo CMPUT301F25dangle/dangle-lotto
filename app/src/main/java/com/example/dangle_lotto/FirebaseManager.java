@@ -244,7 +244,8 @@ public class FirebaseManager {
      *
      * @return Instantiated Event object with all required attributes
      */
-    public Event createEvent(String oid, String name, Timestamp datetime, String location, String description, int eventSize, String pid, ArrayList<String> categories){
+    public Event createEvent(String oid, String name, Timestamp datetime, String location, String description, int eventSize,
+                             int maxEntrants, String pid, ArrayList<String> categories){
         String eid = events.document().getId();
         Map<String, Object> data = Map.of(
                 "Organizer", oid,
@@ -253,6 +254,7 @@ public class FirebaseManager {
                 "Location", location,
                 "Description", description,
                 "Event Size", eventSize,
+                "Max Entrants", maxEntrants,
                 "Picture", pid,
                 "Categories", categories
         );

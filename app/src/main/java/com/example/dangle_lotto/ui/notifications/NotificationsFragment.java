@@ -26,6 +26,18 @@ import com.example.dangle_lotto.databinding.FragmentNotificationsBinding;
 import java.util.ArrayList;
 import java.util.List;
 
+
+/**
+ * NotificationsFragment - Fragment displays all notifications related to the user.
+ * <p>
+ * Retrieves events the user has chosen or not chosen from Firestore, converts them
+ * into Notification objects, and displays them in a ListView using NotificationAdapter.
+ *
+ * @author Prem Elango
+ * @version 1.0
+ * @since 2025-11-05
+ */
+
 public class NotificationsFragment extends Fragment {
     private UserViewModel userViewModel;
 
@@ -45,7 +57,7 @@ public class NotificationsFragment extends Fragment {
         View root = binding.getRoot();
 
         // initialize listview and firebase manager
-        notificationListView = binding.notificationLv;
+        notificationListView = root.findViewById(R.id.notification_lv);
         firebaseManager = new FirebaseManager();
 
         // list of all notifications related to a user
@@ -58,29 +70,70 @@ public class NotificationsFragment extends Fragment {
         // get current user object from viewmodel
         user = userViewModel.getUser().getValue();
 
-        ArrayList<String> chosenEventsList = user.chosenEvents();
-
-        Log.d("NotificationsFragment", "User chosen events: " + chosenEventsList);
-
-
-        for (String eid : chosenEventsList) {
-            eventGrabber(eid, firebaseManager, "Chosen", new FirebaseCallback<Notification>() {
-                @Override
-                public void onSuccess(Notification notification) {
-                    totalNotifications.add(notification);
-                    adapter.notifyDataSetChanged();
+        // display notifications for chosen events
+        user.chosenEvents(new FirebaseCallback<ArrayList<String>>() {
+            @Override
+            public void onSuccess(ArrayList<String> eventIds) {
+                for (String eid : eventIds) {
+                    eventGrabber(eid, firebaseManager, "Chosen", new FirebaseCallback<Notification>() {
+                        @Override
+                        public void onSuccess(Notification notification) {
+                            requireActivity().runOnUiThread(() -> {
+                                totalNotifications.add(notification);
+                                adapter.notifyDataSetChanged();
+                            });
+                        }
+                        @Override
+                        public void onFailure(Exception e) {
+                        }
+                    });
                 }
+            }
 
-                @Override
-                public void onFailure(Exception e) {
-                    Log.e("NotificationsFragment", "Failed to get notification", e);
+            @Override
+            public void onFailure(Exception e) {
+            }
+        });
+
+        // display notifications for not chosen events
+        user.notChosenEvents(new FirebaseCallback<ArrayList<String>>() {
+            @Override
+            public void onSuccess(ArrayList<String> eventIds) {
+                for (String eid : eventIds) {
+                    eventGrabber(eid, firebaseManager, "Not Chosen", new FirebaseCallback<Notification>() {
+                        @Override
+                        public void onSuccess(Notification notification) {
+                            requireActivity().runOnUiThread(() -> {
+                                totalNotifications.add(notification);
+                                adapter.notifyDataSetChanged();
+                            });
+                        }
+                        @Override
+                        public void onFailure(Exception e) {
+                        }
+                    });
                 }
-            });
-        }
+            }
+            @Override
+            public void onFailure(Exception e) {
+            }
+        });
+
 
         return root;
     }
-
+    /**
+     * eventGrabber - Retrieves an event from Firestore and converts it into a Notification.
+     * <p>
+     * Given an event ID, this method fetches the event details using FirebaseManager,
+     * creates a Notification object with the event name and status, and returns it
+     * through the provided callback.
+     *
+     * @param eid           ID of the event to retrieve
+     * @param firebaseManager  FirebaseManager instance used to access Firestore
+     * @param eventStatus   status label to assign to the notification (ex: Chosen/ Not Chosen)
+     * @param callback      callback to handle success or failure of retrieving the event
+     */
     public void eventGrabber(String eid, FirebaseManager firebaseManager, String eventStatus, FirebaseCallback<Notification> callback) {
         firebaseManager.getEvent(eid, new FirebaseCallback<Event>() {
             @Override

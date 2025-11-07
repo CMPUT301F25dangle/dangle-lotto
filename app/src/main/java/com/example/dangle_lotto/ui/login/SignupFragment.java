@@ -15,6 +15,18 @@ import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.R;
 
+/**
+ * SignupFragment - Fragment handles user registration.
+ * <p>
+ * Collects user details such as name, email, phone, and password, then creates a new
+ * Firebase account using FirebaseManager. Upon successful signup, navigates back to
+ * the login screen.
+ *
+ * @author Prem Elango
+ * @version 1.6
+ * @since 2025-10-30
+ */
+
 public class SignupFragment extends Fragment {
 
     private EditText etSignupName, etSignupEmail, etSignupPhone, etSignupPassword;
@@ -44,6 +56,14 @@ public class SignupFragment extends Fragment {
 
         return view;
     }
+
+    /**
+     * registerUser - Registers a new user using Firebase Authentication.
+     * <p>
+     * Validates the provided name, email, and password, then calls FirebaseManager to
+     * create a new user account. On successful registration, switches to LoginFragment;
+     * otherwise, displays an error message.
+     */
 
     private void registerUser() {
         String name = etSignupName.getText().toString().trim();

@@ -244,7 +244,7 @@ public class FirebaseManager {
      *
      * @return Instantiated Event object with all required attributes
      */
-    public Event createEvent(String oid, String name, Timestamp datetime, String location, String description, int eventSize, String pid){
+    public Event createEvent(String oid, String name, Timestamp datetime, String location, String description, int eventSize, String pid, ArrayList<String> categories){
         String eid = events.document().getId();
         Map<String, Object> data = Map.of(
                 "Organizer", oid,
@@ -253,11 +253,12 @@ public class FirebaseManager {
                 "Location", location,
                 "Description", description,
                 "Event Size", eventSize,
-                "Picture", pid
+                "Picture", pid,
+                "Categories", categories
         );
         users.document(oid).collection("Organize").document(eid).set(Map.of("Timestamp", datetime));
         events.document(eid).set(data);
-        return new Event(eid, oid, name, datetime, location, description, pid, eventSize, this);
+        return new Event(eid, oid, name, datetime, location, description, pid, eventSize, categories, this);
     }
 
     /**
@@ -319,8 +320,9 @@ public class FirebaseManager {
                 doc.getTimestamp("Date"),
                 doc.getString("Location"),
                 doc.getString("Description"),
-                doc.getString("Picture"),
+                doc.getString("Picture") != null ? doc.getString("Picture") : "",
                 Objects.requireNonNull(doc.getLong("Event Size")).intValue(),
+                doc.get("Categories") != null ? (ArrayList<String>) doc.get("Categories") : new ArrayList<>(),
                 this
         );
     }

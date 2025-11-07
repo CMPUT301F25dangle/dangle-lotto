@@ -31,6 +31,12 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
+/**
+ *
+ * @para
+ *
+ */
+
 public class EventDetailFragment extends Fragment {
     private FragmentEventDetailBinding binding;
     private FirebaseManager firebaseManager;
@@ -43,6 +49,19 @@ public class EventDetailFragment extends Fragment {
     private boolean postDraw = false;
     private Event selectedEvent;
 
+
+    /**
+     *
+     * @param inflater The LayoutInflater object that can be used to inflate
+     * any views in the fragment,
+     * @param container If non-null, this is the parent view that the fragment's
+     * UI should be attached to.  The fragment should not add the view itself,
+     * but this can be used to generate the LayoutParams of the view.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     *
+     * @return
+     */
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -84,6 +103,13 @@ public class EventDetailFragment extends Fragment {
         return root;
     }
 
+    /**
+     *
+     * @param view The View returned by {@link #onCreateView(LayoutInflater, ViewGroup, Bundle)}.
+     * @param savedInstanceState If non-null, this fragment is being re-constructed
+     * from a previous saved state as given here.
+     */
+
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
@@ -110,11 +136,6 @@ public class EventDetailFragment extends Fragment {
                 } else {
                     selectedEvent.deleteSignUp(currentUser);
                 }
-
-                isWaiting   = isSignedUp;
-                isAttendee  = false;
-                isChosen    = false;
-                isCancelled = false;
             }
             else {
                 // AFTER lottery:
@@ -127,10 +148,10 @@ public class EventDetailFragment extends Fragment {
                 if(!isAttendee && !isCancelled){
                     isWaiting = !isWaiting;
                     if (isWaiting){
-                        selectedEvent.addSignUp(currentUser);
+                        selectedEvent.addRegistered(currentUser);
                     }
                     else{
-                        selectedEvent.deleteSignUp(currentUser);
+                        selectedEvent.deleteRegistered(currentUser);
                         }
                 }
             }
@@ -157,6 +178,8 @@ public class EventDetailFragment extends Fragment {
             isCancelled = true;
             isSignedUp = false;
             updateSignUpButton(isChosen, isAttendee, isWaiting, isCancelled, isSignedUp);
+            selectedEvent.deleteChosen(currentUser);
+            selectedEvent.addCancelled(currentUser);
         });
 
         // Displays Term of Services
@@ -168,6 +191,14 @@ public class EventDetailFragment extends Fragment {
         );
     }
 
+    /**
+     *
+     * @param isChosen
+     * @param isRegistered
+     * @param isWaiting
+     * @param isCancelled
+     * @param isSignedUp
+     */
     private void updateSignUpButton(boolean isChosen, boolean isRegistered, boolean isWaiting,
                                     boolean isCancelled, boolean isSignedUp){
 
@@ -197,6 +228,9 @@ public class EventDetailFragment extends Fragment {
         showSingleButton(isWaiting ? "Leave Waitlist" : "Join Waitlist");
     }
 
+    /**
+     *
+     */
     private void showTermsDialog(){
         new AlertDialog.Builder(requireContext())
                 .setTitle("Terms of Service")
@@ -205,6 +239,11 @@ public class EventDetailFragment extends Fragment {
                 .setPositiveButton("OK", (d,w)->d.dismiss())
                 .show();
     }
+
+    /**
+     *
+     * @param text
+     */
 
     private void showSingleButton(String text){
         binding.btnSignUp.setText(text);
@@ -215,11 +254,19 @@ public class EventDetailFragment extends Fragment {
         binding.bottomMessage.setVisibility(View.GONE);
     }
 
+    /**
+     *
+     */
     private void showTwoButton(){
         binding.btnSignUp.setVisibility(View.GONE);
         binding.lotteryResponse.setVisibility(View.VISIBLE);
         binding.bottomMessage.setVisibility(View.GONE);
     }
+
+    /**
+     *
+     * @param text
+     */
 
     private void showMessage(String text) {
         binding.bottomMessage.setText(text);
@@ -229,6 +276,12 @@ public class EventDetailFragment extends Fragment {
         binding.lotteryResponse.setVisibility(View.GONE);
     }
 
+    /**
+     *
+     * @param ts
+     * @return
+     */
+
     private String Converting_Timestamp_to_String(@Nullable com.google.firebase.Timestamp ts) {
         if (ts == null) return "";
         java.util.Date d = ts.toDate();
@@ -236,6 +289,7 @@ public class EventDetailFragment extends Fragment {
         java.text.DateFormat tf = android.text.format.DateFormat.getTimeFormat(requireContext());
         return df.format(d) + " " + tf.format(d);
     }
+
 
     private void logState(String tag) {
         android.util.Log.d("EventDetail", tag + " postDraw=" + postDraw
@@ -245,6 +299,9 @@ public class EventDetailFragment extends Fragment {
                 + " waiting=" + isWaiting);
     }
 
+    /**
+     *
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

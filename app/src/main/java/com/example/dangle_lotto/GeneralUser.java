@@ -54,6 +54,19 @@ public class GeneralUser extends User{
         });
    }
 
+    public void notChosenEvents(FirebaseCallback<ArrayList<String>> callback){
+        firebaseManager.getUserSubcollection(this.uid, "Not Chosen", new FirebaseCallback<ArrayList<String>>(){
+            @Override
+            public void onSuccess(ArrayList<String> result) {
+                callback.onSuccess(result);
+            }
+            @Override
+            public void onFailure(Exception e) {
+                callback.onFailure(e);
+            }
+        });
+    }
+
     public void signedUpEvents(FirebaseCallback<ArrayList<String>> callback){
         firebaseManager.getUserSubcollection(this.uid, "SignUps", new FirebaseCallback<ArrayList<String>>(){
             @Override

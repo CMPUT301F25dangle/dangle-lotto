@@ -2,12 +2,12 @@ package com.example.dangle_lotto;
 
 /**
  * Notification
- *
+ * <p>
  * Contains methods to get notification information.
  *
  *
- * @author Annie Ding
- * @version 1.0
+ * @author Annie Ding, Prem Elango
+ * @version 1.2
  * @since 2025-11-01
  */
 public class Notification {

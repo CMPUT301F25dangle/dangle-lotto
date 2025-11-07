@@ -26,6 +26,9 @@
         <action
             android:id="@+id/action_navigation_dashboard_to_organizerEventDetailsFragment"
             app:destination="@id/organizerEventDetailsFragment" />
+        <action
+            android:id="@+id/action_navigation_dashboard_to_createEventFragment"
+            app:destination="@id/createEventFragment" />
     </fragment>
 
     <fragment
@@ -57,4 +60,10 @@
         android:name="com.example.dangle_lotto.ui.dashboard.OrganizerEventDetailsFragment"
         android:label="fragment_organizer_event_details"
         tools:layout="@layout/fragment_organizer_event_details" />
+
+    <fragment
+        android:id="@+id/createEventFragment"
+        android:name="com.example.dangle_lotto.ui.create_event.CreateEventFragment"
+        android:label="CreateEventFragment"
+        tools:layout="@layout/fragment_create_event"/>
 </navigation>

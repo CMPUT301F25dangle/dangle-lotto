@@ -15,6 +15,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.dangle_lotto.GeneralUser;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.Event;
@@ -27,8 +28,17 @@ import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
 
+/**
+ * DashboardFragment - Fragment shows events that user has organized.
+ * <p>
+ * User can click on an event to see the organizer view. User can also click settings button, or
+ * create a new event from this fragment.
+ *
+ * @author Aditya Soni
+ * @version 1.0
+ * @since 2025-11-05
+ */
 public class DashboardFragment extends Fragment {
-
     private FragmentDashboardBinding binding;
     private UserViewModel userViewModel;
     private FirebaseManager firebaseManager = new FirebaseManager();
@@ -36,7 +46,7 @@ public class DashboardFragment extends Fragment {
     private LinearLayoutManager layoutManager;
     private EventCardAdapter adapter;
     private ArrayList<Event> organizedEvents;
-    private User user;
+    private GeneralUser user;
     private boolean isLoading;
     private static final int PAGE_SIZE = 4; // or however many events per page
     private DocumentSnapshot lastVisible = null;

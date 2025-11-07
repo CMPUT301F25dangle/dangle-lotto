@@ -32,7 +32,7 @@ import java.util.ArrayList;
  * @version 1.0
  * @since 2025-10-25
  */
-public class EventCardAdapter extends RecyclerView.Adapter<EventCardAdapter.ViewHolder> {
+public class  EventCardAdapter extends RecyclerView.Adapter<EventCardAdapter.ViewHolder> {
     private final ArrayList<Event> Events;
     private final OnItemClickListener listener;
 

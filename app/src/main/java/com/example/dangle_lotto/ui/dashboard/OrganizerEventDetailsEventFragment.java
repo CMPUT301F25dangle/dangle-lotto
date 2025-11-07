@@ -13,7 +13,13 @@ import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.databinding.FragmentOrganizerEventDetailsEventBinding;
 
 /**
- * This fragment opens inside of the OrganizerEventDetails fragment to display the details of the event
+ * OrganizerEventDetailsEventFragment - Fragment shows event details of an event.
+ * <p>
+ * This fragment opens inside of the OrganizerEventDetails fragment.
+ *
+ * @author Aditya Soni
+ * @version 1.0
+ * @since 2025-11-05
  */
 public class OrganizerEventDetailsEventFragment extends Fragment {
     private FragmentOrganizerEventDetailsEventBinding binding;

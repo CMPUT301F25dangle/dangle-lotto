@@ -1,11 +1,8 @@
 package com.example.dangle_lotto;
 
 import android.content.Intent;
-import android.util.Log;
 import android.widget.Toast;
 
-import com.google.android.gms.tasks.Task;
-import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -13,11 +10,8 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -26,7 +20,6 @@ public class FirebaseManager {
     private final FirebaseAuth mAuth;
     private final CollectionReference users;
     private final CollectionReference events;
-    private final String[] collections = new String[]{"Register", "Chosen", "SignUps", "Cancelled"};
     public FirebaseManager() {
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
@@ -153,53 +146,12 @@ public class FirebaseManager {
     }
 
     /**
-     * Deletes a user and all references from the database. Recursively goes through all events the user organaized and also deletes all of those.
-     * Waits for the asynchronous calls to complete before deleting the user at the end.
+     * Deletes a user from the database.
      *
      * @param uid  string of user id to delete from database
      */
     public void deleteUser(String uid) {
-        List<Task<Void>> allTasks = new ArrayList<>();
-        // 1. Delete user from all subcollections their corresponding event refs
-        for (String collection : collections) {
-            Task<Void> t = users.document(uid).collection(collection).get().continueWithTask(task -> {
-                        List<Task<Void>> innerDeletes = new ArrayList<>();
-                        if (task.isSuccessful() && task.getResult() != null) {
-                            for (DocumentSnapshot doc : task.getResult()) {
-                                String eid = doc.getId();
-                                innerDeletes.add(events.document(eid).collection(collection).document(uid).delete());
-                                innerDeletes.add(doc.getReference().delete());
-                            }
-                        }
-                        return Tasks.whenAllComplete(innerDeletes).continueWith(task1 -> null);
-                    });
-            allTasks.add(t);
-        }
-        // 2. Delete all events user organized
-        Task<Void> organizedTask = users.document(uid).collection("Organize").get().continueWithTask(task -> {
-                List<Task<Void>> eventDeletes = new ArrayList<>();
-                if (task.isSuccessful() && task.getResult() != null) {
-                        for (DocumentSnapshot doc : task.getResult()) {
-                            String eid = doc.getId();
-                            eventDeletes.add(deleteEvent(eid));
-                        }
-                    }
-                return Tasks.whenAllComplete(eventDeletes).continueWith(task1 -> null);
-            });
-        allTasks.add(organizedTask);
-        // 3. Delete user from database
-        Tasks.whenAllComplete(allTasks).addOnCompleteListener(task -> {
-                    users.document(uid).delete().addOnCompleteListener(task1 -> {
-                        FirebaseUser currentUser = mAuth.getCurrentUser();
-                        if (currentUser != null) {
-                            currentUser.delete()
-                                    .addOnSuccessListener(v -> Log.d("DeleteUser", "User deleted successfully"))
-                                    .addOnFailureListener(e -> Log.w("DeleteUser", "User Auth Deletion Failed", e));
-;
-                        }
-                    }).addOnFailureListener(e -> Log.w("DeleteUser", "User doc deletion failed", e));
-                });
-
+        users.document(uid).delete();
     }
 
     /**
@@ -255,7 +207,7 @@ public class FirebaseManager {
                 "Event Size", eventSize,
                 "Picture", pid
         );
-        users.document(oid).collection("Organize").document(eid).set(Map.of("Timestamp", datetime));
+
         events.document(eid).set(data);
         return new Event(eid, oid, name, datetime, location, description, pid, eventSize, this);
     }
@@ -276,39 +228,12 @@ public class FirebaseManager {
     }
 
     /**
-     * Deletes an event from the database. Recursively goes through all users the event has been registered for and also deletes all of those references.
-     * Waits for the asynchronous calls to complete before deleting the event at the end.
+     * Deletes an event from the database.
      *
      * @param eid  string of user id to search for and retrieve all attributes
      */
-    public Task<Void> deleteEvent(String eid) {
-        List<Task<Void>> allTasks = new ArrayList<>();
-        // 1. delete all event references in user subcollections
-        for (String collection : collections) {
-            Task<Void> t = events.document(eid).collection(collection).get().continueWithTask(task -> {
-                        List<Task<Void>> innerDeletes = new ArrayList<>();
-                        if (task.isSuccessful() && task.getResult() != null) {
-                            for (DocumentSnapshot doc : task.getResult()) {
-                                String uid = doc.getId();
-                                innerDeletes.add(users.document(uid).collection(collection).document(eid).delete());
-                                innerDeletes.add(doc.getReference().delete());
-                            }
-                        }
-                        return Tasks.whenAllComplete(innerDeletes).continueWith(task1 -> null);
-                    });
-            allTasks.add(t);
-        }
-        // Delete reference from organizer collection
-        Task<Void> deleteOrganizer = events.document(eid).get().continueWithTask(task -> {
-            String oid = task.getResult().getString("Organizer");
-            if (oid != null) {
-                return users.document(oid).collection("Organize").document(eid).delete();
-            }
-            return Tasks.forResult(null);
-        });
-        allTasks.add(deleteOrganizer);
-        // Delete event from database
-        return Tasks.whenAllComplete(allTasks).continueWithTask(task -> events.document(eid).delete());
+    public void deleteEvent(String eid) {
+        events.document(eid).delete();
     }
 
     public Event documentToEvent(DocumentSnapshot doc) {
@@ -328,7 +253,7 @@ public class FirebaseManager {
     /**
      * Retrieves an event from the database and instantiates an object for it.
      *
-     * @param eid  string of user id to search for and retrieve all attributes
+     * @param eid  string of event id to search for and retrieve all attributes
      * @param callback callback function to call when event is retrieved
      */
     public void getEvent(String eid, FirebaseCallback<Event> callback){

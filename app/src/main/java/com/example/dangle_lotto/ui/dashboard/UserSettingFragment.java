@@ -12,7 +12,11 @@ import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.databinding.FragmentUserSettingBinding;
 
 /**
+ * UserSettingFragment - Fragment shows user settings.
  *
+ * @author Aditya Soni
+ * @version 1.0
+ * @since 2025-11-06
  */
 public class UserSettingFragment extends Fragment {
     private FragmentUserSettingBinding binding;

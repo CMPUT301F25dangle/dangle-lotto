@@ -30,7 +30,13 @@ import java.util.Set;
 
 
 /**
+ * OrganizerEventDetailsEntrantsFragment - Fragment shows entrants of an event.
+ * <p>
+ * Here user can filter the users that have applied to an event in any way.
  *
+ * @author Fogil Zheng
+ * @version 1.0
+ * @since 2025-11-06
  */
 public class OrganizerEventDetailsEntrantsFragment extends Fragment {
     private FragmentOrganizerEventDetailsEntrantsBinding binding;
@@ -101,6 +107,11 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
         return root;
     }
 
+    /**
+     * Loads entrants based on the filter
+     *
+     * @param filter Filter to use
+     */
     private void loadEntrants(Filter filter) {
         // UI: start loading
         if (progress != null) progress.setVisibility(View.VISIBLE);
@@ -182,6 +193,14 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
         }
     }
 
+    /**
+     * Fetches a subcollection into a set
+     *
+     * @param eid Event ID
+     * @param sub Subcollection
+     * @param out Set to add to
+     * @param onDone Runnable to run when done
+     */
     private void fetchSubcollectionIntoSet(String eid, String sub, Set<String> out, Runnable onDone) {
         firebase.getEventSubcollection(eid, sub, new FirebaseCallback<ArrayList<String>>() {
             @Override
@@ -197,6 +216,11 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
         });
     }
 
+    /**
+     * Resolves a list of UIDs to names
+     *
+     * @param uids List of UIDs
+     */
     private void resolveUsersToNames(List<String> uids) {
         if (uids == null || uids.isEmpty()) {
             finishUIUpdate();
@@ -226,6 +250,9 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
         }
     }
 
+    /**
+     * Finishes the UI update
+     */
     private void finishUIUpdate() {
         if (adapter != null) adapter.notifyDataSetChanged();
         if (progress != null) progress.setVisibility(View.GONE);

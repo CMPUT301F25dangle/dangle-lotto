@@ -1,6 +1,7 @@
 package com.example.dangle_lotto.ui.notifications;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,16 @@ import com.example.dangle_lotto.Notification;
 
 import java.util.List;
 
+/**
+ * NotificationAdapter - Adapter to display a list of notifications.
+ * <p>
+ * Populates each list item with a notification’s name and status using
+ * the item_notification layout.
+ *
+ * @author Prem Elango
+ * @version 1.0
+ * @since 2025-11-05
+ */
 
 public class NotificationAdapter extends ArrayAdapter<Notification> {
     public NotificationAdapter(@NonNull Context context, @NonNull List<Notification> notifications) {
@@ -25,21 +36,22 @@ public class NotificationAdapter extends ArrayAdapter<Notification> {
 
     @NonNull
     @Override
-    public View getView(int position, @Nullable View convertView, @NonNull ViewGroup parent) {
-        Notification notification = getItem(position);
-
+    public View getView(int position, View convertView, @NonNull ViewGroup parent) {
         if (convertView == null) {
-            convertView = LayoutInflater.from(getContext()).inflate(R.layout.item_notification,
-                    parent, false);
+            convertView = LayoutInflater.from(getContext())
+                    .inflate(R.layout.item_notification, parent, false);
         }
 
-        TextView eid = convertView.findViewById(R.id.notification_name);
+        Notification notification = getItem(position);
+        TextView name = convertView.findViewById(R.id.notification_name);
         TextView status = convertView.findViewById(R.id.notification_status);
 
-        eid.setText(notification.getName());
-        status.setText(notification.getStatus());
+        if (notification != null) {
+            name.setText(notification.getName());
+            status.setText(notification.getStatus());
+        }
+
 
         return convertView;
-
     }
 }

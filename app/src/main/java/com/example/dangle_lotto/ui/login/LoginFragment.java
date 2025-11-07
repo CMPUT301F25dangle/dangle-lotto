@@ -23,6 +23,17 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.Objects;
+/**
+ * LoginFragment - Fragment handles user authentication.
+ * <p>
+ * Allows users to log in using email and password through Firebase Authentication.
+ * On successful login, navigates to MainActivity; users can also switch to the signup
+ * screen from this fragment.
+ *
+ * @author Prem Elango
+ * @version 1.3
+ * @since 2025-10-30
+ */
 
 public class LoginFragment extends Fragment {
 
@@ -55,6 +66,14 @@ public class LoginFragment extends Fragment {
 
         return view;
     }
+
+    /**
+     * loginUser - Handles user login using Firebase Authentication.
+     * <p>
+     * Validates the entered email and password, attempts to sign in through Firebase,
+     * and navigates to MainActivity upon successful authentication.
+     * Displays error messages for invalid credentials or failed login attempts.
+     */
 
     private void loginUser() {
         String email = etLoginEmail.getText().toString().trim();
@@ -93,6 +112,12 @@ public class LoginFragment extends Fragment {
             }
         });
     }
+
+    /**
+     * switchToSignUp - Navigates the user to the signup screen.
+     * <p>
+     * Replaces the current fragment with {@link SignupFragment} to allow new user registration.
+     */
 
     private void switchToSignUp() {
         requireActivity().getSupportFragmentManager()

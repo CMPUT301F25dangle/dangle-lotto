@@ -249,7 +249,7 @@ public class FirebaseManager {
     /**
      * Retrieves an event from the database and instantiates an object for it.
      *
-     * @param eid  string of user id to search for and retrieve all attributes
+     * @param eid  string of event id to search for and retrieve all attributes
      * @param callback callback function to call when event is retrieved
      */
     public void getEvent(String eid, FirebaseCallback<Event> callback){

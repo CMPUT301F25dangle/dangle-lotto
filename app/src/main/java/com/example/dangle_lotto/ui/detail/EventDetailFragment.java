@@ -16,6 +16,8 @@ import androidx.lifecycle.LifecycleOwner;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
+
+import com.example.dangle_lotto.FirebaseManager;
 import com.google.firebase.Timestamp;
 
 import com.example.dangle_lotto.Event;
@@ -26,15 +28,18 @@ import com.example.dangle_lotto.databinding.FragmentEventDetailBinding;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class EventDetailFragment extends Fragment {
     private FragmentEventDetailBinding binding;
+    private FirebaseManager firebaseManager;
+    private UserViewModel userViewModel;
+    private boolean isRegistered = false;
     private boolean isSignedUp = false;
     private boolean isChosen = false;
-    private boolean isRegistered = false;
     private boolean isWaiting = false;
     private boolean isCancelled = false;
-    private boolean postDraw = false;
+    private boolean postDraw = true;
     private Event selectedEvent;
 
     @Nullable
@@ -45,8 +50,11 @@ public class EventDetailFragment extends Fragment {
         binding = FragmentEventDetailBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
+        // intializing firebase manager
+        firebaseManager = new FirebaseManager();
+
         // initialize view model
-        UserViewModel userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
+        userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
         selectedEvent = userViewModel.getSelectedHomeEvent().getValue();
 
         // Sets the Event Title
@@ -61,14 +69,15 @@ public class EventDetailFragment extends Fragment {
         final TextView textView2 = binding.eventDate;
         textView2.setText("Deadline: "+ Converting_Timestamp_to_String(selectedEvent.getDate()));
 
+        //
+        List[] states = new List[]{"Registered", "Chosen", "Cancelled", "Signups"};
+
         return root;
     }
 
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-
-        EventDetailViewModel vm = new ViewModelProvider(this).get(EventDetailViewModel.class);
 
         if(savedInstanceState != null){
             isSignedUp = savedInstanceState.getBoolean("isRegistered", false);
@@ -130,7 +139,6 @@ public class EventDetailFragment extends Fragment {
 
     private void updateSignUpButton(boolean isChosen, boolean isRegistered, boolean isWaiting,
                                     boolean isCancelled, boolean isSignedUp){
-
 
         // Before lottery
         if(!postDraw) {

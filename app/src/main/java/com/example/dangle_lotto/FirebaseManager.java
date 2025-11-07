@@ -21,6 +21,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
+/**
+ * FirebaseManager — handles all Firebase-related operations for authentication, users, and events.
+ * <p>
+ * This class serves as a data manager for Firestore and Firebase Authentication,
+ * handling creation, retrieval, update, and deletion (CRUD) operations for both users and events.
+ * It also manages bidirectional relationships between users and events via subcollections.
+ * </p>
+ *
+ * @author Mahd
+ * @version 1.0
+ * @since 2025-11-01
+ */
 public class FirebaseManager {
     private final FirebaseFirestore db;
     private final FirebaseAuth mAuth;
@@ -110,17 +122,15 @@ public class FirebaseManager {
                 });
     }
     /**
-     * Adds a new user to the database and instantiates a user object with all required attributes.
-     * <p>
-     * Pass null into phone and pid if user has decided not to provide that information.
+     * Creates and stores a new user document in Firestore.
      *
-     * @param uid  user id. is a string provided by firebase auth that can uniquely identify a user
-     * @param name  Name of the user
-     * @param email  Email of the user
-     * @param phone  Phone number of the user - set null if not provided
-     * @param pid  Photo id for user profile picture - set null if not provided
-     * @param canOrganize  Boolean value indicating whether the user can organize events
-     * @return Instantiated GeneralUser object with all required attributes
+     * @param uid          Firebase Auth user ID.
+     * @param name         User name.
+     * @param email        User email.
+     * @param phone        User phone number (nullable).
+     * @param pid          Profile photo ID (nullable).
+     * @param canOrganize  Whether the user can organize events.
+     * @return Instantiated {@link GeneralUser} object.
      */
     public GeneralUser createNewUser(String uid, String name, String email, String phone, String pid, boolean canOrganize){
         Map<String, Object> data = Map.of(
@@ -136,12 +146,9 @@ public class FirebaseManager {
     }
 
     /**
-     * Updates a user's information in the database.
-     * <p>
-     * Is the update method for all users in general. canOrganize does NOT get updated here for
-     * GeneralUser and will be handled separately in admin related functions
+     * Updates an existing user’s data in Firestore.
      *
-     * @param user  User object containing all required attributes
+     * @param user {@link User} object containing updated fields.
      */
     public void updateUser(User user) {
         users.document(user.getUid()).update(
@@ -153,10 +160,10 @@ public class FirebaseManager {
     }
 
     /**
-     * Deletes a user and all references from the database. Recursively goes through all events the user organaized and also deletes all of those.
-     * Waits for the asynchronous calls to complete before deleting the user at the end.
+     * Deletes a user and all related data from Firestore.
+     * Removes references from all events and subcollections the user participated in or organized.
      *
-     * @param uid  string of user id to delete from database
+     * @param uid User ID to delete.
      */
     public void deleteUser(String uid) {
         List<Task<Void>> allTasks = new ArrayList<>();
@@ -203,10 +210,10 @@ public class FirebaseManager {
     }
 
     /**
-     * Retrieves a user from the database and instantiates an object for them
+     * Retrieves a {@link GeneralUser} by UID from Firestore.
      *
-     * @param uid  string of user id to search for and retrieve all attributes
-     * @param callback  callback function to call when user is retrieved
+     * @param uid       User ID.
+     * @param callback  Callback that receives the retrieved user object.
      */
     public void getUser(String uid, FirebaseCallback<GeneralUser> callback) {
         users.document(uid).get().addOnCompleteListener(task -> {
@@ -232,17 +239,18 @@ public class FirebaseManager {
     }
 
     /**
-     * Adds a new event to the database and instantiates an object for it.
+     * Creates and uploads a new event document to Firestore.
      *
-     * @param oid  Organizer id of the event
-     * @param name  Name of the event
-     * @param datetime  Timestamp of the event
-     * @param location  Location of the event
-     * @param description  Description of the event
-     * @param eventSize  Size of the event
-     * @param pid  Photo id for event banner
-     *
-     * @return Instantiated Event object with all required attributes
+     * @param oid          Organizer ID.
+     * @param name         Event name.
+     * @param datetime     Event timestamp.
+     * @param location     Event location.
+     * @param description  Event description.
+     * @param eventSize    Event size limit.
+     * @param maxEntrants  Maximum number of registrants.
+     * @param pid          Event photo ID.
+     * @param categories   List of event categories.
+     * @return Instantiated {@link Event} object.
      */
     public Event createEvent(String oid, String name, Timestamp datetime, String location, String description, int eventSize,
                              int maxEntrants, String pid, ArrayList<String> categories){
@@ -264,9 +272,9 @@ public class FirebaseManager {
     }
 
     /**
-     * Updates an event's information in the database.
+     * Updates event data in Firestore.
      *
-     * @param event  string of user id to search for and retrieve all attributes
+     * @param event The event object containing updated values.
      */
     public void updateEvent(Event event) {
         events.document(event.getEid()).update(
@@ -314,6 +322,12 @@ public class FirebaseManager {
         return Tasks.whenAllComplete(allTasks).continueWithTask(task -> events.document(eid).delete());
     }
 
+    /**
+     * Converts a Firestore document snapshot into an {@link Event} object.
+     *
+     * @param doc The Firestore document snapshot.
+     * @return An instantiated Event object.
+     */
     public Event documentToEvent(DocumentSnapshot doc) {
         return new Event(
                 doc.getId(),
@@ -461,7 +475,13 @@ public class FirebaseManager {
 //    public void userReinstateEvent(User user, Event event);
 
 
-    // Querying
+    /**
+     * Retrieve a list of events from the database.
+     *
+     * @param lastVisible  last visible event
+     * @param numEvents  number of events to retrieve
+     * @param callback  callback function to call when event is retrieved
+     */
     public void getEventsQuery(DocumentSnapshot lastVisible, int numEvents, FirebaseCallback<ArrayList<DocumentSnapshot>> callback){
         Query query = events.orderBy("Date", Query.Direction.DESCENDING).limit(numEvents);
 
@@ -479,7 +499,13 @@ public class FirebaseManager {
                 }).addOnFailureListener(callback::onFailure);
     }
 
-    // Querying for users organized events
+    /**
+     * Retrieve a list of events from the database.
+     *
+     * @param lastVisible  last visible event
+     * @param numEvents  number of events to retrieve
+     * @param callback  callback function to call when event is retrieved
+     */
     public void getOrganizedEventsQuery(DocumentSnapshot lastVisible, String uid, int numEvents, FirebaseCallback<ArrayList<DocumentSnapshot>> callback) {
         Query query = events.whereEqualTo("Organizer", uid).orderBy("Date", Query.Direction.DESCENDING).limit(numEvents);
 

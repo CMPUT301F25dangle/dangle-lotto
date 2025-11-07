@@ -7,7 +7,6 @@
     android:background="@color/white"
     tools:context="ui.create_event.CreateEventFragment">
 
-    <!-- Header Bar -->
     <LinearLayout
         android:id="@+id/create_event_status_bar"
         android:layout_width="match_parent"
@@ -21,26 +20,29 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:focusable="true"
             android:paddingStart="20dp"
             android:paddingVertical="8dp"
             android:text="Cancel"
             android:textColor="@color/black"
-            android:textSize="24sp" />
+            android:textSize="24sp"
+            android:clickable="true"/>
 
         <TextView
             android:id="@+id/create_event_done"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:focusable="true"
             android:paddingEnd="20dp"
             android:paddingVertical="8dp"
             android:text="Done"
             android:textAlignment="textEnd"
             android:textColor="@color/black"
-            android:textSize="24sp" />
+            android:textSize="24sp"
+            android:clickable="true"/>
     </LinearLayout>
 
-    <!-- Event Name -->
     <TextView
         android:id="@+id/create_event_name_hint"
         android:layout_width="wrap_content"
@@ -64,7 +66,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Poster -->
     <ImageView
         android:id="@+id/create_event_banner"
         android:layout_width="0dp"
@@ -91,7 +92,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Max Entrants -->
     <LinearLayout
         android:id="@+id/create_event_enter_maxentrants_layout"
         android:layout_width="0dp"
@@ -107,7 +107,8 @@
             android:id="@+id/cb_max_entrants"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Maximum Entrants" />
+            android:text="Maximum Entrants"
+            android:checked="false"/>
 
         <EditText
             android:id="@+id/create_event_input_maxEntrants"
@@ -115,11 +116,13 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:inputType="number"
-            android:hint="50"
+            android:focusable="false"
+            android:clickable="false"
+            android:cursorVisible="false"
+            android:longClickable="false"
             android:gravity="center" />
     </LinearLayout>
 
-    <!-- Deadline -->
     <TextView
         android:id="@+id/create_event_deadline_label"
         android:layout_width="wrap_content"
@@ -165,7 +168,6 @@
             android:gravity="center" />
     </LinearLayout>
 
-    <!-- Description -->
     <TextView
         android:id="@+id/create_event_description_label"
         android:layout_width="wrap_content"
@@ -192,7 +194,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
-    <!-- Geolocation -->
     <CheckBox
         android:id="@+id/cb_enable_geolocation"
         android:layout_width="wrap_content"

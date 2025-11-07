@@ -34,19 +34,6 @@ public class FirebaseManager {
         events = db.collection("events");
     }
 
-    public FirebaseManager(boolean useEmulator){
-        db = FirebaseFirestore.getInstance();
-        if (useEmulator) {
-            db.useEmulator("10.0.2.2", 8080);
-        }
-        mAuth = FirebaseAuth.getInstance();
-        if (useEmulator) {
-            mAuth.useEmulator("10.0.2.2", 9099);
-        }
-        users = db.collection("users");
-        events = db.collection("events");
-    }
-
     /**
      * Returns a reference to the database.
      *
@@ -430,28 +417,30 @@ public class FirebaseManager {
     /**
      * Adds a user to the requested list for an event in the database.
      *
-     * @param user  User object containing all required attributes
-     * @param event  Event object containing all required attributes
+     * @param uid  User id
+     * @param eid  Event id
      * @param subcollection  string of subcollection to retrieve
      */
-    public void userAddStatus(User user, Event event, String subcollection){
+    public Task<Void> userAddStatus(String uid, String eid, String subcollection){
         // add register time to user's event document and event's signup document
         Map<String, Object> data = Map.of(
                 "Timestamp", Timestamp.now()
                 );
-        users.document(user.getUid()).collection(subcollection).document(event.getEid()).set(data);
-        events.document(event.getEid()).collection(subcollection).document(user.getUid()).set(data);
+        Task<Void> t1 = users.document(uid).collection(subcollection).document(eid).set(data);
+        Task<Void> t2 = events.document(eid).collection(subcollection).document(uid).set(data);
+        return Tasks.whenAll(t1, t2);
     }
     /**
      * Removes a user from the requested list for an event in the database.
      *
-     * @param user  User object containing all required attributes
-     * @param event  Event object containing all required attributes
+     * @param uid  User object containing all required attributes
+     * @param eid  Event object containing all required attributes
      * @param subcollection  string of subcollection to retrieve
      */
-    public void userRemoveStatus(User user, Event event, String subcollection) {
-        users.document(user.getUid()).collection(subcollection).document(event.getEid()).delete();
-        events.document(event.getEid()).collection(subcollection).document(user.getUid()).delete();
+    public Task<Void> userRemoveStatus(String uid, String eid, String subcollection) {
+        Task<Void> t1 = users.document(uid).collection(subcollection).document(eid).delete();
+        Task<Void> t2 = events.document(eid).collection(subcollection).document(uid).delete();
+        return Tasks.whenAll(t1, t2);
     }
 
     // implement for chosen and cancelled and stuff

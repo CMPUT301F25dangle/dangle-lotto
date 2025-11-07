@@ -8,7 +8,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
-import com.example.dangle_lotto.databinding.FragmentHomeBinding;
+import com.example.dangle_lotto.databinding.FragmentCreateEventBinding;
 
 /**
  * CreateEventFragment - This fragment will be displayed whenever a GeneralUser
@@ -19,11 +19,13 @@ import com.example.dangle_lotto.databinding.FragmentHomeBinding;
  * @since 2025-11-05
  */
 public class CreateEventFragment extends Fragment {
-    private FragmentHomeBinding binding;
+    private FragmentCreateEventBinding binding;
+
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
-        binding = FragmentHomeBinding.inflate(inflater, container, false);
+        binding = FragmentCreateEventBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+
         return root;
     }
 }

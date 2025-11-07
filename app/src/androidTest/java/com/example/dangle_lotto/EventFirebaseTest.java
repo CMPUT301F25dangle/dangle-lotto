@@ -17,6 +17,7 @@ import com.google.firebase.firestore.Transaction;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -36,7 +37,7 @@ public class EventFirebaseTest {
     }
 
     public Event createTemplateEvent(){
-        return firebaseManager.createEvent(testOrganizer.getUid(), "Big ahh midterm", Timestamp.now(), "Da House", "Calculussy", 10, "");
+        return firebaseManager.createEvent(testOrganizer.getUid(), "Big ahh midterm", Timestamp.now(), "Da House", "Calculussy", 10 ,"", new ArrayList<>());
     }
 
     @BeforeClass
@@ -90,6 +91,7 @@ public class EventFirebaseTest {
                 "A party for diddy kong",
                 null,
                 69,
+                new ArrayList<>(),
                 firebaseManager
         );
 

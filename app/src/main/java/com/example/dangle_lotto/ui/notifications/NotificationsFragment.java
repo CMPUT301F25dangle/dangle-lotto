@@ -114,6 +114,58 @@ public class NotificationsFragment extends Fragment {
                     });
                 }
             }
+
+
+            @Override
+            public void onFailure(Exception e) {
+            }
+        });
+
+        // display notifications for registered events
+        user.registeredEvents(new FirebaseCallback<ArrayList<String>>() {
+            @Override
+            public void onSuccess(ArrayList<String> eventIds) {
+                for (String eid : eventIds) {
+                    eventGrabber(eid, firebaseManager, "On waiting list (registered)", new FirebaseCallback<Notification>() {
+                        @Override
+                        public void onSuccess(Notification notification) {
+                            requireActivity().runOnUiThread(() -> {
+                                totalNotifications.add(notification);
+                                adapter.notifyDataSetChanged();
+                            });
+                        }
+                        @Override
+                        public void onFailure(Exception e) {
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+            }
+        });
+
+        // display notifications for user cancelled events
+        user.cancelledEvents(new FirebaseCallback<ArrayList<String>>() {
+            @Override
+            public void onSuccess(ArrayList<String> eventIds) {
+                for (String eid : eventIds) {
+                    eventGrabber(eid, firebaseManager, "You have cancelled (declined)", new FirebaseCallback<Notification>() {
+                        @Override
+                        public void onSuccess(Notification notification) {
+                            requireActivity().runOnUiThread(() -> {
+                                totalNotifications.add(notification);
+                                adapter.notifyDataSetChanged();
+                            });
+                        }
+                        @Override
+                        public void onFailure(Exception e) {
+                        }
+                    });
+                }
+            }
+
             @Override
             public void onFailure(Exception e) {
             }

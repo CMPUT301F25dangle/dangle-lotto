@@ -29,7 +29,7 @@ public class GeneralUser extends User{
     }
 
     public void registeredEvents(FirebaseCallback<ArrayList<String>> callback){
-        firebaseManager.getUserSubcollection(this.uid, "Register", new FirebaseCallback<ArrayList<String>>(){
+        firebaseManager.getUserSubcollection(this.uid, "Registered", new FirebaseCallback<ArrayList<String>>(){
             @Override
             public void onSuccess(ArrayList<String> result) {
                 callback.onSuccess(result);

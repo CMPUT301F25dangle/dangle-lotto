@@ -7,6 +7,8 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
 
 import androidx.fragment.app.Fragment;
@@ -50,10 +52,13 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
     private View progress;
     private View emptyView;
     private ChipGroup filterGroup;
-    private Chip chipAll, chipChosen, chipNotChosen, chipCancelled;
+    private Chip chipRegistrants, chipChosen, chipSignups, chipCancelled;
+    private Button dynamicButton;
+    private Button removeButton;
+    private EditText chooseEntrantsTextView;
 
-    private enum Filter { ALL, CHOSEN, NOT_CHOSEN, CANCELLED }
-    private Filter currentFilter = Filter.ALL;
+    private enum Filter { REGISTRANTS, CHOSEN, SIGNUPS, CANCELLED }
+    private Filter currentFilter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -70,6 +75,13 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
         // firebase
         firebase = new FirebaseManager();
 
+        // button
+        dynamicButton = binding.eventDetailsEntrantsButton;
+        removeButton = binding.eventDetailsEntrantsRemoveButton;
+
+        // edit text view
+        chooseEntrantsTextView = binding.eventDetailsEntrantsAmount;
+
         // views
         listView  = binding.entrantsListView;
         progress  = binding.progress;
@@ -81,26 +93,50 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
         listView.setEmptyView(emptyView);
 
         // --- FILTER CHIPS ---
-        filterGroup   = binding.filterGroup;        // <ChipGroup android:id="@+id/filterGroup"/>
-        chipAll       = binding.chipAll;            // <Chip android:id="@+id/chip_all"/>
-        chipChosen    = binding.chipChosen;         // <Chip android:id="@+id/chip_chosen"/>
-        chipNotChosen = binding.chipNotChosen;      // <Chip android:id="@+id/chip_not_chosen"/>
-        chipCancelled = binding.chipCancelled;      // <Chip android:id="@+id/chip_cancelled"/>
+        filterGroup     = binding.filterGroup;      // <ChipGroup android:id="@+id/filterGroup"/>
+        chipRegistrants = binding.chipRegistrants;  // <Chip android:id="@+id/chip_registrants"/>
+        chipChosen      = binding.chipChosen;       // <Chip android:id="@+id/chip_chosen"/>
+        chipSignups     = binding.chipSignups;      // <Chip android:id="@+id/chip_signups"/>
+        chipCancelled   = binding.chipCancelled;    // <Chip android:id="@+id/chip_cancelled"/>
 
         // default filter
-        currentFilter = Filter.ALL;
-        chipAll.setChecked(true);
+        currentFilter = Filter.REGISTRANTS;
+        chipRegistrants.setChecked(true);
 
         // when a chip is selected, reload with that filter
         filterGroup.setOnCheckedStateChangeListener((group, checkedIds) -> {
             if (checkedIds == null || checkedIds.isEmpty()) return;
             int id = checkedIds.get(0);
-            if (id == chipAll.getId())            currentFilter = Filter.ALL;
-            else if (id == chipChosen.getId())    currentFilter = Filter.CHOSEN;
-            else if (id == chipNotChosen.getId()) currentFilter = Filter.NOT_CHOSEN;
-            else if (id == chipCancelled.getId()) currentFilter = Filter.CANCELLED;
+
+            if (id == chipRegistrants.getId()) {
+                currentFilter = Filter.REGISTRANTS;
+                dynamicButton.setText("Choose:");
+                chooseEntrantsTextView.setVisibility(View.VISIBLE);
+                removeButton.setVisibility(View.GONE);
+            } else if (id == chipChosen.getId()) {
+                currentFilter = Filter.CHOSEN;
+                dynamicButton.setText("Notify");
+                chooseEntrantsTextView.setVisibility(View.GONE);
+                removeButton.setVisibility(View.VISIBLE);
+            } else {
+                if (id == chipSignups.getId()) currentFilter = Filter.SIGNUPS;
+                else if (id == chipCancelled.getId()) currentFilter = Filter.CANCELLED;
+
+                dynamicButton.setText("Notify");
+                chooseEntrantsTextView.setVisibility(View.GONE);
+                removeButton.setVisibility(View.GONE);
+            }
 
             loadEntrants(currentFilter);
+        });
+
+
+        dynamicButton.setOnClickListener(v -> {
+            if (currentFilter == Filter.REGISTRANTS) {
+                event.chooseLottoWinners();
+            } else {
+                // can add manual notify functionality here
+            }
         });
 
         // initial load
@@ -135,6 +171,7 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
         final Set<String> register  = new HashSet<>();
         final Set<String> chosen    = new HashSet<>();
         final Set<String> cancelled = new HashSet<>();
+        final Set<String> signsup   = new HashSet<>();
 
         // Count EXACTLY how many fetches we start
         final int[] need = {0};
@@ -146,7 +183,7 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
                 // Decide which UIDs to show based on filter
                 Set<String> toShow;
                 switch (filter) {
-                    case ALL:
+                    case REGISTRANTS:
                         toShow = register;
                         break;
                     case CHOSEN:
@@ -155,11 +192,8 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
                     case CANCELLED:
                         toShow = cancelled;
                         break;
-                    case NOT_CHOSEN:
-                        Set<String> tmp = new HashSet<>(register);
-                        tmp.removeAll(chosen);
-                        tmp.removeAll(cancelled);
-                        toShow = tmp;
+                    case SIGNUPS:
+                        toShow = signsup;
                         break;
                     default:
                         toShow = register;
@@ -170,7 +204,7 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
 
         // Start ONLY the fetches needed for the selected filter
         switch (filter) {
-            case ALL:
+            case REGISTRANTS:
                 need[0]++;
                 fetchSubcollectionIntoSet(eventId, "Register", register, onEachFetchDone);
                 break;
@@ -185,11 +219,9 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
                 fetchSubcollectionIntoSet(eventId, "Cancelled", cancelled, onEachFetchDone);
                 break;
 
-            case NOT_CHOSEN:
-                need[0] += 3;
-                fetchSubcollectionIntoSet(eventId, "Register",  register,  onEachFetchDone);
-                fetchSubcollectionIntoSet(eventId, "Chosen",    chosen,    onEachFetchDone);
-                fetchSubcollectionIntoSet(eventId, "Cancelled", cancelled, onEachFetchDone);
+            case SIGNUPS:
+                need[0]++;
+                fetchSubcollectionIntoSet(eventId, "SignUps",  signsup, onEachFetchDone);
                 break;
         }
     }

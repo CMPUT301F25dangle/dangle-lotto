@@ -28,23 +28,13 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class EventDetailFragment extends Fragment {
-
-    private String eventId;
-
     private FragmentEventDetailBinding binding;
-
     private boolean isSignedUp = false;
-
     private boolean isChosen = false;
-
     private boolean isRegistered = false;
-
     private boolean isWaiting = false;
-
     private boolean isCancelled = false;
-
     private boolean postDraw = false;
-
     private Event selectedEvent;
 
     @Nullable

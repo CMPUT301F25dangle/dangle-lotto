@@ -1,6 +1,5 @@
 package com.example.dangle_lotto.ui.home;
 
-import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -18,10 +17,10 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.dangle_lotto.Event;
 import com.example.dangle_lotto.FirebaseManager;
-import com.example.dangle_lotto.FirestoreCallback;
-import com.example.dangle_lotto.R;
+import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentHomeBinding;
+import com.example.dangle_lotto.ui.EventCardAdapter;
 import com.google.firebase.firestore.DocumentSnapshot;
 
 import java.util.ArrayList;
@@ -67,12 +66,13 @@ public class HomeFragment extends Fragment {
         }
 
         // initializing and attaching adapter
-         adapter = new EventCardAdapter(events, position -> {
+        adapter = new EventCardAdapter(events, position -> {
             // update the view model
             userViewModel.setSelectedHomeEvent(events.get(position));
 
             // open the event fragment
-            openEventFragment();
+            NavController navController = NavHostFragment.findNavController(this);
+            //navController.navigate(R.id.action_home_to_eventDetail);
         });
         recyclerView.setAdapter(adapter);
 
@@ -95,6 +95,7 @@ public class HomeFragment extends Fragment {
             }
         });
 
+        // if data is not cached, load first page
         if (events.isEmpty()) {
             loadFirstPage();
         }
@@ -112,15 +113,6 @@ public class HomeFragment extends Fragment {
 
         // update the view model
         userViewModel.setHomeEvents(events);
-    }
-
-    /**
-     * Opens the event that is requested using nav controller
-     */
-    private void openEventFragment() {
-        NavController navController = NavHostFragment.findNavController(this);
-
-        navController.navigate(R.id.action_home_to_eventDetail);
     }
 
     /**
@@ -150,7 +142,7 @@ public class HomeFragment extends Fragment {
     private void loadFirstPage() {
         isLoading = true;
 
-        firebaseManager.getEventsQuery(null, PAGE_SIZE, new FirestoreCallback<ArrayList<DocumentSnapshot>>() {
+        firebaseManager.getEventsQuery(null, PAGE_SIZE, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
                 int startPos = events.size();
@@ -184,7 +176,7 @@ public class HomeFragment extends Fragment {
         if (isLoading || lastVisible == null) return;
         isLoading = true;
         Toast.makeText(getContext(), "Loading more events...", Toast.LENGTH_SHORT).show();
-        firebaseManager.getEventsQuery(lastVisible, PAGE_SIZE, new FirestoreCallback<ArrayList<DocumentSnapshot>>() {
+        firebaseManager.getEventsQuery(lastVisible, PAGE_SIZE, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
                 Log.d("Firebase", "Loaded " + result.size() + " events");

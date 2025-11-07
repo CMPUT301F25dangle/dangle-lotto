@@ -19,20 +19,20 @@ import java.util.ArrayList;
  */
 public class UserViewModel extends ViewModel {
     private final FirebaseManager firebaseManager = new FirebaseManager();
-    private final MutableLiveData<User> user = new MutableLiveData<>();
-    private final MutableLiveData<ArrayList<Event>> yourEvents = new MutableLiveData<>();
-    private boolean yourEventsLoaded = false;
-    private final MutableLiveData<ArrayList<Event>> organizedEvents = new MutableLiveData<>();
-    private boolean organizedEventsLoaded = false;
+    private final MutableLiveData<GeneralUser> user = new MutableLiveData<GeneralUser>();
     private final MutableLiveData<ArrayList<Event>> homeEvents = new MutableLiveData<>();
     private final MutableLiveData<Event> selectedHomeEvent = new MutableLiveData<>();
+    private final MutableLiveData<ArrayList<Event>> yourEvents = new MutableLiveData<>();
+    private final MutableLiveData<Event> selectedYourEvent = new MutableLiveData<>();
+    private final MutableLiveData<ArrayList<Event>> organizedEvents = new MutableLiveData<>();
+    private final MutableLiveData<Event> selectedOrganizedEvent = new MutableLiveData<>();
 
     /**
      * Sets the user object
      *
      * @param user user object
      */
-    public void setUser(User user) {
+    public void setUser(GeneralUser user) {
         this.user.postValue(user);
     }
 
@@ -41,7 +41,7 @@ public class UserViewModel extends ViewModel {
      *
      * @return user object
      */
-    public LiveData<User> getUser() {
+    public LiveData<GeneralUser> getUser() {
         return user;
     }
 
@@ -51,9 +51,9 @@ public class UserViewModel extends ViewModel {
             return;
         }
 
-        firebaseManager.getUser(uid, new FirestoreCallback<User>() {
+        firebaseManager.getUser(uid, new FirebaseCallback<GeneralUser>() {
             @Override
-            public void onSuccess(User result) {
+            public void onSuccess(GeneralUser result) {
                 Log.d("UserViewModel", "User loaded: " + result.getName());
                 user.setValue(result);
             }
@@ -96,6 +96,7 @@ public class UserViewModel extends ViewModel {
     public void setSelectedHomeEvent(Event event) {
         selectedHomeEvent.setValue(event);
     }
+
     /**
      * Gets the index of the event that is currently selected in the Home Fragment
      *
@@ -103,6 +104,19 @@ public class UserViewModel extends ViewModel {
      */
     public LiveData<Event> getSelectedHomeEvent() {
         return selectedHomeEvent;
+    }
+
+    /**
+     * Sets the events that are currently in the Your Events Fragment
+     *
+     * @param events Arraylist of events that you want to save in the View Model
+     */
+    public void setYourEvents(ArrayList<Event> events) {
+        if (events != null) {
+            yourEvents.setValue(events);
+        } else {
+            yourEvents.setValue(new ArrayList<>());
+        }
     }
 
     /**
@@ -115,47 +129,61 @@ public class UserViewModel extends ViewModel {
     }
 
     /**
-     * Fetches users yourEvents data from firebase if it hasn't already been fetched.
-     * <p>
-     * Sets boolean to false, so that this can only occur once in an instance of the app running.
+     * Sets the event that is currently selected in the Your Events Fragment
+     *
+     * @param event Event that is currently selected
      */
-    public void loadYourEvents() {
-        if (!yourEventsLoaded) {
-            // fetch yourEvents from firebase and if successful then use
-            // yourEvents.postValue(some data) to update yourEvents in the View Model
-            // and set yourEventsLoaded to true
-        }
+    public void setSelectedYourEvent(Event event) {
+        selectedYourEvent.setValue(event);
     }
 
-//    public void addYourEvent(Event event) {
-//        ArrayList<Event> currentList = getYourEvents().getValue();
-//        if (currentList == null) {
-//            currentList = new ArrayList<>();
-//        }
-//        currentList.add(event);
-//        getYourEvents().setValue(currentList);
-//    }
+    /**
+     * Gets the event that is currently selected in the Your Events Fragment
+     *
+     * @return Event that is currently selected
+     */
+    public LiveData<Event> getSelectedYourEvent() {
+        return selectedYourEvent;
+    }
+
+
+    /**
+     * Sets the events that are currently in the Organized Fragment
+     *
+     * @param events Arraylist of events that you want to save in the View
+     */
+    public void setOrganizedEvents(ArrayList<Event> events) {
+        if (events != null) {
+            organizedEvents.setValue(events);
+        } else {
+            organizedEvents.setValue(new ArrayList<>());
+        }
+    }
 
     /**
      * Gets organizedEvents that are currently in the View Model
      *
      * @return Arraylist of events that the user has organized
      */
-    public MutableLiveData<ArrayList<Event>> getOrganizedEvents() {
+    public LiveData<ArrayList<Event>> getOrganizedEvents() {
         return organizedEvents;
     }
 
     /**
-     * Fetches users organizedEvents data from firebase if it hasn't already been fetched.
-     * <p>
-     * Sets boolean to false, so that this can only occur once in an instance of the app running.
+     * Sets event that is currently selected in the Dashboard Fragment
+     *
+     * @param event Event that is currently selected
      */
-    public void loadOrganizedEvents() {
-        if (!organizedEventsLoaded) {
-            // fetch organizedEvents from firebase and if successful then use
-            // organizedEvents.postValue(some data) to update organizedEvents in the View Model
-            // and set organizedEventsLoaded to true
-        }
+    public void setSelectedOrganizedEvent(Event event) {
+        selectedOrganizedEvent.setValue(event);
     }
 
+    /**
+     * Gets event that is currently selected in the Dashboard Fragment
+     *
+     * @return Event that is currently selected
+     */
+    public LiveData<Event> getSelectedOrganizedEvent() {
+        return selectedOrganizedEvent;
+    }
 }

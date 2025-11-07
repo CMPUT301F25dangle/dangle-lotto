@@ -1,44 +1,27 @@
 package com.example.dangle_lotto;
 
-import java.util.Date;
 /**
  * Notification
- *
+ * <p>
  * Contains methods to get notification information.
  *
  *
- * @author Annie Ding
- * @version 1.0
+ * @author Annie Ding, Prem Elango
+ * @version 1.2
  * @since 2025-11-01
  */
 public class Notification {
-    private String nid;
-    private String message;
-    private String sender;
-    private String recipient;
-    private Date date;
+    private String name;
+    private String status;
 
-    public Notification(String nid, String message, String sender, String recipient, Date date) {
-        this.nid = nid;
-        this.message = message;
-        this.sender = sender;
-        this.recipient = recipient;
-        this.date = date;
+    public Notification(String name, String status) {
+        this.name = name;
+        this.status = status;
     }
 
-    public String getNid() {
-        return nid;
+    public String getName() {
+        return name;
     }
 
-    public String getMessage() {
-        return message;
-    }
-
-    public String getSender() {
-        return sender;
-    }
-
-    public Date getDate() {
-        return date;
-    }
+    public String getStatus() { return status; }
 }

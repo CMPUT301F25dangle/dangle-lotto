@@ -28,64 +28,69 @@ public class GeneralUser extends User{
         firebaseManager.deleteUser(uid);
     }
 
-    public ArrayList<String> registeredEvents(){
-        ArrayList<String> events = new ArrayList<>();
-        firebaseManager.getUserSubcollection(this.uid, "Register", new FirebaseCallback<ArrayList<String>>(){
+    public void registeredEvents(FirebaseCallback<ArrayList<String>> callback){
+        firebaseManager.getUserSubcollection(this.uid, "Registered", new FirebaseCallback<ArrayList<String>>(){
             @Override
             public void onSuccess(ArrayList<String> result) {
-                events.addAll(result);
+                callback.onSuccess(result);
             }
             @Override
             public void onFailure(Exception e) {
-                events.clear();
+                callback.onFailure(e);
             }
         });
-        return events;
     }
 
-    public ArrayList<String> chosenEvents(){
-        ArrayList<String> events = new ArrayList<>();
+    public void chosenEvents(FirebaseCallback<ArrayList<String>> callback){
         firebaseManager.getUserSubcollection(this.uid, "Chosen", new FirebaseCallback<ArrayList<String>>(){
             @Override
             public void onSuccess(ArrayList<String> result) {
-                events.addAll(result);
+                callback.onSuccess(result);
             }
             @Override
             public void onFailure(Exception e) {
-                events.clear();
+                callback.onFailure(e);
             }
         });
-        return events;
+   }
+
+    public void notChosenEvents(FirebaseCallback<ArrayList<String>> callback){
+        firebaseManager.getUserSubcollection(this.uid, "Not Chosen", new FirebaseCallback<ArrayList<String>>(){
+            @Override
+            public void onSuccess(ArrayList<String> result) {
+                callback.onSuccess(result);
+            }
+            @Override
+            public void onFailure(Exception e) {
+                callback.onFailure(e);
+            }
+        });
     }
 
-    public ArrayList<String> signedUpEvents(){
-        ArrayList<String> events = new ArrayList<>();
+    public void signedUpEvents(FirebaseCallback<ArrayList<String>> callback){
         firebaseManager.getUserSubcollection(this.uid, "SignUps", new FirebaseCallback<ArrayList<String>>(){
             @Override
             public void onSuccess(ArrayList<String> result) {
-                events.addAll(result);
+                callback.onSuccess(result);
             }
             @Override
             public void onFailure(Exception e) {
-                events.clear();
+                callback.onFailure(e);
             }
         });
-        return events;
     }
 
-    public ArrayList<String> cancelledEvents(){
-        ArrayList<String> events = new ArrayList<>();
+    public void cancelledEvents(FirebaseCallback<ArrayList<String>> callback){
         firebaseManager.getUserSubcollection(this.uid, "Cancelled", new FirebaseCallback<ArrayList<String>>(){
             @Override
             public void onSuccess(ArrayList<String> result) {
-                events.addAll(result);
+                callback.onSuccess(result);
             }
             @Override
             public void onFailure(Exception e) {
-                events.clear();
+                callback.onFailure(e);
             }
         });
-        return events;
     }
 
     public boolean canOrganize() {

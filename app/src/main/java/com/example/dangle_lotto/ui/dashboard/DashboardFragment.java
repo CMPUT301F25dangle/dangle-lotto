@@ -15,6 +15,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.dangle_lotto.GeneralUser;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.Event;
@@ -45,7 +46,7 @@ public class DashboardFragment extends Fragment {
     private LinearLayoutManager layoutManager;
     private EventCardAdapter adapter;
     private ArrayList<Event> organizedEvents;
-    private User user;
+    private GeneralUser user;
     private boolean isLoading;
     private static final int PAGE_SIZE = 4; // or however many events per page
     private DocumentSnapshot lastVisible = null;

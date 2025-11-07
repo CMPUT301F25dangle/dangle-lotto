@@ -21,7 +21,6 @@ import com.example.dangle_lotto.databinding.ActivityMainBinding;
 public class MainActivity extends AppCompatActivity {
 
     private ActivityMainBinding binding;
-    private FirebaseManager firebaseManager;
     private UserViewModel userViewModel;
 
     @Override
@@ -32,8 +31,7 @@ public class MainActivity extends AppCompatActivity {
         binding = ActivityMainBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
-        // initialize firebase manager and user view model
-        firebaseManager = new FirebaseManager();
+        // initialize and view model
         userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
 
         // Get user from firebase and save in view model

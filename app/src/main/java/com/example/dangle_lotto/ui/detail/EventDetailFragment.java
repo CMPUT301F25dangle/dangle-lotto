@@ -34,12 +34,12 @@ public class EventDetailFragment extends Fragment {
     private FragmentEventDetailBinding binding;
     private FirebaseManager firebaseManager;
     private UserViewModel userViewModel;
-    private boolean isRegistered = false;
+    private boolean isAttendee = false;
     private boolean isSignedUp = false;
     private boolean isChosen = false;
     private boolean isWaiting = false;
     private boolean isCancelled = false;
-    private boolean postDraw = true;
+    private boolean postDraw = false;
     private Event selectedEvent;
 
     @Nullable
@@ -50,7 +50,7 @@ public class EventDetailFragment extends Fragment {
         binding = FragmentEventDetailBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        // intializing firebase manager
+        // initializing firebase manager
         firebaseManager = new FirebaseManager();
 
         // initialize view model
@@ -69,8 +69,16 @@ public class EventDetailFragment extends Fragment {
         final TextView textView2 = binding.eventDate;
         textView2.setText("Deadline: "+ Converting_Timestamp_to_String(selectedEvent.getDate()));
 
-        //
-        List[] states = new List[]{"Registered", "Chosen", "Cancelled", "Signups"};
+        // Sets the Organizers name
+        final TextView textView3 = binding.organizerName;
+        textView3.setText("Organizer: "+ selectedEvent.getOrganizerID());
+        // String List[states] = new List[]{"Registered", "Chosen", "Cancelled", "Signups"};
+
+        // Getting number of entrants when loading fragment
+        final int eventLimit = selectedEvent.getEventSize();
+        final int entrants = selectedEvent.getSignUps().toArray().length;
+        final TextView textView4 = binding.eventSpots;
+        textView4.setText("Entrants: "+entrants+"/"+eventLimit);
 
         return root;
     }
@@ -80,11 +88,18 @@ public class EventDetailFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         if(savedInstanceState != null){
-            isSignedUp = savedInstanceState.getBoolean("isRegistered", false);
+            isSignedUp = savedInstanceState.getBoolean("isSignedUp", false);
             isWaiting = isSignedUp;
         }
-        logState("render");
-        updateSignUpButton(isChosen,isRegistered,isWaiting,isCancelled, isSignedUp);
+
+        // Checks if post draw conditions are met, people already drew for lottery
+        if(!selectedEvent.getChosen().isEmpty()){
+            postDraw = true;
+        }
+
+
+        //logState("render");
+        updateSignUpButton(isChosen,isAttendee,isWaiting,isCancelled, isSignedUp);
 
         binding.btnSignUp.setOnClickListener(v -> {
             if (!postDraw) {
@@ -104,28 +119,28 @@ public class EventDetailFragment extends Fragment {
                     }
                 }
             }
-            logState("render");
-            updateSignUpButton(isChosen, isRegistered, isWaiting, isCancelled, isSignedUp);
+            //logState("render");
+            updateSignUpButton(isChosen, isAttendee, isWaiting, isCancelled, isSignedUp);
         });
 
         // Accept chosen spot
         binding.btnAccept.setOnClickListener(v -> {
-            isRegistered = true;
+            isAttendee = true;
             isChosen = false;
             isWaiting = false;
             isCancelled = false;
             isSignedUp = false;
-            updateSignUpButton(isChosen, isRegistered, isWaiting, isCancelled, isSignedUp);
+            updateSignUpButton(isChosen, isAttendee, isWaiting, isCancelled, isSignedUp);
         });
 
         // Decline chosen spot
         binding.btnDecline.setOnClickListener(v -> {
-            isRegistered = false;
+            isAttendee = false;
             isChosen = false;
             isWaiting = false;
             isCancelled = true;
             isSignedUp = false;
-            updateSignUpButton(isChosen, isRegistered, isWaiting, isCancelled, isSignedUp);
+            updateSignUpButton(isChosen, isAttendee, isWaiting, isCancelled, isSignedUp);
         });
 
         // Displays Term of Services
@@ -209,7 +224,7 @@ public class EventDetailFragment extends Fragment {
     private void logState(String tag) {
         android.util.Log.d("EventDetail", tag + " postDraw=" + postDraw
                 + " chosen=" + isChosen
-                + " registered=" + isRegistered
+                + " attendee=" + isAttendee
                 + " cancelled=" + isCancelled
                 + " waiting=" + isWaiting);
     }

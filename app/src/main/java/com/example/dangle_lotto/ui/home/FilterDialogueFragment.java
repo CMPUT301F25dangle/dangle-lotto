@@ -26,12 +26,23 @@ import java.util.ArrayList;
  */
 public class FilterDialogueFragment extends DialogFragment {
 
+    /**
+     *  Interface for the parent fragment to communicate with this fragment through
+     */
     public interface OnFilterSelectedListener {
         void onFiltersSelected(ArrayList<String> selectedFilters);
     }
 
+    /**
+     * Listener for when filters are selected
+     */
     private OnFilterSelectedListener listener;
 
+    /**
+     * Sets the listener for when filters are selected
+     *
+     * @param listener The listener to set
+     */
     public void setOnFilterSelectedListener(OnFilterSelectedListener listener) {
         this.listener = listener;
     }
@@ -98,7 +109,8 @@ public class FilterDialogueFragment extends DialogFragment {
 
     /**
      * Sets pre-selected filters
-     * <p>To be called by parent fragment to save pre-selected filters</p>
+     * <p>
+     * To be called by parent fragment to save pre-selected filters
      *
      * @param preselectedCategories The saved filters from previous use of this fragment
      */

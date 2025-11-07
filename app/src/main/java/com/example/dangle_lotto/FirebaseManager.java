@@ -156,7 +156,7 @@ public class FirebaseManager {
      * @param uid  string of user id to search for and retrieve all attributes
      * @param callback  callback function to call when user is retrieved
      */
-    public void getUser(String uid, FirebaseCallback<User> callback) {
+    public void getUser(String uid, FirebaseCallback<GeneralUser> callback) {
         users.document(uid).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 DocumentSnapshot doc = task.getResult();
@@ -270,7 +270,8 @@ public class FirebaseManager {
     /**
      * Retrieves a subcollection of an event from the database. Calls the provided callback function when event has been received.
      *
-     * Usage: getUserSubcollection(uid, "collection name", new FirestoreCallback<ArrayList<String>>() {
+     * Usage: getUserSubcollection(uid, "collection name", new FirebaseCallback&lt;ArrayList&lt;String&gt;&gt;() {
+     * <pre>{@code
      *      @Override
      *      public void onSuccess(ArrayList<String> result) {
      *          // define what to do with result
@@ -281,7 +282,7 @@ public class FirebaseManager {
      *                 // define what to do on failure case
      *             }
      *         });
-     *
+     *  }</pre>
      * @param uid  string of user id to search for and retrieve all attributes
      * @param subcollection  string of subcollection to retrieve
      * @param callback callback function to call when event is retrieved
@@ -303,7 +304,8 @@ public class FirebaseManager {
     /**
      * Retrieves a subcollection of an event from the database. Calls the provided callback function when event has been received.
      *
-     * Usage: getEventSubcollection(eid, "collection name", new FirestoreCallback<ArrayList<String>>() {
+     * <pre>{@code
+     * Usage: getEventSubcollection(eid, "collection name", new FirebaseCallback&lt;ArrayList&lt;String&gt;&gt;() {
      *      @Override
      *      public void onSuccess(ArrayList<String> result) {
      *          // define what to do with result
@@ -314,7 +316,7 @@ public class FirebaseManager {
      *                 // define what to do on failure case
      *             }
      *         });
-     *
+     * }</pre>
      * @param eid  string of user id to search for and retrieve all attributes
      * @param subcollection  string of subcollection to retrieve
      * @param callback callback function to call when event is retrieved
@@ -343,7 +345,7 @@ public class FirebaseManager {
     public void userAddStatus(User user, Event event, String subcollection){
         // add register time to user's event document and event's signup document
         Map<String, Object> data = Map.of(
-                "RegisterTime", Timestamp.now()
+                "Timestamp", Timestamp.now()
                 );
         users.document(user.getUid()).collection(subcollection).document(event.getEid()).set(data);
         events.document(event.getEid()).collection(subcollection).document(user.getUid()).set(data);
@@ -392,5 +394,21 @@ public class FirebaseManager {
                 }).addOnFailureListener(callback::onFailure);
     }
 
+    // Querying for users organized events
+    public void getOrganizedEventsQuery(DocumentSnapshot lastVisible, String uid, int numEvents, FirebaseCallback<ArrayList<DocumentSnapshot>> callback) {
+        Query query = events.whereEqualTo("Organizer", uid).orderBy("Date", Query.Direction.DESCENDING).limit(numEvents);
 
+        if (lastVisible != null) query = query.startAfter(lastVisible);
+        query.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                ArrayList<DocumentSnapshot> events = new ArrayList<>();
+                for (DocumentSnapshot doc : task.getResult()) {
+                    events.add(doc);
+                }
+                callback.onSuccess(events);
+            } else {
+                callback.onFailure(task.getException());
+            }
+        }).addOnFailureListener(callback::onFailure);
+    }
 }

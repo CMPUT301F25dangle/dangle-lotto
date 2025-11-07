@@ -1,4 +1,4 @@
-package com.example.dangle_lotto.ui.home;
+package com.example.dangle_lotto.ui;
 import com.example.dangle_lotto.Event;
 
 import com.example.dangle_lotto.R;
@@ -20,7 +20,7 @@ import java.util.ArrayList;
  * Event objects will be each represented as a card with an image and title, which can be clicked.
  * Implement your own on click listener.
  *
- * <h4>Example Usage</h4>
+ * Example Usage
  * <pre><code>
  * EventCardAdapter eventCardAdapter = new EventCardAdapter(Events, position -> {
  *   Event clickedEvent = Events.get(position);

@@ -95,32 +95,6 @@ public class NotificationsFragment extends Fragment {
             }
         });
 
-        // display notifications for not chosen events
-        user.notChosenEvents(new FirebaseCallback<ArrayList<String>>() {
-            @Override
-            public void onSuccess(ArrayList<String> eventIds) {
-                for (String eid : eventIds) {
-                    eventGrabber(eid, firebaseManager, "Not Chosen", new FirebaseCallback<Notification>() {
-                        @Override
-                        public void onSuccess(Notification notification) {
-                            requireActivity().runOnUiThread(() -> {
-                                totalNotifications.add(notification);
-                                adapter.notifyDataSetChanged();
-                            });
-                        }
-                        @Override
-                        public void onFailure(Exception e) {
-                        }
-                    });
-                }
-            }
-
-
-            @Override
-            public void onFailure(Exception e) {
-            }
-        });
-
         // display notifications for registered events
         user.registeredEvents(new FirebaseCallback<ArrayList<String>>() {
             @Override

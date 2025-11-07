@@ -5,8 +5,10 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import androidx.annotation.NonNull;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.fragment.app.DialogFragment;
 
 import com.example.dangle_lotto.databinding.DialogueQrcodeBinding;
@@ -34,9 +36,10 @@ public class QRDialogueFragment extends DialogFragment {
                              ViewGroup container,
                              Bundle savedInstanceState){
         @NonNull DialogueQrcodeBinding binding = DialogueQrcodeBinding.inflate(inflater);
-        View root = binding.getRoot();
-
-
+        ConstraintLayout root = new ConstraintLayout(requireContext());
+        ImageView qrDisplay = new ImageView(requireContext());
+        qrDisplay.setImageBitmap(qr);
+        root.addView(qrDisplay);
         return root;
     }
 

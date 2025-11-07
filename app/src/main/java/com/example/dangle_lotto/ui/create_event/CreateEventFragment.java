@@ -215,14 +215,14 @@ public class CreateEventFragment extends Fragment {
         if (qr == null) {
             BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
             try {
-                Bitmap qr = barcodeEncoder.encodeBitmap(text + binding.createEventInputTime.getText().toString(), BarcodeFormat.QR_CODE, 400, 400);
-                printQRCodeToLogcat(qr);
-//                openQRDialogue();
+                qr = barcodeEncoder.encodeBitmap(text + binding.createEventInputTime.getText().toString(), BarcodeFormat.QR_CODE, 600, 600);
+                openQRDialogue();
             } catch (WriterException e) {
                 e.printStackTrace();
             }
         }
     }
+
 
     /**
      * Opens the QR code dialogue, setting the bitmap to be the generated one
@@ -233,40 +233,6 @@ public class CreateEventFragment extends Fragment {
         QRDialogueFragment dialog = new QRDialogueFragment();
         dialog.setQr(qr);
         dialog.show(getParentFragmentManager(), "QRDialog");
-    }
-
-
-    // The following is from DeepSeek, "Android studio print a QR code bitmap to logCat"
-    private void printQRCodeToLogcat(Bitmap bitmap) {
-        // Scale down for logcat readability
-        int logcatWidth = 40; // Smaller for logcat
-        int scaledWidth = logcatWidth;
-        int scaledHeight = (int) (bitmap.getHeight() * ((float) scaledWidth / bitmap.getWidth()));
-
-        Bitmap scaledBitmap = Bitmap.createScaledBitmap(bitmap, scaledWidth, scaledHeight, false);
-
-        StringBuilder sb = new StringBuilder();
-        sb.append("\n=== QR CODE ===\n");
-
-        for (int y = 0; y < scaledBitmap.getHeight(); y++) {
-            StringBuilder line = new StringBuilder();
-            for (int x = 0; x < scaledBitmap.getWidth(); x++) {
-                int pixel = scaledBitmap.getPixel(x, y);
-                boolean isDark = isPixelDark(pixel);
-                line.append(isDark ? "##" : "  "); // Use simple characters
-            }
-            // Log each line separately to avoid truncation
-            Log.d("QR_CODE", line.toString());
-        }
-        Log.d("QR_CODE", "=== END QR CODE ===");
-    }
-
-    private boolean isPixelDark(int pixel) {
-        int r = Color.red(pixel);
-        int g = Color.green(pixel);
-        int b = Color.blue(pixel);
-        int luminance = (int) (0.299 * r + 0.587 * g + 0.114 * b);
-        return luminance < 128;
     }
 
     @Override

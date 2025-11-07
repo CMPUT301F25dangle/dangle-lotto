@@ -1,6 +1,7 @@
 com.example.dangle_lotto
 com.example.dangle_lotto.ui
 com.example.dangle_lotto.ui.dashboard
+com.example.dangle_lotto.ui.detail
 com.example.dangle_lotto.ui.home
 com.example.dangle_lotto.ui.login
 com.example.dangle_lotto.ui.notifications

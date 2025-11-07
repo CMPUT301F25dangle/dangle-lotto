@@ -187,6 +187,7 @@ public class CreateEventFragment extends Fragment {
                     location,
                     description,
                     Integer.parseInt(binding.createEventSizeInput.getText().toString()),
+                    maxEntrants,
                     "0",
                     categories
             );

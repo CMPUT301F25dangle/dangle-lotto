@@ -338,7 +338,7 @@ public class EventDetailFragment extends Fragment {
      * @param list
      */
     private void friendlyAdd(User u, String list) {
-        firebaseManager.userAddStatus(u, selectedEvent, list);
+        firebaseManager.userAddStatus(u.getUid(), selectedEvent.getEid(), list);
     }
 
     /**
@@ -348,7 +348,7 @@ public class EventDetailFragment extends Fragment {
      */
 
     private void friendlyRemoval(User u, String list)  {
-        firebaseManager.userRemoveStatus(u, selectedEvent, list);
+        firebaseManager.userRemoveStatus(u.getUid(), selectedEvent.getEid(), list);
     }
 
     /**

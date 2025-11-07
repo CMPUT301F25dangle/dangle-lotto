@@ -12,39 +12,7 @@
         android:layout_width="match_parent"
         android:layout_height="60dp"
         android:background="@color/light_blue"
-        android:elevation="10dp"
         app:layout_constraintTop_toTopOf="parent">
-
-        <Button
-            android:id="@+id/create_event_cancel"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:background="@android:color/transparent"
-            android:text="@string/cancel_create_event"
-            android:textColor="@color/black"
-            android:textSize="24sp"
-            android:clickable="true"
-            android:focusable="true"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginStart="16dp" />
-
-        <Button
-            android:id="@+id/create_event_done"
-            android:layout_width="wrap_content"
-            android:layout_height="48dp"
-            android:background="@android:color/transparent"
-            android:text="@string/done_create_event"
-            android:textColor="@color/black"
-            android:textSize="24sp"
-            android:clickable="true"
-            android:focusable="true"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintBottom_toBottomOf="parent"
-            android:layout_marginEnd="16dp" />
-
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <TextView
@@ -113,6 +81,7 @@
             android:id="@+id/cb_max_entrants"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:checked="false"
             android:text="@string/maximum_entrants" />
 
         <EditText
@@ -121,7 +90,20 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:gravity="center"
+            android:enabled="false"
             android:inputType="number" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Limit"/>
+        <EditText
+            android:layout_width="60dp"
+            android:layout_height="wrap_content"
+            android:id="@+id/create_event_size_input"
+            android:text="1"
+            android:textAlignment="center"
+            android:inputType="number"
+            />
     </LinearLayout>
 
     <TextView
@@ -223,4 +205,35 @@
         android:id="@+id/create_event_qr_generate"
         android:layout_margin="20dp"
         android:backgroundTint="@color/light_blue"/>
+    <Button
+        android:id="@+id/create_event_cancel"
+        android:layout_width="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_height="48dp"
+        android:background="@android:color/transparent"
+        android:text="@string/cancel_create_event"
+        android:textColor="@color/black"
+        android:textSize="24sp"
+        android:clickable="true"
+        android:focusable="true"
+        android:elevation="10dp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginStart="16dp" />
+
+    <Button
+        android:id="@+id/create_event_done"
+        android:layout_width="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_height="48dp"
+        android:background="@android:color/transparent"
+        android:text="@string/done_create_event"
+        android:textColor="@color/black"
+        android:textSize="24sp"
+        android:clickable="true"
+        android:focusable="true"
+        android:elevation="10dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginEnd="16dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

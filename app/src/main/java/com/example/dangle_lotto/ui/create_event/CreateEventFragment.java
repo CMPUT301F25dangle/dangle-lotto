@@ -75,12 +75,10 @@ public class CreateEventFragment extends Fragment {
 
         // buttons
         binding.createEventCancel.setOnClickListener(v -> {
-            Log.d("CreateEvent", "Cancel pressed");
             goBack();
         });
 
         binding.createEventDone.setOnClickListener(v -> {
-            Log.d("CreateEvent", "Done pressed");
             createEvent();
         });
 
@@ -142,7 +140,6 @@ public class CreateEventFragment extends Fragment {
             }
 
             String description = binding.createEventInputDescription.getText().toString().trim();
-
             // Parse date/time safely
             String date = binding.createEventInputDate.getText().toString().trim();
             String time = binding.createEventInputTime.getText().toString().trim();
@@ -176,7 +173,11 @@ public class CreateEventFragment extends Fragment {
                 }
             }
 
-            Log.d("CreateEvent", "Creating event: " + name);
+            if ((binding.cbMaxEntrants.isChecked())) {
+                maxEntrants = Integer.parseInt(binding.createEventInputMaxEntrants.getText().toString());
+            }
+
+
 
             // Create event in Firebase
             firebaseManager.createEvent(
@@ -185,11 +186,11 @@ public class CreateEventFragment extends Fragment {
                     dateTimeStamp,
                     location,
                     description,
-                    maxEntrants,
-                    "0"
+                    Integer.parseInt(binding.createEventSizeInput.getText().toString()),
+                    "0",
+                    categories
             );
 
-            Log.d("CreateEvent", "Categories: " + categories);
             goBack();
 
         } catch (Exception e) {
@@ -216,11 +217,24 @@ public class CreateEventFragment extends Fragment {
             try {
                 Bitmap qr = barcodeEncoder.encodeBitmap(text + binding.createEventInputTime.getText().toString(), BarcodeFormat.QR_CODE, 400, 400);
                 printQRCodeToLogcat(qr);
+//                openQRDialogue();
             } catch (WriterException e) {
                 e.printStackTrace();
             }
         }
     }
+
+    /**
+     * Opens the QR code dialogue, setting the bitmap to be the generated one
+     *
+     */
+
+    private void openQRDialogue(){
+        QRDialogueFragment dialog = new QRDialogueFragment();
+        dialog.setQr(qr);
+        dialog.show(getParentFragmentManager(), "QRDialog");
+    }
+
 
     // The following is from DeepSeek, "Android studio print a QR code bitmap to logCat"
     private void printQRCodeToLogcat(Bitmap bitmap) {
@@ -261,7 +275,6 @@ public class CreateEventFragment extends Fragment {
         // Only clear binding when fragment is permanently destroyed
         if (isRemoving()) {
             binding = null;
-            Log.d("CreateEvent", "Binding cleared - fragment removing");
         }
     }
 }

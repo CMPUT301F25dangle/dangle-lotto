@@ -9,7 +9,7 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.DialogFragment;
 
-import com.example.dangle_lotto.databinding.DialogueFilterBinding;
+import com.example.dangle_lotto.databinding.DialogueQrcodeBinding;
 
 import java.util.ArrayList;
 
@@ -28,12 +28,23 @@ public class QRDialogueFragment extends DialogFragment {
 
     private Bitmap qr;
 
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container,
                              Bundle savedInstanceState){
-        DialogueFilterBinding binding = DialogueFilterBinding.inflate(inflater, container, false);
+        @NonNull DialogueQrcodeBinding binding = DialogueQrcodeBinding.inflate(inflater);
         View root = binding.getRoot();
+
+
         return root;
+    }
+
+    /**
+     * Sets the qr code bitmap
+     * @param bitmap The bitmap generated
+     */
+    public void setQr(Bitmap bitmap){
+        this.qr = bitmap;
     }
 }

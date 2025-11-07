@@ -24,6 +24,70 @@ public class GeneralUser extends User{
         this.canOrganize = canOrganize;
     }
 
+    public void delete() {
+        firebaseManager.deleteUser(uid);
+    }
+
+    public ArrayList<String> registeredEvents(){
+        ArrayList<String> events = new ArrayList<>();
+        firebaseManager.getUserSubcollection(this.uid, "Register", new FirebaseCallback<ArrayList<String>>(){
+            @Override
+            public void onSuccess(ArrayList<String> result) {
+                events.addAll(result);
+            }
+            @Override
+            public void onFailure(Exception e) {
+                events.clear();
+            }
+        });
+        return events;
+    }
+
+    public ArrayList<String> chosenEvents(){
+        ArrayList<String> events = new ArrayList<>();
+        firebaseManager.getUserSubcollection(this.uid, "Chosen", new FirebaseCallback<ArrayList<String>>(){
+            @Override
+            public void onSuccess(ArrayList<String> result) {
+                events.addAll(result);
+            }
+            @Override
+            public void onFailure(Exception e) {
+                events.clear();
+            }
+        });
+        return events;
+    }
+
+    public ArrayList<String> signedUpEvents(){
+        ArrayList<String> events = new ArrayList<>();
+        firebaseManager.getUserSubcollection(this.uid, "SignUps", new FirebaseCallback<ArrayList<String>>(){
+            @Override
+            public void onSuccess(ArrayList<String> result) {
+                events.addAll(result);
+            }
+            @Override
+            public void onFailure(Exception e) {
+                events.clear();
+            }
+        });
+        return events;
+    }
+
+    public ArrayList<String> cancelledEvents(){
+        ArrayList<String> events = new ArrayList<>();
+        firebaseManager.getUserSubcollection(this.uid, "Cancelled", new FirebaseCallback<ArrayList<String>>(){
+            @Override
+            public void onSuccess(ArrayList<String> result) {
+                events.addAll(result);
+            }
+            @Override
+            public void onFailure(Exception e) {
+                events.clear();
+            }
+        });
+        return events;
+    }
+
     public boolean canOrganize() {
         return canOrganize;
     }

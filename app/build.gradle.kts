@@ -48,6 +48,10 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+    //implementation(files("/home/mahdlinux/Android/Sdk/platforms/android-34/android.jar"))
+
+    // javadocs
+    //implementation(files("C:/Users/adi4s/AppData/Local/Android/Sdk/platforms/android-36/android.jar"))
 //    implementation(files("/home/mahdlinux/Android/Sdk/platforms/android-34/android.jar"))
 
     // Import the Firebase BoM
@@ -60,7 +64,8 @@ dependencies {
     // When using the BoM, don't specify versions in Firebase dependencies
     implementation("com.google.firebase:firebase-analytics")
 
-
+    // import dependency to generate QR code
+    implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
 
     // Add the dependencies for any other desired Firebase products
     // https://firebase.google.com/docs/android/setup#available-libraries// Import the Firebase BoM
@@ -75,6 +80,7 @@ dependencies {
     //  // Add the dependencies for any other desired Firebase products
     //  // https://firebase.google.com/docs/android/setup#available-libraries
 }
+
 
 apply(plugin = "com.google.gms.google-services")
 

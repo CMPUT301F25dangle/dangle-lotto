@@ -1,5 +1,7 @@
 package com.example.dangle_lotto;
 
+import android.util.Log;
+
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.Timestamp;
@@ -497,11 +499,14 @@ public class Event {
         if (registered.isEmpty()) {
             throw new IllegalArgumentException("Event has no registered users");
         }
-        if (!chosen.isEmpty()) return;
+//        if (!chosen.isEmpty()) return; causes problems
 
         if (registered.size() <= eventSize) {
             ArrayList<String> temp = new ArrayList<>(registered);
-            for (String user : temp) addChosen(user);
+            for (String user : temp) {
+                addChosen(user);
+                Log.d("BUTFUCK", user);
+            }
         } else if (chosen.size() + signUps.size() < eventSize) {
             ArrayList<String> shuffled = new ArrayList<>(registered);
             Collections.shuffle(shuffled);

@@ -1,5 +1,7 @@
 package com.example.dangle_lotto;
 
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.Timestamp;
 
 import java.util.ArrayList;
@@ -158,29 +160,24 @@ public class Event {
     }
 
 
-
-    public void addRegistered(User user) {
-        if (registered.contains(user.getUid())){
+    public Task<Void> addRegistered(String uid) {
+        if (registered.contains(uid)){
             throw new IllegalArgumentException("User is already registered");
         }else{
-            registered.add(user.getUid());
+            registered.add(uid);
 
             // remove from other lists (just to make sure)
-            this.deleteSignUp(user);
-            this.deleteChosen(user);
-            this.deleteCancelled(user);
+            this.deleteSignUp(uid);
+            this.deleteChosen(uid);
+            this.deleteCancelled(uid);
 
-            firebaseManager.userAddStatus(user, this, "Register");
+            return firebaseManager.userAddStatus(uid, eid, "Register");
         }
     }
 
-    public void deleteRegistered(User user) {
-        if (!registered.contains(user.getUid())){
-            throw new IllegalArgumentException("User is not registered");
-        } else {
-            registered.remove(user.getUid());
-            firebaseManager.userRemoveStatus(user, this, "Register");
-        }
+    public Task<Void> deleteRegistered(String uid) {
+        registered.remove(uid);
+        return firebaseManager.userRemoveStatus(uid, eid, "Register");
     }
 
     // FIX WHEN ADDING A REGISTRATION CAP
@@ -188,82 +185,79 @@ public class Event {
 //        return registered.size() >= eventSize;
 //    }
 
-    public void addChosen(User user) {
-        if (!chosen.contains(user.getUid())) {
-            chosen.add(user.getUid());
+    public Task<Void> addChosen(String uid) {
+        if (!chosen.contains(uid)) {
+            chosen.add(uid);
 
             // remove from other lists
-            this.deleteSignUp(user);
-            this.deleteRegistered(user);
-            this.deleteCancelled(user);
+            this.deleteSignUp(uid);
+            this.deleteRegistered(uid);
+            this.deleteCancelled(uid);
 
-            firebaseManager.userAddStatus(user, this, "Chosen");
+            return firebaseManager.userAddStatus(uid, eid, "Chosen");
         }else{
             throw new IllegalArgumentException("User is already chosen");
         }
 
     }
 
-    public void deleteChosen(User user) {
-        if (!registered.contains(user.getUid())){
-            throw new IllegalArgumentException("User is not registered");
-        } else {
-            chosen.remove(user.getUid());
-            firebaseManager.userRemoveStatus(user, this, "Register");
-        }
+    public Task<Void> deleteChosen(String uid) {
+        chosen.remove(uid);
+        return firebaseManager.userRemoveStatus(uid, eid, "Register");
     }
 
     /**
      * Adds a user ID to the list of sign-ups.
      *
-     * @param user the user to add to the sign-ups list
+     * @param uid the user to add to the sign-ups list
      */
-    public void addSignUp(User user) {
-        if (!signUps.contains(user.getUid())) {
-            signUps.add(user.getUid());
+    public Task<Void> addSignUp(String uid) {
+        if (!signUps.contains(uid)) {
+            signUps.add(uid);
 
             // remove from other lists
-            this.deleteRegistered(user);
-            this.deleteChosen(user);
-            this.deleteCancelled(user);
+            this.deleteRegistered(uid);
+            this.deleteChosen(uid);
+            this.deleteCancelled(uid);
 
-            firebaseManager.userAddStatus(user, this, "SignUps");
+            return firebaseManager.userAddStatus(uid, eid, "SignUps");
         }else{
             throw new IllegalArgumentException("User is already signed up");
         }
     }
 
-    public void deleteSignUp(User user) {
-        if (!signUps.contains(user.getUid())) {
-            throw new IllegalArgumentException("User is not signed up");
-        } else {
-            signUps.remove(user.getUid());
-            firebaseManager.userRemoveStatus(user, this, "SignUps");
-        }
+    public Task<Void> deleteSignUp(String uid) {
+        signUps.remove(uid);
+        return firebaseManager.userRemoveStatus(uid, eid, "SignUps");
     }
 
-    public void addCancelled(User user) {
-        if (!cancelled.contains(user.getUid())) {
-            cancelled.add(user.getUid());
+    public Task<Void> addCancelled(String uid) {
+        if (!cancelled.contains(uid)) {
+            cancelled.add(uid);
 
             // remove from other lists
-            this.deleteRegistered(user);
-            this.deleteChosen(user);
-            this.deleteSignUp(user);
+            this.deleteRegistered(uid);
+            this.deleteChosen(uid);
+            this.deleteSignUp(uid);
 
-            firebaseManager.userAddStatus(user, this, "Cancelled");
+            return firebaseManager.userAddStatus(uid, eid, "Cancelled");
         } else{
             throw new IllegalArgumentException("User is already cancelled");
         }
     }
 
-    public void deleteCancelled(User user) {
-        if (!cancelled.contains(user.getUid())) {
-            throw new IllegalArgumentException("User is not cancelled");
-        } else {
-            cancelled.remove(user.getUid());
-            firebaseManager.userRemoveStatus(user, this, "Cancelled");
-        }
+    public Task<Void> deleteCancelled(String uid) {
+        cancelled.remove(uid);
+        return firebaseManager.userRemoveStatus(uid, eid, "Cancelled");
+    }
+
+    public Task<Void> deleteFromEvent(String uid) {
+        Task<Void> t1 = deleteRegistered(uid);
+        Task<Void> t2 = deleteSignUp(uid);
+        Task<Void> t3 = deleteChosen(uid);
+        Task<Void> t4 = deleteCancelled(uid);
+        return Tasks.whenAll(t1, t2, t3, t4);
+
     }
 
     // FINALIZE IMPLEMENTATION LATER - need to save to firebase?
@@ -293,24 +287,22 @@ public class Event {
      *
      * @return arraylist of user id's who have been chosen for the lottery for the event
      */
-    public ArrayList<String> chooseLottoWinners() {
-        ArrayList<String> winners = new ArrayList<>();
+    public void chooseLottoWinners() {
         if (registered.isEmpty()) {
-            System.out.println("No sign-ups yet");
-            return winners;
+            throw new IllegalArgumentException("Event has no registered users");
         }
+        // if all ppl who registered can go (there is less than the max on the event)
         if (registered.size() <= eventSize) {
-            winners = new ArrayList<>(registered);
-            return winners;
+            for (String user : registered) {
+                addChosen(user);
+            }
+        }else{
+            ArrayList<String> shuffled = new ArrayList<>(registered);
+            Collections.shuffle(shuffled);
+            for (int i = 0; i < eventSize; i++) {
+                addChosen(shuffled.get(i));
+            }
         }
-        ArrayList<String> shuffled = new ArrayList<>(registered);
-        Collections.shuffle(shuffled);
-
-        for (int i = 0; i < eventSize; i++) {
-            winners.add(shuffled.get(i));
-        }
-
-        return winners;
     }
 
     // implement logic for displaying pictures

@@ -521,5 +521,12 @@ public class Event {
             }
         }
     }
+
+    public void cancelAllChosen() {
+        ArrayList<String> temp = new ArrayList<>(chosen);
+        for (String user : temp) {
+            addCancelled(user);
+        }
+    }
 }
 

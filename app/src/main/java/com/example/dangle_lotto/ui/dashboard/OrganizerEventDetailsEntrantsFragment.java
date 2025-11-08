@@ -55,7 +55,6 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
     private Chip chipRegistrants, chipChosen, chipSignups, chipCancelled;
     private Button dynamicButton;
     private Button removeButton;
-    private EditText chooseEntrantsTextView;
 
     private enum Filter { REGISTRANTS, CHOSEN, SIGNUPS, CANCELLED }
     private Filter currentFilter;
@@ -78,9 +77,6 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
         // button
         dynamicButton = binding.eventDetailsEntrantsButton;
         removeButton = binding.eventDetailsEntrantsRemoveButton;
-
-        // edit text view
-        chooseEntrantsTextView = binding.eventDetailsEntrantsAmount;
 
         // views
         listView  = binding.entrantsListView;
@@ -111,19 +107,16 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
             if (id == chipRegistrants.getId()) {
                 currentFilter = Filter.REGISTRANTS;
                 dynamicButton.setText("Choose:");
-                chooseEntrantsTextView.setVisibility(View.VISIBLE);
                 removeButton.setVisibility(View.GONE);
             } else if (id == chipChosen.getId()) {
                 currentFilter = Filter.CHOSEN;
                 dynamicButton.setText("Notify");
-                chooseEntrantsTextView.setVisibility(View.GONE);
                 removeButton.setVisibility(View.VISIBLE);
             } else {
                 if (id == chipSignups.getId()) currentFilter = Filter.SIGNUPS;
                 else if (id == chipCancelled.getId()) currentFilter = Filter.CANCELLED;
 
                 dynamicButton.setText("Notify");
-                chooseEntrantsTextView.setVisibility(View.GONE);
                 removeButton.setVisibility(View.GONE);
             }
 
@@ -134,8 +127,16 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
         dynamicButton.setOnClickListener(v -> {
             if (currentFilter == Filter.REGISTRANTS) {
                 event.chooseLottoWinners();
+                loadEntrants(currentFilter);
             } else {
                 // can add manual notify functionality here
+            }
+        });
+
+        removeButton.setOnClickListener(v -> {
+            if (currentFilter == Filter.CHOSEN) {
+                event.cancelAllChosen();
+                loadEntrants(currentFilter);
             }
         });
 

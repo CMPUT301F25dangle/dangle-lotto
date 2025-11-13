@@ -377,7 +377,7 @@ public class Event {
      */
     public Task<Void> deleteRegistered(String uid) {
         registered.remove(uid);
-        return firebaseManager.userRemoveStatus(uid, eid, "Register");
+        return firebaseManager.userRemoveStatus(uid, eid, "Chosen");
     }
 
     /**

@@ -95,6 +95,8 @@
         android:text="Remove"
         android:textSize="24sp"
         android:visibility="gone"
+        android:layout_marginHorizontal="8dp"
+        android:backgroundTint="@color/red"
         app:layout_constraintTop_toTopOf="@id/event_details_entrants_button"
         app:layout_constraintBottom_toBottomOf="@id/event_details_entrants_button"
         app:layout_constraintStart_toEndOf="@id/event_details_entrants_button"

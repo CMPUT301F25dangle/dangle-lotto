@@ -106,7 +106,7 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
 
             if (id == chipRegistrants.getId()) {
                 currentFilter = Filter.REGISTRANTS;
-                dynamicButton.setText("Choose:");
+                dynamicButton.setText("Choose");
                 removeButton.setVisibility(View.GONE);
             } else if (id == chipChosen.getId()) {
                 currentFilter = Filter.CHOSEN;
@@ -129,7 +129,7 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
                 event.chooseLottoWinners();
                 loadEntrants(currentFilter);
             } else {
-                // can add manual notify functionality here
+                // can add manual notify functionality here using the data in the list view
             }
         });
 

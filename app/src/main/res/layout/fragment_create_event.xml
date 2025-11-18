@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
@@ -7,233 +9,269 @@
     android:background="@color/white"
     tools:context="ui.create_event.CreateEventFragment">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
-        android:id="@+id/header_container"
+    <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="60dp"
-        android:background="@color/light_blue"
-        app:layout_constraintTop_toTopOf="parent">
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-    <TextView
-        android:id="@+id/create_event_name_hint"
-        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="12dp"
-        android:text="@string/event_name"
-        android:textColor="@color/black"
+        android:fillViewport="true"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            tools:context="ui.create_event.CreateEventFragment">
+
+            <TextView
+                android:id="@+id/title_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Create Event"
+                android:textStyle="bold"
+                android:textSize="48sp"
+                android:layout_margin="16dp"
+                android:textColor="@color/black"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"/>
+<!--            <ImageButton-->
+<!--                android:id="@+id/btn_back"-->
+<!--                android:layout_width="48dp"-->
+<!--                android:layout_height="48dp"-->
+<!--                android:layout_marginTop="12dp"-->
+<!--                android:layout_marginStart="12dp"-->
+<!--                android:background="?attr/selectableItemBackgroundBorderless"-->
+<!--                android:contentDescription="@null"-->
+<!--                android:padding="8dp"-->
+<!--                android:src="@android:drawable/ic_menu_revert"-->
+<!--                android:clickable="true"-->
+<!--                android:focusable="true"-->
+<!--                android:elevation="8dp"-->
+<!--                app:layout_constraintStart_toStartOf="parent"-->
+<!--                app:layout_constraintTop_toTopOf="parent"-->
+<!--                app:layout_constraintBottom_toTopOf="@+id/create_event_name_hint"-->
+<!--                app:tint="?attr/colorOnBackground" />-->
+
+<!--            <Button-->
+<!--                android:id="@+id/create_event_done"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_marginTop="10dp"-->
+<!--                android:layout_height="48dp"-->
+<!--                android:background="@android:color/transparent"-->
+<!--                android:text="@string/done_create_event"-->
+<!--                android:textColor="@color/black"-->
+<!--                android:textSize="24sp"-->
+<!--                android:clickable="true"-->
+<!--                android:focusable="true"-->
+<!--                android:elevation="10dp"-->
+<!--                app:layout_constraintEnd_toEndOf="parent"-->
+<!--                app:layout_constraintTop_toTopOf="parent"-->
+<!--                app:layout_constraintBottom_toTopOf="@+id/create_event_name_hint"-->
+<!--                android:layout_marginEnd="16dp" />-->
+
+            <TextView
+                android:id="@+id/create_event_name_hint"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="12dp"
+                android:text="@string/event_name"
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/title_text" />
+
+            <EditText
+                android:id="@+id/create_event_name_input"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:hint="@string/enter_event_name"
+                android:inputType="text"
+                android:padding="10dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/create_event_name_hint" />
+
+            <ImageView
+                android:id="@+id/create_event_banner"
+                android:layout_width="0dp"
+                android:layout_height="200dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="12dp"
+                android:background="@color/light_blue"
+                android:contentDescription="@string/todo"
+                android:scaleType="centerCrop"
+                android:src="@drawable/event_card_test_image"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/create_event_name_input" />
+
+            <Button
+                style="@style/Widget.MaterialComponents.Button"
+                android:id="@+id/create_event_banner_button"
+                android:layout_width="0dp"
+                android:layout_height="60dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="8dp"
+                android:text="@string/upload_poster"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/create_event_banner" />
+
+            <LinearLayout
+                android:id="@+id/create_event_enter_max_entrants_layout"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/create_event_banner_button">
+
+                <CheckBox
+                    android:id="@+id/cb_max_entrants"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:checked="false"
+                    android:text="@string/maximum_entrants" />
+
+                <EditText
+                    android:id="@+id/create_event_input_maxEntrants"
+                    android:layout_width="60dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:gravity="center"
+                    android:enabled="false"
+                    android:inputType="number" />
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Limit"/>
+                <EditText
+                    android:layout_width="60dp"
+                    android:layout_height="wrap_content"
+                    android:id="@+id/create_event_size_input"
+                    android:text="1"
+                    android:textAlignment="center"
+                    android:inputType="number"
+                    />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/create_event_deadline_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:text="@string/deadline"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/create_event_enter_max_entrants_layout" />
+
+            <com.google.android.material.textview.MaterialTextView
+                android:id="@+id/create_event_input_date"
+                android:layout_width="0dp"
+                android:layout_height="56dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="8dp"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="Select Date and Time"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:background="@drawable/bg_input_field"
+                android:clickable="true"
+                android:focusable="true"
+                android:drawableStart="@drawable/ic_calendar"
+                android:drawablePadding="12dp"
+                android:elevation="1dp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/create_event_deadline_label" />
+
+            <TextView
+                android:id="@+id/create_event_description_label"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:text="@string/event_description"
+                android:textColor="@color/black"
+                android:textSize="16sp"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/create_event_input_date" />
+
+            <EditText
+                android:id="@+id/create_event_input_description"
+                android:layout_width="0dp"
+                android:layout_height="120dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="4dp"
+                android:gravity="top|start"
+                android:hint="@string/describe_your_event"
+                android:inputType="textMultiLine"
+                android:padding="10dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/create_event_description_label" />
+
+            <CheckBox
+                android:id="@+id/cb_enable_geolocation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="12dp"
+                android:text="@string/require_geolocation"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/create_event_input_description" />
+
+            <EditText
+                android:id="@+id/create_event_categories_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_margin="10dp"
+                android:hint="@string/enter_categories_separated_by_string"
+                android:inputType="text"
+                android:paddingBottom="100dp"
+                app:layout_constraintLeft_toLeftOf="parent"
+                app:layout_constraintRight_toRightOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/cb_enable_geolocation" />
+
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_cancel"
+        style="@style/Widget.MaterialComponents.Button"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_margin="16dp"
+        android:text="Cancel"
+        android:textAllCaps="false"
         android:textSize="18sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/header_container" />
-
-    <EditText
-        android:id="@+id/create_event_name_input"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:hint="@string/enter_event_name"
-        android:inputType="text"
-        android:padding="10dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/create_event_name_hint" />
-
-    <ImageView
-        android:id="@+id/create_event_banner"
-        android:layout_width="0dp"
-        android:layout_height="200dp"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="12dp"
-        android:background="@color/light_blue"
-        android:contentDescription="@string/todo"
-        android:scaleType="centerCrop"
-        android:src="@drawable/event_card_test_image"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/create_event_name_input" />
-
-    <Button
-        android:id="@+id/create_event_banner_button"
-        android:layout_width="0dp"
-        android:layout_height="60dp"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="8dp"
-        android:backgroundTint="@color/dark_blue"
-        android:text="@string/upload_poster"
-        android:textColor="@color/white"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/create_event_banner" />
-
-    <LinearLayout
-        android:id="@+id/create_event_enter_max_entrants_layout"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="12dp"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/create_event_banner_button">
-
-        <CheckBox
-            android:id="@+id/cb_max_entrants"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:checked="false"
-            android:text="@string/maximum_entrants" />
-
-        <EditText
-            android:id="@+id/create_event_input_maxEntrants"
-            android:layout_width="60dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:gravity="center"
-            android:enabled="false"
-            android:inputType="number" />
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Limit"/>
-        <EditText
-            android:layout_width="60dp"
-            android:layout_height="wrap_content"
-            android:id="@+id/create_event_size_input"
-            android:text="1"
-            android:textAlignment="center"
-            android:inputType="number"
-            />
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/create_event_deadline_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="@string/deadline"
         android:textColor="@color/black"
-        android:textSize="16sp"
+        android:backgroundTint="@color/grey"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/create_event_enter_max_entrants_layout" />
+        app:layout_constraintEnd_toStartOf="@id/btn_done" />
 
-    <LinearLayout
-        android:id="@+id/create_event_date_picker_layout"
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btn_done"
+        style="@style/Widget.MaterialComponents.Button"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="6dp"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/create_event_deadline_label">
-
-        <EditText
-            android:id="@+id/create_event_input_date"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:inputType="date"
-            android:padding="8dp" />
-
-        <EditText
-            android:id="@+id/create_event_input_time"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
-            android:layout_weight="1"
-            android:gravity="center"
-            android:inputType="text"
-            android:padding="8dp" />
-    </LinearLayout>
-
-    <TextView
-        android:id="@+id/create_event_description_label"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        android:text="@string/event_description"
-        android:textColor="@color/black"
-        android:textSize="16sp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/create_event_date_picker_layout" />
-
-    <EditText
-        android:id="@+id/create_event_input_description"
-        android:layout_width="0dp"
-        android:layout_height="120dp"
-        android:layout_marginHorizontal="16dp"
-        android:layout_marginTop="4dp"
-        android:gravity="top|start"
-        android:hint="@string/describe_your_event"
-        android:inputType="textMultiLine"
-        android:padding="10dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/create_event_description_label" />
-
-    <CheckBox
-        android:id="@+id/cb_enable_geolocation"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="12dp"
-        android:text="@string/require_geolocation"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/create_event_input_description" />
-
-    <EditText
-        android:id="@+id/create_event_categories_input"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:hint="@string/enter_categories_separated_by_string"
-        android:inputType="text"
-        app:layout_constraintLeft_toLeftOf="parent"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cb_enable_geolocation" />
-
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Make QR Code"
-        app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/create_event_input_description"
-        android:id="@+id/create_event_qr_generate"
-        android:layout_margin="20dp"
-        android:backgroundTint="@color/light_blue"/>
-    <Button
-        android:id="@+id/create_event_cancel"
-        android:layout_width="wrap_content"
-        android:layout_marginTop="10dp"
         android:layout_height="48dp"
-        android:background="@android:color/transparent"
-        android:text="@string/cancel_create_event"
-        android:textColor="@color/black"
-        android:textSize="24sp"
-        android:clickable="true"
-        android:focusable="true"
-        android:elevation="10dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginStart="16dp" />
+        android:layout_margin="16dp"
+        android:text="Done"
+        android:textAllCaps="false"
+        android:textSize="18sp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toEndOf="@id/btn_cancel"
+        app:layout_constraintEnd_toEndOf="parent" />
 
-    <Button
-        android:id="@+id/create_event_done"
-        android:layout_width="wrap_content"
-        android:layout_marginTop="10dp"
-        android:layout_height="48dp"
-        android:background="@android:color/transparent"
-        android:text="@string/done_create_event"
-        android:textColor="@color/black"
-        android:textSize="24sp"
-        android:clickable="true"
-        android:focusable="true"
-        android:elevation="10dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:layout_marginEnd="16dp" />
 </androidx.constraintlayout.widget.ConstraintLayout>

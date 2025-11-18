@@ -9,24 +9,6 @@
     android:paddingTop="36dp"
     >
 
-    <!-- Top-right "?" button in the view -->
-    <ImageButton
-        android:id="@+id/btn_help"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginEnd="12dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="@string/terms_of_service"
-        android:padding="8dp"
-        android:src="@android:drawable/ic_menu_help"
-        android:clickable="true"
-        android:focusable="true"
-        android:elevation="8dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:tint="?attr/colorOnBackground" />
-
     <!-- Top-left back button in the view -->
     <ImageButton
         android:id="@+id/btn_back"
@@ -52,7 +34,7 @@
         android:layout_height="0dp"
         android:fillViewport="true"
         android:padding="24dp"
-        app:layout_constraintTop_toBottomOf="@id/btn_help"
+        app:layout_constraintTop_toBottomOf="@id/btn_back"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toTopOf="@id/btnSignUp">
@@ -72,6 +54,7 @@
                 android:textSize="48dp"
                 android:textAlignment="center"
                 android:layout_marginBottom="8dp" />
+
             <!-- Event Poster -->
             <ImageView
                 android:id="@+id/img_poster"
@@ -80,7 +63,6 @@
                 android:scaleType="centerCrop"
                 android:contentDescription="@null"
                 android:src="@drawable/event_poster" />
-
 
             <!-- Spots remaining -->
             <TextView

@@ -1,5 +1,6 @@
 package com.example.dangle_lotto.ui.create_event;
 
+import android.app.TimePickerDialog;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -18,6 +19,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentCreateEventBinding;
+import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.firebase.Timestamp;
 
 import java.text.ParseException;
@@ -55,6 +57,8 @@ public class CreateEventFragment extends Fragment {
     private int maxEntrants = -1;
     private Bitmap qr = null;
 
+    private long selectedDateTimeMillis;
+
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -66,19 +70,22 @@ public class CreateEventFragment extends Fragment {
                 WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
 
         // Make sure buttons are on top
-        binding.createEventCancel.bringToFront();
-        binding.createEventDone.bringToFront();
+        binding.btnCancel.bringToFront();
+        binding.btnDone.bringToFront();
+
+        selectedDateTimeMillis = System.currentTimeMillis() + 1000*60*60; // an hour ahead is default time
+
 
         // initialize viewmodel and firebase manager
         firebaseManager = new FirebaseManager();
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
         // buttons
-        binding.createEventCancel.setOnClickListener(v -> {
+        binding.btnCancel.setOnClickListener(v -> {
             goBack();
         });
 
-        binding.createEventDone.setOnClickListener(v -> {
+        binding.btnDone.setOnClickListener(v -> {
             createEvent();
         });
 
@@ -91,24 +98,80 @@ public class CreateEventFragment extends Fragment {
         // Set default max entrants
         binding.createEventInputMaxEntrants.setText("50");
 
-        // Set default date/time
-        Calendar calendar = Calendar.getInstance();
-        Date defaultDate = calendar.getTime();
-        SimpleDateFormat dateFormat = new SimpleDateFormat("MMMM d, yyyy", Locale.getDefault());
-        SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm:ss", Locale.getDefault());
-        binding.createEventInputDate.setText(dateFormat.format(defaultDate));
-        binding.createEventInputTime.setText(timeFormat.format(defaultDate));
-
-        binding.createEventQrGenerate.setOnClickListener(v -> {
-            if (TextUtils.isEmpty(binding.createEventNameInput.getText())) {
-                Toast.makeText(getActivity(), "Need a name", Toast.LENGTH_SHORT).show();
-            } else {
-                generateQRCode(binding.createEventNameInput.getText().toString());
-            }
-        });
+        binding.createEventInputDate.setOnClickListener(v -> showDateTimePicker());
+//        binding.btnDone.setOnClickListener(v -> {
+//            if (TextUtils.isEmpty(binding.createEventNameInput.getText())) {
+//                Toast.makeText(getActivity(), "Need a name", Toast.LENGTH_SHORT).show();
+//            } else {
+//                generateQRCode(binding.createEventNameInput.getText().toString());
+//            }
+//        });
 
         return root;
     }
+
+    private void showDateTimePicker() {
+
+        MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
+                .setTitleText("Select deadline date")
+                .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
+                .build();
+
+        datePicker.addOnPositiveButtonClickListener(selection -> {
+
+            // Convert picked date from UTC → local time zone
+            Calendar pickedUtc = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+            pickedUtc.setTimeInMillis(selection);
+
+            Calendar localCal = Calendar.getInstance();
+            localCal.set(Calendar.YEAR, pickedUtc.get(Calendar.YEAR));
+            localCal.set(Calendar.MONTH, pickedUtc.get(Calendar.MONTH));
+            localCal.set(Calendar.DAY_OF_MONTH, pickedUtc.get(Calendar.DAY_OF_MONTH));
+
+            // ★ Get current local hour/minute for default time picker
+            Calendar now = Calendar.getInstance();
+            int defaultHour = now.get(Calendar.HOUR_OF_DAY);
+            int defaultMinute = now.get(Calendar.MINUTE);
+
+            // TIME PICKER
+            TimePickerDialog timePicker = new TimePickerDialog(
+                    requireContext(),
+                    (view, hour, minute) -> {
+
+                        // Combine chosen date + chosen time (local timezone)
+                        localCal.set(Calendar.HOUR_OF_DAY, hour);
+                        localCal.set(Calendar.MINUTE, minute);
+                        localCal.set(Calendar.SECOND, 0);
+                        localCal.set(Calendar.MILLISECOND, 0);
+
+                        if (localCal.getTimeInMillis() < System.currentTimeMillis()){
+                            Toast.makeText(getActivity(), "Invalid time. Time must be in the future",
+                                    Toast.LENGTH_SHORT).show();
+                            return;
+                        }else {
+                            // Convert local → UTC
+                            Calendar utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+                            utcCal.setTimeInMillis(localCal.getTimeInMillis());
+                            selectedDateTimeMillis = utcCal.getTimeInMillis();
+
+                            // Display back to user in local time
+                            SimpleDateFormat fmt = new SimpleDateFormat("MMMM d, yyyy h:mm a", Locale.getDefault());
+                            binding.createEventInputDate.setText(fmt.format(localCal.getTime()));
+                        }
+                    },
+                    defaultHour,   // ★ starting hour
+                    defaultMinute, // ★ starting minute
+                    false
+            );
+
+            timePicker.show();
+
+        });
+
+        datePicker.show(getParentFragmentManager(), "DATE_PICKER");
+    }
+
+
 
     /**
      * Toggles the status of max entrants input to be in accordance with the checkbox
@@ -140,24 +203,12 @@ public class CreateEventFragment extends Fragment {
             }
 
             String description = binding.createEventInputDescription.getText().toString().trim();
-            // Parse date/time safely
-            String date = binding.createEventInputDate.getText().toString().trim();
-            String time = binding.createEventInputTime.getText().toString().trim();
-
-            String dateTimeString = date + " " + time;
-            SimpleDateFormat dateTimeFormat = new SimpleDateFormat("MMMM d, yyyy HH:mm:ss", Locale.getDefault());
-            dateTimeFormat.setTimeZone(TimeZone.getTimeZone("America/Denver"));
 
             Timestamp dateTimeStamp;
             try {
-                Date parsedDate = dateTimeFormat.parse(dateTimeString);
-                if (parsedDate == null) {
-                    Log.e("CreateEvent", "Failed to parse date");
-                    return;
-                }
-                dateTimeStamp = new Timestamp(parsedDate);
-            } catch (ParseException e) {
-                Log.e("CreateEvent", "Date parsing error: " + e.getMessage());
+                dateTimeStamp = new Timestamp(new Date(selectedDateTimeMillis));
+            } catch (Exception e) {
+                Log.e("CreateEvent", "Error parsing date: " + e.getMessage(), e);
                 return;
             }
 
@@ -215,12 +266,12 @@ public class CreateEventFragment extends Fragment {
     private void generateQRCode(String text) {
         if (qr == null) {
             BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
-            try {
-                qr = barcodeEncoder.encodeBitmap(text + binding.createEventInputTime.getText().toString(), BarcodeFormat.QR_CODE, 600, 600);
-                openQRDialogue();
-            } catch (WriterException e) {
-                e.printStackTrace();
-            }
+//            try {
+//                qr = barcodeEncoder.encodeBitmap(text + binding.createEventInputTime.getText().toString(), BarcodeFormat.QR_CODE, 600, 600);
+//                openQRDialogue();
+//            } catch (WriterException e) {
+//                e.printStackTrace();
+//            }
         }
     }
 

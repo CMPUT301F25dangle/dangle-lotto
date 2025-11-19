@@ -377,7 +377,7 @@ public class Event {
      */
     public Task<Void> deleteRegistered(String uid) {
         registered.remove(uid);
-        return firebaseManager.userRemoveStatus(uid, eid, "Register");
+        return firebaseManager.userRemoveStatus(uid, eid, "Chosen");
     }
 
     /**
@@ -520,5 +520,11 @@ public class Event {
             }
         }
     }
-}
 
+    public void cancelAllChosen() {
+        ArrayList<String> temp = new ArrayList<>(chosen);
+        for (String user : temp) {
+            addCancelled(user);
+        }
+    }
+}

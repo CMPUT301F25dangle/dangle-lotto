@@ -487,8 +487,8 @@ public class FirebaseManager {
      * @param numEvents  number of events to retrieve
      * @param callback  callback function to call when event is retrieved
      */
-    public void getEventsQuery(DocumentSnapshot lastVisible, int numEvents, FirebaseCallback<ArrayList<DocumentSnapshot>> callback){
-        Query query = events.orderBy("Date", Query.Direction.DESCENDING).limit(numEvents);
+    public void getEventsQuery(DocumentSnapshot lastVisible, int numEvents, String userId, FirebaseCallback<ArrayList<DocumentSnapshot>> callback){
+        Query query = events.whereNotEqualTo("Organizer", userId).orderBy("Date", Query.Direction.DESCENDING).limit(numEvents);
 
         if (lastVisible != null) query = query.startAfter(lastVisible);
         query.get().addOnCompleteListener(task -> {

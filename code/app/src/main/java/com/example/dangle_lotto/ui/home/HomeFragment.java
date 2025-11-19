@@ -97,9 +97,12 @@ public class HomeFragment extends Fragment {
         });
 
         // if data is not cached, load first page
-        if (events.isEmpty()) {
-            loadFirstPage();
-        }
+        // also ensures that data is only loaded if user is accessible
+        userViewModel.getUser().observe(getViewLifecycleOwner(), user -> {
+            if (user != null && events.isEmpty()) {
+                loadFirstPage();  // SAFE now
+            }
+        });
 
         // initialize button for opening filter dialogue
         binding.filterButton.setOnClickListener(v -> openFilterDialogue());
@@ -142,8 +145,9 @@ public class HomeFragment extends Fragment {
      */
     private void loadFirstPage() {
         isLoading = true;
+        String userId = userViewModel.getUser().getValue().getUid();
 
-        firebaseManager.getEventsQuery(null, PAGE_SIZE, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
+        firebaseManager.getEventsQuery(null, PAGE_SIZE, userId, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
                 int startPos = events.size();
@@ -174,10 +178,12 @@ public class HomeFragment extends Fragment {
      * Loads the next page of events by querying firebase
      */
     private void loadNextPage() {
+        String userId = userViewModel.getUser().getValue().getUid();
+
         if (isLoading || lastVisible == null) return;
         isLoading = true;
         Toast.makeText(getContext(), "Loading more events...", Toast.LENGTH_SHORT).show();
-        firebaseManager.getEventsQuery(lastVisible, PAGE_SIZE, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
+        firebaseManager.getEventsQuery(lastVisible, PAGE_SIZE, userId, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
                 Log.d("Firebase", "Loaded " + result.size() + " events");

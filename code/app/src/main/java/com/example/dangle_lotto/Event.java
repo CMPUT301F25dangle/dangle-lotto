@@ -406,7 +406,7 @@ public class Event {
      */
     public Task<Void> deleteChosen(String uid) {
         chosen.remove(uid);
-        return firebaseManager.userRemoveStatus(uid, eid, "Register");
+        return firebaseManager.userRemoveStatus(uid, eid, "Chosen");
     }
 
     /**

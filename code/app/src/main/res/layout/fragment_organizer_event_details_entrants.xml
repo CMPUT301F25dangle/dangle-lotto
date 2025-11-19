@@ -81,34 +81,25 @@
         android:id="@+id/event_details_entrants_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Choose:"
-        android:textSize="24dp"
+        android:text="Choose"
+        android:textSize="24sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toStartOf="@id/event_details_entrants_remove_button"
-        app:layout_constraintHorizontal_chainStyle="packed" />
+        app:layout_constraintHorizontal_chainStyle="packed"
+        app:layout_constraintStart_toStartOf="parent" />
 
     <Button
         android:id="@+id/event_details_entrants_remove_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Remove"
+        android:textSize="24sp"
         android:visibility="gone"
-        android:textSize="24dp"
-        app:layout_constraintBottom_toBottomOf="parent"
+        android:layout_marginHorizontal="8dp"
+        android:backgroundTint="@color/red"
+        app:layout_constraintTop_toTopOf="@id/event_details_entrants_button"
+        app:layout_constraintBottom_toBottomOf="@id/event_details_entrants_button"
         app:layout_constraintStart_toEndOf="@id/event_details_entrants_button"
-        app:layout_constraintEnd_toStartOf="@id/event_details_entrants_amount" />
-
-    <EditText
-        android:id="@+id/event_details_entrants_amount"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:hint="Amount"
-        android:visibility="gone"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintStart_toEndOf="@id/event_details_entrants_remove_button"
-        app:layout_constraintEnd_toEndOf="parent"
-        android:layout_marginBottom="4dp"
-        app:layout_constraintWidth_default="spread" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

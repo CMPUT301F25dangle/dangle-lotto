@@ -13,7 +13,7 @@
     <string name="event_name">Event Name</string>
     <string name="enter_event_name">Enter event name</string>
     <string name="upload_poster">Upload Poster</string>
-    <string name="maximum_entrants">Maximum Entrants</string>
+    <string name="maximum_registrants">Maximum Registrants</string>
     <string name="deadline">Deadline</string>
     <string name="cancel_create_event">Cancel</string>
     <string name="done_create_event">Done</string>

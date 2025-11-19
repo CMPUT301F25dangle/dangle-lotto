@@ -19,6 +19,7 @@ import androidx.navigation.Navigation;
 import com.example.dangle_lotto.Event;
 import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.FirebaseManager;
+import com.example.dangle_lotto.GeneralUser;
 import com.example.dangle_lotto.User;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentEventDetailBinding;
@@ -71,20 +72,26 @@ public class EventDetailFragment extends Fragment {
             return root;
         }
 
+        // get organizer and set their name
+        firebaseManager.getUser(selectedEvent.getOrganizerID(), new FirebaseCallback<GeneralUser>() {
+            @Override
+            public void onSuccess(GeneralUser result) {
+                binding.organizerName.setText("Organizer: " + result.getName());
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
         // Display event information
         binding.eventTitle.setText(selectedEvent.getName());
         binding.eventDescription.setText(selectedEvent.getDescription());
         binding.eventDate.setText("Deadline: " + formatTimestamp(selectedEvent.getDate()));
         binding.organizerName.setText("Organizer: " + selectedEvent.getOrganizerID());
 
-        int eventLimit = selectedEvent.getEventSize();
-        int chosenCount = selectedEvent.getChosen().size();
-        if (eventLimit > 0) {
-            int spotsRemaining = Math.max(0, eventLimit - chosenCount);
-            binding.eventSpots.setText("Spots Remaining: " + spotsRemaining + "/" + eventLimit);
-        } else {
-            binding.eventSpots.setText("Attendees: " + chosenCount);
-        }
+        updateSpotsUI();
 
         binding.btnBack.setOnClickListener(
                 v -> Navigation.findNavController(v).popBackStack()
@@ -124,6 +131,21 @@ public class EventDetailFragment extends Fragment {
     }
 
     /**
+     * Updates the number of spots remaining in the event.
+     */
+    private void updateSpotsUI() {
+        Integer registrantsLimit = selectedEvent.getMaxEntrants();
+        int registrantsCount = selectedEvent.getSignUps().size() + selectedEvent.getCancelled().size() +selectedEvent.getChosen().size() + selectedEvent.getRegistered().size();
+
+        if (registrantsLimit != null) {
+            int spotsRemaining = Math.max(0, registrantsLimit - registrantsCount);
+            binding.eventSpots.setText("Spots Remaining: " + spotsRemaining + "/" + registrantsLimit);
+        } else {
+            binding.eventSpots.setText("Registrants: " + registrantsCount);
+        }
+    }
+
+    /**
      * Handle button click depending on user’s event state.
      */
     private void handleClick(String uid) {
@@ -136,6 +158,9 @@ public class EventDetailFragment extends Fragment {
                 performTask(selectedEvent.addRegistered(uid), "Registered for lottery");
                 isRegistered = true;
             }
+
+            updateSpotsUI();
+
         } else {
             // AFTER LOTTERY
             if (isChosen && !isSignedUp && !isCancelled) {
@@ -153,6 +178,9 @@ public class EventDetailFragment extends Fragment {
                     performTask(selectedEvent.addRegistered(uid), "Joined waitlist");
                     isRegistered = true;
                 }
+
+                updateSpotsUI();
+
             }
         }
 

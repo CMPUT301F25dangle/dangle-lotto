@@ -117,12 +117,13 @@ public class Event {
      * @param description     Description of the event.
      * @param photo_id        Associated photo identifier.
      * @param eventSize       Maximum number of attendees.
+     * @param maxEntrants     Optional maximum entrants cap.
      * @param categories      List of category tags.
      * @param firebaseManager Reference to FirebaseManager instance.
      */
     public Event(String eid, String organizer_id, String name, Timestamp deadline, String location,
-                 String description, String photo_id, int eventSize, ArrayList<String> categories,
-                 FirebaseManager firebaseManager) {
+                 String description, String photo_id, int eventSize, Integer maxEntrants,
+                 ArrayList<String> categories, FirebaseManager firebaseManager) {
 
         this.eid = eid;
         this.organizer_id = organizer_id;
@@ -132,14 +133,16 @@ public class Event {
         this.description = description;
         this.photo_id = photo_id;
         this.eventSize = eventSize;
+        this.maxEntrants = maxEntrants;
         this.categories = categories;
         this.firebaseManager = firebaseManager;
 
-        this.populateList("Register", registered);
-        this.populateList("Chosen", chosen);
-        this.populateList("SignUps", signUps);
-        this.populateList("Cancelled", cancelled);
+        populateList("Register", registered);
+        populateList("Chosen", chosen);
+        populateList("SignUps", signUps);
+        populateList("Cancelled", cancelled);
     }
+
 
     /**
      * Populates a participant list from a specific Firebase subcollection.
@@ -262,6 +265,24 @@ public class Event {
      */
     public void setEventSize(int eventSize) {
         this.eventSize = eventSize;
+        firebaseManager.updateEvent(this);
+    }
+
+    /**
+     * @return The optional maximum entrants cap.
+     */
+
+    public int getMaxEntrants() {
+        return maxEntrants;
+    }
+
+    /**
+     * Sets the optional maximum entrants cap and updates Firebase.
+     *
+     * @param maxEntrants New cap value.
+     */
+    public void setMaxEntrants(int maxEntrants) {
+        this.maxEntrants = maxEntrants;
         firebaseManager.updateEvent(this);
     }
 

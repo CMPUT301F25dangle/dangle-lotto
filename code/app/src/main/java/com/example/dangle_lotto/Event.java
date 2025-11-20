@@ -137,10 +137,10 @@ public class Event {
         this.categories = categories;
         this.firebaseManager = firebaseManager;
 
-        populateList("Register", registered);
-        populateList("Chosen", chosen);
-        populateList("SignUps", signUps);
-        populateList("Cancelled", cancelled);
+        this.populateList("Register", registered);
+        this.populateList("Chosen", chosen);
+        this.populateList("SignUps", signUps);
+        this.populateList("Cancelled", cancelled);
     }
 
 

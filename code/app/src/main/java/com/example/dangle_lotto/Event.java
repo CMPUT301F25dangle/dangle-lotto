@@ -398,7 +398,7 @@ public class Event {
      */
     public Task<Void> deleteRegistered(String uid) {
         registered.remove(uid);
-        return firebaseManager.userRemoveStatus(uid, eid, "Chosen");
+        return firebaseManager.userRemoveStatus(uid, eid, "Register");
     }
 
     /**
@@ -413,8 +413,8 @@ public class Event {
             throw new IllegalArgumentException("User is already chosen");
         }
         chosen.add(uid);
-        this.deleteSignUp(uid);
         this.deleteRegistered(uid);
+        this.deleteSignUp(uid);
         this.deleteCancelled(uid);
         return firebaseManager.userAddStatus(uid, eid, "Chosen");
     }

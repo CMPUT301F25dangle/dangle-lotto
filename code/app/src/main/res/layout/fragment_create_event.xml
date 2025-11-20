@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -7,11 +6,12 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/white"
+    android:paddingTop="12dp"
     tools:context="ui.create_event.CreateEventFragment">
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:fillViewport="true"
         app:layout_constraintBottom_toTopOf="@+id/btn_cancel"
         app:layout_constraintEnd_toEndOf="parent"
@@ -45,7 +45,7 @@
                 android:layout_marginTop="12dp"
                 android:text="@string/event_name"
                 android:textColor="@color/black"
-                android:textSize="18sp"
+                android:textSize="16sp"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/title_text" />
 
@@ -56,7 +56,8 @@
                 android:layout_marginHorizontal="16dp"
                 android:hint="@string/enter_event_name"
                 android:inputType="text"
-                android:padding="10dp"
+                android:paddingVertical="10dp"
+                android:textSize="16sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/create_event_name_hint" />
@@ -91,7 +92,7 @@
                 android:id="@+id/create_event_enter_max_entrants_layout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
+                android:layout_marginHorizontal="11dp"
                 android:layout_marginTop="12dp"
                 android:orientation="horizontal"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -103,7 +104,9 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:checked="false"
-                    android:text="@string/maximum_registrants" />
+                    android:text="@string/maximum_registrants"
+                    android:textSize="16sp"
+                    android:textColor="@color/black"/>
 
                 <EditText
                     android:id="@+id/create_event_input_maxEntrants"
@@ -112,7 +115,8 @@
                     android:layout_marginStart="8dp"
                     android:enabled="false"
                     android:gravity="center"
-                    android:inputType="number" />
+                    android:inputType="number"
+                    android:textSize="16sp"/>
             </LinearLayout>
 
             <LinearLayout
@@ -120,7 +124,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="16dp"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="8dp"
                 android:orientation="horizontal"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintEnd_toEndOf="parent"
@@ -130,6 +134,7 @@
                     android:id="@+id/create_event_size_label"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:textSize="16sp"
                     android:text="Limit"
                     android:textColor="@color/black"/>
 
@@ -140,7 +145,8 @@
                     android:layout_marginStart="8dp"
                     android:inputType="number"
                     android:text="1"
-                    android:gravity="center" />
+                    android:gravity="center"
+                    android:textSize="18sp"/>
             </LinearLayout>
 
             <TextView
@@ -148,7 +154,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="12dp"
                 android:text="@string/deadline"
                 android:textColor="@color/black"
                 android:textSize="16sp"
@@ -160,7 +166,7 @@
                 android:layout_width="0dp"
                 android:layout_height="56dp"
                 android:layout_marginHorizontal="16dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:background="@drawable/bg_input_field"
                 android:clickable="true"
                 android:drawableStart="@drawable/ic_calendar"
@@ -182,7 +188,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="12dp"
                 android:text="@string/event_description"
                 android:textColor="@color/black"
                 android:textSize="16sp"
@@ -198,7 +204,7 @@
                 android:gravity="top|start"
                 android:hint="@string/describe_your_event"
                 android:inputType="textMultiLine"
-                android:padding="10dp"
+                android:textSize="16sp"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/create_event_description_label" />
@@ -207,20 +213,22 @@
                 android:id="@+id/cb_enable_geolocation"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="12dp"
+                android:layout_marginStart="11dp"
+                android:layout_marginTop="8dp"
                 android:text="@string/require_geolocation"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/create_event_input_description" />
 
             <EditText
                 android:id="@+id/create_event_categories_input"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="10dp"
-                android:hint="@string/enter_categories_separated_by_string"
-                android:inputType="text"
-                android:paddingBottom="100dp"
+                android:layout_width="0dp"
+                android:layout_height="120dp"
+                android:layout_marginHorizontal="16dp"
+                android:layout_marginTop="4dp"
+                android:gravity="top|start"
+                android:hint="asdf"
+                android:inputType="textMultiLine"
+                android:textSize="16sp"
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/cb_enable_geolocation" />
@@ -249,7 +257,7 @@
         style="@style/Widget.MaterialComponents.Button"
         android:layout_width="0dp"
         android:layout_height="48dp"
-        android:layout_margin="16dp"
+        android:layout_margin="12dp"
         android:text="Done"
         android:textAllCaps="false"
         android:textSize="18sp"

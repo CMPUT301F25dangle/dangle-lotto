@@ -23,6 +23,7 @@ import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentHomeBinding;
 import com.example.dangle_lotto.ui.EventCardAdapter;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 
@@ -143,7 +144,8 @@ public class HomeFragment extends Fragment {
     private void loadFirstPage() {
         isLoading = true;
 
-        firebaseManager.getEventsQuery(null, PAGE_SIZE, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
+        Query query = firebaseManager.getEventsReference().orderBy("Date", Query.Direction.DESCENDING).limit(PAGE_SIZE);
+        firebaseManager.getQuery(null, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
                 int startPos = events.size();
@@ -177,7 +179,8 @@ public class HomeFragment extends Fragment {
         if (isLoading || lastVisible == null) return;
         isLoading = true;
         Toast.makeText(getContext(), "Loading more events...", Toast.LENGTH_SHORT).show();
-        firebaseManager.getEventsQuery(lastVisible, PAGE_SIZE, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
+        Query query = firebaseManager.getEventsReference().orderBy("Date", Query.Direction.DESCENDING).limit(PAGE_SIZE);
+        firebaseManager.getQuery(lastVisible, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
                 Log.d("Firebase", "Loaded " + result.size() + " events");
@@ -191,6 +194,8 @@ public class HomeFragment extends Fragment {
                 if (!result.isEmpty()) {
                     lastVisible = result.get(result.size() - 1);
                 } else {
+                    // THIS MAY NEED FIXING, DOES NOT WORK IF NEW EVENTS ARE ADDED DURING RUNTIME SHOULD PROLLY IMPLEMENT A REFRESH
+                    // ADD REFRESH THROUGH BUTTON
                     // No more pages
                     lastVisible = null;
                 }

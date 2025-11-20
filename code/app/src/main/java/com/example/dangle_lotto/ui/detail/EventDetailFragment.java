@@ -34,7 +34,7 @@ import java.util.Locale;
 /**
  * Displays the full details of an event and handles user interaction
  * depending on their event participation state.
- *
+ * <p>
  * User States:
  *  - Registered: on the waiting list before draw
  *  - Chosen: selected from the lottery
@@ -147,6 +147,8 @@ public class EventDetailFragment extends Fragment {
 
     /**
      * Handle button click depending on user’s event state.
+     *
+     * @param uid User ID of the clicked user.
      */
     private void handleClick(String uid) {
         if (!postDraw) {
@@ -189,6 +191,8 @@ public class EventDetailFragment extends Fragment {
 
     /**
      * Displays dialog for chosen users to accept or decline.
+     *
+     * @param uid User ID of the chosen user.
      */
     private void showChosenDialog(String uid) {
         new AlertDialog.Builder(requireContext())
@@ -235,6 +239,9 @@ public class EventDetailFragment extends Fragment {
 
     /**
      * Executes a Firebase Task safely with toast feedback.
+     *
+     * @param task Firebase Task to execute.
+     * @param successMsg Message to display on success.
      */
     private void performTask(Task<Void> task, String successMsg) {
         binding.btnSignUp.setEnabled(false);
@@ -248,10 +255,19 @@ public class EventDetailFragment extends Fragment {
         });
     }
 
+    /**
+     * Displays a toast message.
+     */
     private void showMessage(String msg) {
         Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Formats a Firebase Timestamp for display.
+     *
+     * @param ts Timestamp to format.
+     * @return Formatted date string.
+     */
     private String formatTimestamp(Timestamp ts) {
         if (ts == null) return "N/A";
         Date date = ts.toDate();

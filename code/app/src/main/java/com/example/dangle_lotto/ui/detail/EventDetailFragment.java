@@ -19,6 +19,7 @@ import androidx.navigation.Navigation;
 import com.example.dangle_lotto.Event;
 import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.FirebaseManager;
+import com.example.dangle_lotto.GeneralUser;
 import com.example.dangle_lotto.User;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentEventDetailBinding;
@@ -33,7 +34,7 @@ import java.util.Locale;
 /**
  * Displays the full details of an event and handles user interaction
  * depending on their event participation state.
- *
+ * <p>
  * User States:
  *  - Registered: on the waiting list before draw
  *  - Chosen: selected from the lottery
@@ -71,20 +72,26 @@ public class EventDetailFragment extends Fragment {
             return root;
         }
 
+        // get organizer and set their name
+        firebaseManager.getUser(selectedEvent.getOrganizerID(), new FirebaseCallback<GeneralUser>() {
+            @Override
+            public void onSuccess(GeneralUser result) {
+                binding.organizerName.setText("Organizer: " + result.getName());
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+
         // Display event information
         binding.eventTitle.setText(selectedEvent.getName());
         binding.eventDescription.setText(selectedEvent.getDescription());
         binding.eventDate.setText("Deadline: " + formatTimestamp(selectedEvent.getDate()));
         binding.organizerName.setText("Organizer: " + selectedEvent.getOrganizerID());
 
-        int eventLimit = selectedEvent.getEventSize();
-        int chosenCount = selectedEvent.getChosen().size();
-        if (eventLimit > 0) {
-            int spotsRemaining = Math.max(0, eventLimit - chosenCount);
-            binding.eventSpots.setText("Spots Remaining: " + spotsRemaining + "/" + eventLimit);
-        } else {
-            binding.eventSpots.setText("Attendees: " + chosenCount);
-        }
+        updateSpotsUI();
 
         binding.btnBack.setOnClickListener(
                 v -> Navigation.findNavController(v).popBackStack()
@@ -124,7 +131,24 @@ public class EventDetailFragment extends Fragment {
     }
 
     /**
+     * Updates the number of spots remaining in the event.
+     */
+    private void updateSpotsUI() {
+        Integer registrantsLimit = selectedEvent.getMaxEntrants();
+        int registrantsCount = selectedEvent.getSignUps().size() + selectedEvent.getCancelled().size() +selectedEvent.getChosen().size() + selectedEvent.getRegistered().size();
+
+        if (registrantsLimit != null) {
+            int spotsRemaining = Math.max(0, registrantsLimit - registrantsCount);
+            binding.eventSpots.setText("Spots Remaining: " + spotsRemaining + "/" + registrantsLimit);
+        } else {
+            binding.eventSpots.setText("Registrants: " + registrantsCount);
+        }
+    }
+
+    /**
      * Handle button click depending on user’s event state.
+     *
+     * @param uid User ID of the clicked user.
      */
     private void handleClick(String uid) {
         if (!postDraw) {
@@ -136,6 +160,9 @@ public class EventDetailFragment extends Fragment {
                 performTask(selectedEvent.addRegistered(uid), "Registered for lottery");
                 isRegistered = true;
             }
+
+            updateSpotsUI();
+
         } else {
             // AFTER LOTTERY
             if (isChosen && !isSignedUp && !isCancelled) {
@@ -153,6 +180,9 @@ public class EventDetailFragment extends Fragment {
                     performTask(selectedEvent.addRegistered(uid), "Joined waitlist");
                     isRegistered = true;
                 }
+
+                updateSpotsUI();
+
             }
         }
 
@@ -161,6 +191,8 @@ public class EventDetailFragment extends Fragment {
 
     /**
      * Displays dialog for chosen users to accept or decline.
+     *
+     * @param uid User ID of the chosen user.
      */
     private void showChosenDialog(String uid) {
         new AlertDialog.Builder(requireContext())
@@ -207,6 +239,9 @@ public class EventDetailFragment extends Fragment {
 
     /**
      * Executes a Firebase Task safely with toast feedback.
+     *
+     * @param task Firebase Task to execute.
+     * @param successMsg Message to display on success.
      */
     private void performTask(Task<Void> task, String successMsg) {
         binding.btnSignUp.setEnabled(false);
@@ -220,10 +255,19 @@ public class EventDetailFragment extends Fragment {
         });
     }
 
+    /**
+     * Displays a toast message.
+     */
     private void showMessage(String msg) {
         Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
     }
 
+    /**
+     * Formats a Firebase Timestamp for display.
+     *
+     * @param ts Timestamp to format.
+     * @return Formatted date string.
+     */
     private String formatTimestamp(Timestamp ts) {
         if (ts == null) return "N/A";
         Date date = ts.toDate();

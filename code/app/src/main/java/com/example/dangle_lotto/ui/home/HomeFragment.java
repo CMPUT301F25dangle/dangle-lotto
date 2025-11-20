@@ -98,9 +98,12 @@ public class HomeFragment extends Fragment {
         });
 
         // if data is not cached, load first page
-        if (events.isEmpty()) {
-            loadFirstPage();
-        }
+        // also ensures that data is only loaded if user is accessible
+        userViewModel.getUser().observe(getViewLifecycleOwner(), user -> {
+            if (user != null && events.isEmpty()) {
+                loadFirstPage();  // SAFE now
+            }
+        });
 
         // initialize button for opening filter dialogue
         binding.filterButton.setOnClickListener(v -> openFilterDialogue());
@@ -143,6 +146,7 @@ public class HomeFragment extends Fragment {
      */
     private void loadFirstPage() {
         isLoading = true;
+        String userId = userViewModel.getUser().getValue().getUid();
 
         Query query = firebaseManager.getEventsReference().orderBy("Date", Query.Direction.DESCENDING).limit(PAGE_SIZE);
         firebaseManager.getQuery(null, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
@@ -176,6 +180,8 @@ public class HomeFragment extends Fragment {
      * Loads the next page of events by querying firebase
      */
     private void loadNextPage() {
+        String userId = userViewModel.getUser().getValue().getUid();
+
         if (isLoading || lastVisible == null) return;
         isLoading = true;
         Toast.makeText(getContext(), "Loading more events...", Toast.LENGTH_SHORT).show();

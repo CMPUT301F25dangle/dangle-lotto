@@ -54,7 +54,7 @@ public class CreateEventFragment extends Fragment {
     private FragmentCreateEventBinding binding;
     private FirebaseManager firebaseManager = new FirebaseManager();
     private UserViewModel userViewModel;
-    private int maxEntrants = -1;
+    private int maxEntrants;
     private Bitmap qr = null;
 
     private long selectedDateTimeMillis;
@@ -74,7 +74,6 @@ public class CreateEventFragment extends Fragment {
         binding.btnDone.bringToFront();
 
         selectedDateTimeMillis = System.currentTimeMillis() + 1000*60*60; // an hour ahead is default time
-
 
         // initialize viewmodel and firebase manager
         firebaseManager = new FirebaseManager();
@@ -171,8 +170,6 @@ public class CreateEventFragment extends Fragment {
         datePicker.show(getParentFragmentManager(), "DATE_PICKER");
     }
 
-
-
     /**
      * Toggles the status of max entrants input to be in accordance with the checkbox
      */
@@ -228,8 +225,6 @@ public class CreateEventFragment extends Fragment {
                 maxEntrants = Integer.parseInt(binding.createEventInputMaxEntrants.getText().toString());
             }
 
-
-
             // Create event in Firebase
             firebaseManager.createEvent(
                     userViewModel.getUser().getValue().getUid(),
@@ -242,7 +237,7 @@ public class CreateEventFragment extends Fragment {
                     "0",
                     categories
             );
-
+            userViewModel.setOrganizedEvents(null);
             goBack();
 
         } catch (Exception e) {

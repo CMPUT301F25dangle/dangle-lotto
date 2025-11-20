@@ -272,7 +272,7 @@ public class FirebaseManager {
         );
         users.document(oid).collection("Organize").document(eid).set(Map.of("Timestamp", datetime));
         events.document(eid).set(data);
-        return new Event(eid, oid, name, datetime, location, description, pid, eventSize, categories, this);
+        return new Event(eid, oid, name, datetime, location, description, pid, eventSize, maxEntrants, categories, this);
     }
 
     /**
@@ -333,6 +333,10 @@ public class FirebaseManager {
      * @return An instantiated Event object.
      */
     public Event documentToEvent(DocumentSnapshot doc) {
+
+        Long maxEntrantsLong = doc.getLong("Max Entrants");
+        Integer maxEntrants = (maxEntrantsLong != null) ? maxEntrantsLong.intValue() : null;
+
         return new Event(
                 doc.getId(),
                 doc.getString("Organizer"),
@@ -342,6 +346,7 @@ public class FirebaseManager {
                 doc.getString("Description"),
                 doc.getString("Picture") != null ? doc.getString("Picture") : "",
                 Objects.requireNonNull(doc.getLong("Event Size")).intValue(),
+                maxEntrants,
                 doc.get("Categories") != null ? (ArrayList<String>) doc.get("Categories") : new ArrayList<>(),
                 this
         );

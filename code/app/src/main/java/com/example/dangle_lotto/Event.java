@@ -117,12 +117,13 @@ public class Event {
      * @param description     Description of the event.
      * @param photo_id        Associated photo identifier.
      * @param eventSize       Maximum number of attendees.
+     * @param maxEntrants     Optional maximum entrants cap.
      * @param categories      List of category tags.
      * @param firebaseManager Reference to FirebaseManager instance.
      */
     public Event(String eid, String organizer_id, String name, Timestamp deadline, String location,
-                 String description, String photo_id, int eventSize, ArrayList<String> categories,
-                 FirebaseManager firebaseManager) {
+                 String description, String photo_id, int eventSize, Integer maxEntrants,
+                 ArrayList<String> categories, FirebaseManager firebaseManager) {
 
         this.eid = eid;
         this.organizer_id = organizer_id;
@@ -132,6 +133,7 @@ public class Event {
         this.description = description;
         this.photo_id = photo_id;
         this.eventSize = eventSize;
+        this.maxEntrants = maxEntrants;
         this.categories = categories;
         this.firebaseManager = firebaseManager;
 
@@ -140,6 +142,7 @@ public class Event {
         this.populateList("SignUps", signUps);
         this.populateList("Cancelled", cancelled);
     }
+
 
     /**
      * Populates a participant list from a specific Firebase subcollection.
@@ -266,6 +269,24 @@ public class Event {
     }
 
     /**
+     * @return The optional maximum entrants cap.
+     */
+
+    public int getMaxEntrants() {
+        return maxEntrants;
+    }
+
+    /**
+     * Sets the optional maximum entrants cap and updates Firebase.
+     *
+     * @param maxEntrants New cap value.
+     */
+    public void setMaxEntrants(int maxEntrants) {
+        this.maxEntrants = maxEntrants;
+        firebaseManager.updateEvent(this);
+    }
+
+    /**
      * @return A list of category tags for this event.
      */
     public ArrayList<String> getCategories() {
@@ -377,7 +398,7 @@ public class Event {
      */
     public Task<Void> deleteRegistered(String uid) {
         registered.remove(uid);
-        return firebaseManager.userRemoveStatus(uid, eid, "Chosen");
+        return firebaseManager.userRemoveStatus(uid, eid, "Register");
     }
 
     /**
@@ -392,8 +413,8 @@ public class Event {
             throw new IllegalArgumentException("User is already chosen");
         }
         chosen.add(uid);
-        this.deleteSignUp(uid);
         this.deleteRegistered(uid);
+        this.deleteSignUp(uid);
         this.deleteCancelled(uid);
         return firebaseManager.userAddStatus(uid, eid, "Chosen");
     }
@@ -406,7 +427,7 @@ public class Event {
      */
     public Task<Void> deleteChosen(String uid) {
         chosen.remove(uid);
-        return firebaseManager.userRemoveStatus(uid, eid, "Register");
+        return firebaseManager.userRemoveStatus(uid, eid, "Chosen");
     }
 
     /**

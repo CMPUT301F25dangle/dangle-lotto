@@ -170,8 +170,6 @@ public class CreateEventFragment extends Fragment {
         datePicker.show(getParentFragmentManager(), "DATE_PICKER");
     }
 
-
-
     /**
      * Toggles the status of max entrants input to be in accordance with the checkbox
      */

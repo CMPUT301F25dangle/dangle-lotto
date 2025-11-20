@@ -237,7 +237,7 @@ public class CreateEventFragment extends Fragment {
                     "0",
                     categories
             );
-
+            userViewModel.setOrganizedEvents(null);
             goBack();
 
         } catch (Exception e) {

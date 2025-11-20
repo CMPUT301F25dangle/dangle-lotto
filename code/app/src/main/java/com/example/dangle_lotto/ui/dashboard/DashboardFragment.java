@@ -25,6 +25,7 @@ import com.example.dangle_lotto.User;
 import com.example.dangle_lotto.databinding.FragmentDashboardBinding;
 import com.example.dangle_lotto.ui.EventCardAdapter;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 
@@ -142,8 +143,8 @@ public class DashboardFragment extends Fragment {
      */
     private void loadFirstPage() {
         isLoading = true;
-
-        firebaseManager.getOrganizedEventsQuery(null, user.getUid(), PAGE_SIZE, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
+        Query query = firebaseManager.getEventsReference().whereEqualTo("Organizer", user.getUid()).orderBy("Date", Query.Direction.DESCENDING).limit(PAGE_SIZE);
+        firebaseManager.getQuery(null, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
                 int startPos = organizedEvents.size();
@@ -177,7 +178,8 @@ public class DashboardFragment extends Fragment {
         if (isLoading || lastVisible == null) return;
         isLoading = true;
         Toast.makeText(getContext(), "Loading more events...", Toast.LENGTH_SHORT).show();
-        firebaseManager.getOrganizedEventsQuery(lastVisible, user.getUid(), PAGE_SIZE, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
+        Query query = firebaseManager.getEventsReference().whereEqualTo("Organizer", user.getUid()).orderBy("Date", Query.Direction.DESCENDING).limit(PAGE_SIZE);
+        firebaseManager.getQuery(lastVisible, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
                 Log.d("Firebase", "Loaded " + result.size() + " events");

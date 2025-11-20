@@ -63,6 +63,10 @@ public class FirebaseManager {
         return mAuth;
     }
 
+    public CollectionReference getUsersReference(){ return users; }
+    public CollectionReference getEventsReference(){ return events; }
+
+
     /**
      * Signing in a user with email and password. Send uid to callback function if successful.
      *
@@ -479,47 +483,22 @@ public class FirebaseManager {
      * Retrieve a list of events from the database.
      *
      * @param lastVisible  last visible event
-     * @param numEvents  number of events to retrieve
+     * @param query  query to execute asynchronously
      * @param callback  callback function to call when event is retrieved
      */
-    public void getEventsQuery(DocumentSnapshot lastVisible, int numEvents, FirebaseCallback<ArrayList<DocumentSnapshot>> callback){
-        Query query = events.orderBy("Date", Query.Direction.DESCENDING).limit(numEvents);
-
+    public void getQuery(DocumentSnapshot lastVisible, Query query, FirebaseCallback<ArrayList<DocumentSnapshot>> callback){
         if (lastVisible != null) query = query.startAfter(lastVisible);
         query.get().addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        ArrayList<DocumentSnapshot> events = new ArrayList<>();
+                        ArrayList<DocumentSnapshot> response = new ArrayList<>();
                         for (DocumentSnapshot doc : task.getResult()) {
-                            events.add(doc);
+                            response.add(doc);
                         }
-                        callback.onSuccess(events);
+                        callback.onSuccess(response);
                     }else{
                         callback.onFailure(task.getException());
                     }
+                    callback.onComplete();
                 }).addOnFailureListener(callback::onFailure);
-    }
-
-    /**
-     * Retrieve a list of events from the database.
-     *
-     * @param lastVisible  last visible event
-     * @param numEvents  number of events to retrieve
-     * @param callback  callback function to call when event is retrieved
-     */
-    public void getOrganizedEventsQuery(DocumentSnapshot lastVisible, String uid, int numEvents, FirebaseCallback<ArrayList<DocumentSnapshot>> callback) {
-        Query query = events.whereEqualTo("Organizer", uid).orderBy("Date", Query.Direction.DESCENDING).limit(numEvents);
-
-        if (lastVisible != null) query = query.startAfter(lastVisible);
-        query.get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                ArrayList<DocumentSnapshot> events = new ArrayList<>();
-                for (DocumentSnapshot doc : task.getResult()) {
-                    events.add(doc);
-                }
-                callback.onSuccess(events);
-            } else {
-                callback.onFailure(task.getException());
-            }
-        }).addOnFailureListener(callback::onFailure);
     }
 }

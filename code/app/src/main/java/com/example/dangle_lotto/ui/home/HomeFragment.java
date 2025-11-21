@@ -22,7 +22,9 @@ import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentHomeBinding;
 import com.example.dangle_lotto.ui.EventCardAdapter;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
@@ -46,6 +48,9 @@ public class HomeFragment extends Fragment {
     private boolean isLoading;
     private static final int PAGE_SIZE = 4; // or however many events per page
     private DocumentSnapshot lastVisible = null;
+    private ListenerRegistration newEventsListener;
+    private Timestamp newestEventDate = null;
+
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -118,6 +123,11 @@ public class HomeFragment extends Fragment {
 
         // update the view model
         userViewModel.setHomeEvents(events);
+
+        if (newEventsListener != null) {
+            newEventsListener.remove();
+            newEventsListener = null;
+        }
     }
 
     /**
@@ -161,10 +171,13 @@ public class HomeFragment extends Fragment {
                 isLoading = false;
                 if (!result.isEmpty()) {
                     lastVisible = result.get(result.size() - 1);
+                    newestEventDate = result.get(0).getTimestamp("Date");
+
                 } else {
                     // No more pages
                     lastVisible = null;
                 }
+                startNewEventsListener();
             }
 
             @Override
@@ -185,7 +198,10 @@ public class HomeFragment extends Fragment {
         if (isLoading || lastVisible == null) return;
         isLoading = true;
         Toast.makeText(getContext(), "Loading more events...", Toast.LENGTH_SHORT).show();
-        Query query = firebaseManager.getEventsReference().orderBy("Date", Query.Direction.DESCENDING).limit(PAGE_SIZE);
+        Query query = firebaseManager.getEventsReference()
+                .orderBy("Date", Query.Direction.DESCENDING)
+                .startAfter(lastVisible)
+                .limit(PAGE_SIZE);
         firebaseManager.getQuery(lastVisible, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
@@ -215,5 +231,33 @@ public class HomeFragment extends Fragment {
             }
         });
     }
+
+    private void startNewEventsListener() {
+        if (newestEventDate == null) return;
+
+        newEventsListener = firebaseManager.getEventsReference()
+                .orderBy("Date", Query.Direction.DESCENDING)
+                .whereGreaterThan("Date", newestEventDate)
+                .addSnapshotListener((snap, e) -> {
+                    if (e != null) return;
+
+                    if (snap != null && !snap.isEmpty()) {
+                        for (DocumentSnapshot doc : snap.getDocuments()) {
+                            Event event = firebaseManager.documentToEvent(doc);
+
+                            // add at top
+                            events.add(0, event);
+
+                            // update newest timestamp
+                            Timestamp eventTime = doc.getTimestamp("Date");
+                            if (eventTime != null && eventTime.compareTo(newestEventDate) > 0) {
+                                newestEventDate = eventTime;
+                            }
+                        }
+                        adapter.notifyItemRangeInserted(0, snap.size());
+                    }
+                });
+    }
+
 
 }

@@ -45,14 +45,15 @@ dependencies {
     implementation(libs.navigation.ui)
     implementation(libs.firebase.firestore)
     implementation(libs.legacy.support.v4)
+    implementation(libs.espresso.idling.resource)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-//    implementation(files("/home/mahdlinux/Android/Sdk/platforms/android-34/android.jar"))
+    //implementation(files("/home/mahdlinux/Android/Sdk/platforms/android-34/android.jar"))
 
-    // javadocs
+    //javadocs
     //implementation(files("C:/Users/adi4s/AppData/Local/Android/Sdk/platforms/android-36/android.jar"))
-//    implementation(files("/home/mahdlinux/Android/Sdk/platforms/android-34/android.jar"))
+    //implementation(files("/home/mahdlinux/Android/Sdk/platforms/android-34/android.jar"))
 
     // Import the Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:34.4.0"))

@@ -16,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.dangle_lotto.Event;
+import com.example.dangle_lotto.FirebaseIdlingResource;
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.R;
@@ -38,7 +39,7 @@ public class HomeFragment extends Fragment {
     private FragmentHomeBinding binding;
     private RecyclerView recyclerView;
     private ArrayList<String> selectedFilters = new ArrayList<>();
-    private FirebaseManager firebaseManager = new FirebaseManager();
+    private FirebaseManager firebaseManager = FirebaseManager.getInstance();
     private UserViewModel userViewModel;
     private ArrayList<Event> events;
     private EventCardAdapter adapter;
@@ -149,6 +150,7 @@ public class HomeFragment extends Fragment {
         String userId = userViewModel.getUser().getValue().getUid();
 
         Query query = firebaseManager.getEventsReference().orderBy("Date", Query.Direction.DESCENDING).limit(PAGE_SIZE);
+
         firebaseManager.getQuery(null, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {

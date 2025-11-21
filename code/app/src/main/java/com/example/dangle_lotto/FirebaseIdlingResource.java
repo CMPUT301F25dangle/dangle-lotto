@@ -1,45 +1,25 @@
 package com.example.dangle_lotto;
 
-import androidx.annotation.Nullable;
 import androidx.test.espresso.IdlingResource;
 import com.google.android.gms.tasks.Task;
-
-import java.util.HashSet;
-import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class FirebaseIdlingResource implements IdlingResource {
     private ResourceCallback callback;
-    private final Set<Task<?>> tasks = new HashSet<>();
+    private AtomicInteger counter = new AtomicInteger(0);
 
-    public void monitorTask(Task<?> task) {
-        synchronized (tasks) {
-            tasks.add(task);
-        }
-
-        task.addOnCompleteListener(t -> {
-            synchronized (tasks) {
-                tasks.remove(task);
-                if (tasks.isEmpty() && callback != null) {
-                    callback.onTransitionToIdle();
-                }
-            }
-        });
+    public void increment() { counter.getAndIncrement(); }
+    public void decrement() {
+        int value = counter.decrementAndGet();
+        if (value == 0 && callback != null) callback.onTransitionToIdle();
     }
 
     @Override
-    public String getName() {
-        return this.getClass().getName();
-    }
+    public String getName() { return "FirebaseIdlingResource"; }
 
     @Override
-    public boolean isIdleNow() {
-        synchronized (tasks) {
-            return tasks.isEmpty();
-        }
-    }
+    public boolean isIdleNow() { return counter.get() == 0; }
 
     @Override
-    public void registerIdleTransitionCallback(ResourceCallback callback) {
-        this.callback = callback;
-    }
+    public void registerIdleTransitionCallback(ResourceCallback callback) { this.callback = callback; }
 }

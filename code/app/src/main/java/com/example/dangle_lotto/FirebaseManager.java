@@ -20,6 +20,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -159,6 +160,21 @@ public class FirebaseManager {
                     callback.onComplete();
                 });
     }
+
+    public void getAllUsers(FirebaseCallback<ArrayList<String>> callback){
+        users.get().addOnCompleteListener(task -> {
+            ArrayList<String> userList = new ArrayList<>();
+            if (task.isSuccessful()) {
+                for (DocumentSnapshot doc : task.getResult()) {
+                    userList.add(doc.getId());
+                }
+                callback.onSuccess(userList);
+            }else{
+                callback.onFailure(task.getException());
+            }
+        });
+    }
+
     /**
      * Creates and stores a new user document in Firestore.
      *
@@ -275,6 +291,51 @@ public class FirebaseManager {
             }
         }).addOnFailureListener(callback::onFailure);
     }
+
+    public void revokeOrganizer(String uid){
+        users.document(uid).update("CanOrganize", false);
+    }
+
+    public void grantOrganizer(String uid){
+        users.document(uid).update("CanOrganize", true);
+    }
+
+    public void getAdmin(String uid, FirebaseCallback<AdminUser> callback){
+        users.document(uid).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot doc = task.getResult();
+                if (doc.exists()) {
+                    Map<String, Object> data = doc.getData();
+                    assert data != null;
+                    String name = (String) data.get("Name");
+                    String email = (String) data.get("Email");
+                    String phone = (String) data.get("Phone");
+                    String pid = (String) data.get("Picture");
+                    AdminUser user = new AdminUser(uid, name, email, phone, pid, this);
+                    callback.onSuccess(user);
+                } else {
+                    callback.onFailure(new Exception("User not found"));
+                }
+            }else{
+                callback.onFailure(task.getException());
+            }
+        }).addOnFailureListener(callback::onFailure);
+    }
+
+    public void getAllEvents(FirebaseCallback<ArrayList<String>> callback){
+        events.get().addOnCompleteListener(task -> {
+            ArrayList<String> eventList = new ArrayList<>();
+            if (task.isSuccessful()) {
+                for (DocumentSnapshot doc : task.getResult()) {
+                    eventList.add(doc.getId());
+                }
+                callback.onSuccess(eventList);
+            }else{
+                callback.onFailure(task.getException());
+            }
+        });
+    }
+
 
     /**
      * Creates and uploads a new event document to Firestore.
@@ -505,7 +566,6 @@ public class FirebaseManager {
     }
 
 
-
     /**
      * Retrieve a list of events from the database.
      *
@@ -540,6 +600,7 @@ public class FirebaseManager {
             idlingResource.decrement();
         });
     }
+
 
     public void uploadBannerPic(Uri fileUri, FirebaseCallback<String> callback){
         String pid = UUID.randomUUID().toString(); // unique id for picture

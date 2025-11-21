@@ -45,14 +45,15 @@ dependencies {
     implementation(libs.navigation.ui)
     implementation(libs.firebase.firestore)
     implementation(libs.legacy.support.v4)
+    implementation(libs.espresso.idling.resource)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-//    implementation(files("/home/mahdlinux/Android/Sdk/platforms/android-34/android.jar"))
+    //implementation(files("/home/mahdlinux/Android/Sdk/platforms/android-34/android.jar"))
 
-    // javadocs
+    //javadocs
     //implementation(files("C:/Users/adi4s/AppData/Local/Android/Sdk/platforms/android-36/android.jar"))
-//    implementation(files("/home/mahdlinux/Android/Sdk/platforms/android-34/android.jar"))
+    //implementation(files("/home/mahdlinux/Android/Sdk/platforms/android-34/android.jar"))
 
     // Import the Firebase BoM
     implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
@@ -66,19 +67,15 @@ dependencies {
 
     // import dependency to generate QR code
     implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
+    // import firebase storage dependency
+    implementation("com.google.firebase:firebase-storage:20.3.0")
 
-    // Add the dependencies for any other desired Firebase products
-    // https://firebase.google.com/docs/android/setup#available-libraries// Import the Firebase BoM
-    //  implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
-    //
-    //
-    //  // TODO: Add the dependencies for Firebase products you want to use
-    //  // When using the BoM, don't specify versions in Firebase dependencies
-    //  implementation("com.google.firebase:firebase-analytics")
-    //
-    //
-    //  // Add the dependencies for any other desired Firebase products
-    //  // https://firebase.google.com/docs/android/setup#available-libraries
+    // image picker dependencies
+    implementation("androidx.activity:activity-ktx:1.12.0")
+
+    // image loading dependency
+    implementation("com.github.bumptech.glide:glide:5.0.5")
+    annotationProcessor("com.github.bumptech.glide:compiler:5.0.5")
 }
 
 

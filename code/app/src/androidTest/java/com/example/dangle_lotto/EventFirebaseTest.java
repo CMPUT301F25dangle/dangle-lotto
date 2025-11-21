@@ -91,6 +91,7 @@ public class EventFirebaseTest {
                 "A party for diddy kong",
                 null,
                 69,
+                -1,
                 new ArrayList<>(),
                 firebaseManager
         );

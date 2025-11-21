@@ -1,8 +1,10 @@
 package com.example.dangle_lotto.ui;
+import com.bumptech.glide.Glide;
 import com.example.dangle_lotto.Event;
 
 import com.example.dangle_lotto.R;
 
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -123,7 +125,12 @@ public class  EventCardAdapter extends RecyclerView.Adapter<EventCardAdapter.Vie
          */
         public void bind(Event event, OnItemClickListener listener) {
             textView.setText(event.getName());
-            imageView.setImageResource(R.drawable.event_card_test_image);
+            // load default image if no image is provided
+            if (event.getPhotoID() == null || event.getPhotoID().isEmpty())
+                imageView.setImageResource(R.drawable.event_card_test_image);
+            else{
+                Glide.with(imageView.getContext()).load(event.getPhotoID()).into(imageView);
+            }
             itemView.setOnClickListener(v -> listener.onItemClick(getBindingAdapterPosition()));
         }
     }

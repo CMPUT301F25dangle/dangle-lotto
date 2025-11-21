@@ -2,6 +2,7 @@ package com.example.dangle_lotto.ui.create_event;
 
 import android.app.TimePickerDialog;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -10,16 +11,21 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.PickVisualMediaRequest;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentCreateEventBinding;
 import com.google.android.material.datepicker.MaterialDatePicker;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
 
 import java.text.ParseException;
@@ -58,6 +64,17 @@ public class CreateEventFragment extends Fragment {
     private Bitmap qr = null;
 
     private long selectedDateTimeMillis;
+    private ActivityResultLauncher<PickVisualMediaRequest> pickMedia;
+
+    private Uri selectedUri;
+
+    String[] categoryItems = {
+            "Sports", "Music", "Volunteering", "Education",
+            "Gaming", "Food", "Tech", "Career", "Community"
+    };
+
+    boolean[] selectedItems = new boolean[categoryItems.length];
+    ArrayList<String> selectedCategories = new ArrayList<>();
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -75,18 +92,46 @@ public class CreateEventFragment extends Fragment {
 
         selectedDateTimeMillis = System.currentTimeMillis() + 1000*60*60; // an hour ahead is default time
 
+        // initalize image picker
+        pickMedia = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(),
+            uri -> {
+                if (uri != null) {
+                    binding.createEventBanner.setImageURI(uri);
+                    selectedUri = uri;
+                }
+            }
+        );
+
         // initialize viewmodel and firebase manager
         firebaseManager = new FirebaseManager();
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
         // buttons
+        binding.createEventBannerButton.setOnClickListener(v -> {
+            pickMedia.launch(new PickVisualMediaRequest.Builder()
+                    .setMediaType(ActivityResultContracts.PickVisualMedia.ImageAndVideo.INSTANCE)
+                    .build());
+        });
+
         binding.btnCancel.setOnClickListener(v -> {
             goBack();
         });
 
         binding.btnDone.setOnClickListener(v -> {
-            createEvent();
-        });
+                    if (selectedUri != null) {
+                        firebaseManager.uploadBannerPic(selectedUri, new FirebaseCallback<String>() {
+                            @Override
+                            public void onSuccess(String result) {
+                                createEvent(result);
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+                                createEvent(null);
+                            }
+                        });
+                    } else createEvent(null);
+                });
 
         // max entrants toggle
         binding.cbMaxEntrants.setOnClickListener(v -> {
@@ -97,14 +142,31 @@ public class CreateEventFragment extends Fragment {
         // Set default max entrants
         binding.createEventInputMaxEntrants.setText("50");
 
+        // open date and time picker
         binding.createEventInputDate.setOnClickListener(v -> showDateTimePicker());
-//        binding.btnDone.setOnClickListener(v -> {
-//            if (TextUtils.isEmpty(binding.createEventNameInput.getText())) {
-//                Toast.makeText(getActivity(), "Need a name", Toast.LENGTH_SHORT).show();
-//            } else {
-//                generateQRCode(binding.createEventNameInput.getText().toString());
-//            }
-//        });
+
+        // open category multiple choice dialogue
+        binding.createEventCategoriesInput.setOnClickListener(v -> {
+            MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(getContext());
+            builder.setTitle("Select Categories");
+
+            builder.setMultiChoiceItems(categoryItems,
+                    selectedItems, (dialog, which, isChecked) -> {
+                        if (isChecked) {
+                            selectedCategories.add(categoryItems[which]);
+                        } else {
+                            selectedCategories.remove(categoryItems[which]);
+                        }
+                    });
+            builder.setPositiveButton("OK", (dialog, which) -> {
+                String categories;
+                if (selectedCategories.isEmpty()) categories = "Select Categories";
+                else categories = String.join(", ", selectedCategories);
+                binding.createEventCategoriesInput.setText(categories);
+            });
+            builder.setNegativeButton("Cancel", null);
+            builder.show();
+        });
 
         return root;
     }
@@ -188,7 +250,7 @@ public class CreateEventFragment extends Fragment {
     /**
      * Creates the event and adds it to the database
      */
-    private void createEvent() {
+    private void createEvent(String photo_url) {
         try {
             // Validate required fields
             String name = binding.createEventNameInput.getText().toString().trim();
@@ -211,16 +273,6 @@ public class CreateEventFragment extends Fragment {
 
             String location = String.valueOf(binding.cbEnableGeolocation.isChecked());
 
-            // Process categories
-            ArrayList<String> categories = new ArrayList<>();
-            String categoriesText = binding.createEventCategoriesInput.getText().toString().trim();
-            if (!categoriesText.isEmpty()) {
-                for (String item : categoriesText.split(",")) {
-                    String c = item.trim();
-                    if (!c.isEmpty()) categories.add(c);
-                }
-            }
-
             if ((binding.cbMaxEntrants.isChecked())) {
                 maxEntrants = Integer.parseInt(binding.createEventInputMaxEntrants.getText().toString());
             }
@@ -234,8 +286,8 @@ public class CreateEventFragment extends Fragment {
                     description,
                     Integer.parseInt(binding.createEventSizeInput.getText().toString()),
                     maxEntrants,
-                    "0",
-                    categories
+                    photo_url,
+                    selectedCategories
             );
             userViewModel.setOrganizedEvents(null);
             goBack();

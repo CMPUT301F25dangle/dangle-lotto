@@ -1,5 +1,6 @@
 package com.example.dangle_lotto.ui.home;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -23,7 +24,9 @@ import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentHomeBinding;
 import com.example.dangle_lotto.ui.EventCardAdapter;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
@@ -48,6 +51,8 @@ public class HomeFragment extends Fragment {
     private static final int PAGE_SIZE = 4; // or however many events per page
     private DocumentSnapshot lastVisible = null;
 
+
+    @SuppressLint("NotifyDataSetChanged")
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
@@ -109,6 +114,13 @@ public class HomeFragment extends Fragment {
         // initialize button for opening filter dialogue
         binding.filterButton.setOnClickListener(v -> openFilterDialogue());
 
+        binding.refreshButton.setOnClickListener(v -> {
+           userViewModel.setHomeEvents(null);
+           events.clear();
+           adapter.notifyDataSetChanged();
+           loadFirstPage();
+        });
+
         return root;
     }
 
@@ -149,8 +161,10 @@ public class HomeFragment extends Fragment {
         isLoading = true;
         String userId = userViewModel.getUser().getValue().getUid();
 
-        Query query = firebaseManager.getEventsReference().orderBy("Date", Query.Direction.DESCENDING).limit(PAGE_SIZE);
-
+        Query query = firebaseManager.getEventsReference()
+                .orderBy("Date", Query.Direction.DESCENDING)
+                .whereNotEqualTo("Organizer", userId)
+                .limit(PAGE_SIZE);
         firebaseManager.getQuery(null, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
@@ -163,6 +177,7 @@ public class HomeFragment extends Fragment {
                 isLoading = false;
                 if (!result.isEmpty()) {
                     lastVisible = result.get(result.size() - 1);
+
                 } else {
                     // No more pages
                     lastVisible = null;
@@ -187,7 +202,11 @@ public class HomeFragment extends Fragment {
         if (isLoading || lastVisible == null) return;
         isLoading = true;
         Toast.makeText(getContext(), "Loading more events...", Toast.LENGTH_SHORT).show();
-        Query query = firebaseManager.getEventsReference().orderBy("Date", Query.Direction.DESCENDING).limit(PAGE_SIZE);
+        Query query = firebaseManager.getEventsReference()
+                .orderBy("Date", Query.Direction.DESCENDING)
+                .whereNotEqualTo("Organizer", userId)
+                .startAfter(lastVisible)
+                .limit(PAGE_SIZE);
         firebaseManager.getQuery(lastVisible, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
@@ -217,5 +236,6 @@ public class HomeFragment extends Fragment {
             }
         });
     }
+
 
 }

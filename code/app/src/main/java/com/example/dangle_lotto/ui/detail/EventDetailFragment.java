@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.Navigation;
 
+import com.bumptech.glide.Glide;
 import com.example.dangle_lotto.Event;
 import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.FirebaseManager;
@@ -89,7 +90,8 @@ public class EventDetailFragment extends Fragment {
         binding.eventTitle.setText(selectedEvent.getName());
         binding.eventDescription.setText(selectedEvent.getDescription());
         binding.eventDate.setText("Deadline: " + formatTimestamp(selectedEvent.getDate()));
-        binding.organizerName.setText("Organizer: " + selectedEvent.getOrganizerID());
+        if (!(selectedEvent.getPhotoID().isEmpty() || selectedEvent.getPhotoID() == null))
+            Glide.with(requireContext()).load(selectedEvent.getPhotoID()).into(binding.imgPoster);
 
         updateSpotsUI();
 

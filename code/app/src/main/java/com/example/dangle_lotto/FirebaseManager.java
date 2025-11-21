@@ -1,6 +1,8 @@
 package com.example.dangle_lotto;
 
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.net.Uri;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -14,12 +16,16 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
 
+import java.io.ByteArrayOutputStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.UUID;
 
 /**
  * FirebaseManager — handles all Firebase-related operations for authentication, users, and events.
@@ -38,12 +44,17 @@ public class FirebaseManager {
     private final FirebaseAuth mAuth;
     private final CollectionReference users;
     private final CollectionReference events;
+    private final FirebaseStorage storage;
+    private final StorageReference storageRef;
+
     private final String[] collections = new String[]{"Register", "Chosen", "SignUps", "Cancelled"};
     public FirebaseManager() {
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
         users = db.collection("users");
         events = db.collection("events");
+        storage = FirebaseStorage.getInstance();
+        storageRef = storage.getReference();
     }
 
     /**
@@ -252,12 +263,12 @@ public class FirebaseManager {
      * @param description  Event description.
      * @param eventSize    Event size limit.
      * @param maxEntrants  Maximum number of registrants.
-     * @param pid          Event photo ID.
+     * @param photo_url    Event photo URL for reference into firebase storage. Null if no photo provided.
      * @param categories   List of event categories.
      * @return Instantiated {@link Event} object.
      */
     public Event createEvent(String oid, String name, Timestamp datetime, String location, String description, int eventSize,
-                             int maxEntrants, String pid, ArrayList<String> categories){
+                             int maxEntrants, String photo_url, ArrayList<String> categories){
         String eid = events.document().getId();
         Map<String, Object> data = Map.of(
                 "Organizer", oid,
@@ -267,12 +278,12 @@ public class FirebaseManager {
                 "Description", description,
                 "Event Size", eventSize,
                 "Max Entrants", maxEntrants,
-                "Picture", pid,
+                "Picture", photo_url,
                 "Categories", categories
         );
         users.document(oid).collection("Organize").document(eid).set(Map.of("Timestamp", datetime));
         events.document(eid).set(data);
-        return new Event(eid, oid, name, datetime, location, description, pid, eventSize, maxEntrants, categories, this);
+        return new Event(eid, oid, name, datetime, location, description, photo_url, eventSize, maxEntrants, categories, this);
     }
 
     /**
@@ -470,18 +481,6 @@ public class FirebaseManager {
         return Tasks.whenAll(t1, t2);
     }
 
-    // implement for chosen and cancelled and stuff
-//    public void userChooseEvent(User user, Event event);
-//
-//    public void userCancelChosenEvent(User user, Event event);
-//
-//    public ArrayList<String> getChosenEvents(String uid);
-//
-//    public ArrayList<String> getEventChosenUsers(String eid);
-//
-//    public void userCancelEvent(User user, Event event);
-//
-//    public void userReinstateEvent(User user, Event event);
 
 
     /**
@@ -505,5 +504,63 @@ public class FirebaseManager {
                     }
                     callback.onComplete();
                 }).addOnFailureListener(callback::onFailure);
+    }
+
+    public void uploadBannerPic(Uri fileUri, FirebaseCallback<String> callback){
+        String pid = UUID.randomUUID().toString(); // unique id for picture
+        StorageReference imgRef = storageRef.child("banners/" + pid);
+
+        imgRef.putFile(fileUri)
+                .addOnSuccessListener(taskSnapshot ->
+                        imgRef.getDownloadUrl()
+                                .addOnSuccessListener(uri -> callback.onSuccess(uri.toString()))
+                )
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    public void uploadProfilePic(Uri fileUri, FirebaseCallback<String> callback){
+        String pid = UUID.randomUUID().toString(); // unique id for picture
+        StorageReference imgRef = storageRef.child("profiles/" + pid);
+
+        imgRef.putFile(fileUri)
+                .addOnSuccessListener(taskSnapshot ->
+                        imgRef.getDownloadUrl()
+                                .addOnSuccessListener(uri -> callback.onSuccess(uri.toString()))
+                )
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    public void uploadQR(Bitmap qr_bitmap, FirebaseCallback<String> callback){
+        String pid = UUID.randomUUID().toString(); // unique id for picture
+        StorageReference imgRef = storageRef.child("qr/" + pid);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        qr_bitmap.compress(Bitmap.CompressFormat.PNG, 100, baos);
+        byte[] data = baos.toByteArray();
+
+        imgRef.putBytes(data)
+                .addOnSuccessListener(taskSnapshot ->
+                        imgRef.getDownloadUrl()
+                                .addOnSuccessListener(uri -> callback.onSuccess(uri.toString()))
+                )
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    // DOWNLOAD URL WILL CHANGE BECAUSE FIREBASE REGENS THE TOKEN
+    public void editPic(Uri fileUri, String imageUrl, FirebaseCallback<String> callback){
+        StorageReference imgRef = storage.getReferenceFromUrl(imageUrl);
+        imgRef.putFile(fileUri)
+                .addOnSuccessListener(taskSnapshot ->
+                        imgRef.getDownloadUrl()
+                                .addOnSuccessListener(uri -> callback.onSuccess(uri.toString()))
+                )
+                .addOnFailureListener(callback::onFailure);
+    }
+
+    public void deletePic(String imageUrl, FirebaseCallback<Void> callback){
+        StorageReference imgRef = storage.getReferenceFromUrl(imageUrl);
+        imgRef.delete()
+                .addOnSuccessListener(callback::onSuccess)
+                .addOnFailureListener(callback::onFailure);
     }
 }

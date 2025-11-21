@@ -18,7 +18,7 @@ import java.util.ArrayList;
  * @since 2025-11-05
  */
 public class UserViewModel extends ViewModel {
-    private final FirebaseManager firebaseManager = new FirebaseManager();
+    private final FirebaseManager firebaseManager = FirebaseManager.getInstance();
     private final MutableLiveData<GeneralUser> user = new MutableLiveData<GeneralUser>();
     private final MutableLiveData<ArrayList<Event>> homeEvents = new MutableLiveData<>();
     private final MutableLiveData<Event> selectedHomeEvent = new MutableLiveData<>();

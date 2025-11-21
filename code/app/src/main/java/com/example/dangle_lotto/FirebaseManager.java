@@ -48,6 +48,9 @@ public class FirebaseManager {
     private final StorageReference storageRef;
 
     private final String[] collections = new String[]{"Register", "Chosen", "SignUps", "Cancelled"};
+    private final FirebaseIdlingResource idlingResource = new FirebaseIdlingResource();
+    private static FirebaseManager instance;
+
     public FirebaseManager() {
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
@@ -55,6 +58,13 @@ public class FirebaseManager {
         events = db.collection("events");
         storage = FirebaseStorage.getInstance();
         storageRef = storage.getReference();
+    }
+
+    public static FirebaseManager getInstance(){
+        if (instance == null){
+            instance = new FirebaseManager();
+        }
+        return instance;
     }
 
     /**
@@ -65,6 +75,7 @@ public class FirebaseManager {
     public FirebaseFirestore getDb() {
         return db;
     }
+
     /**
      * Returns a reference to the authentication.
      *
@@ -74,9 +85,15 @@ public class FirebaseManager {
         return mAuth;
     }
 
+    /**
+     * Returns the idling resource.
+     *
+     * @return  Reference to idling resource
+     */
+    public FirebaseIdlingResource getIdlingResource(){ return idlingResource; }
+
     public CollectionReference getUsersReference(){ return users; }
     public CollectionReference getEventsReference(){ return events; }
-
 
     /**
      * Signing in a user with email and password. Send uid to callback function if successful.
@@ -86,6 +103,9 @@ public class FirebaseManager {
      * @param callback  Callback function to call when user is created
      */
     public void signIn(String email, String password, FirebaseCallback<String> callback){
+        // idling resource for testing
+        idlingResource.increment();
+
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
@@ -102,6 +122,9 @@ public class FirebaseManager {
                         callback.onFailure(task.getException());
                     }
                     callback.onComplete();
+
+                    // idling resource for testing
+                    idlingResource.decrement();
                 });
     }
 
@@ -492,18 +515,30 @@ public class FirebaseManager {
      */
     public void getQuery(DocumentSnapshot lastVisible, Query query, FirebaseCallback<ArrayList<DocumentSnapshot>> callback){
         if (lastVisible != null) query = query.startAfter(lastVisible);
+
+        idlingResource.increment();
+
         query.get().addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        ArrayList<DocumentSnapshot> response = new ArrayList<>();
-                        for (DocumentSnapshot doc : task.getResult()) {
-                            response.add(doc);
-                        }
-                        callback.onSuccess(response);
-                    }else{
-                        callback.onFailure(task.getException());
-                    }
-                    callback.onComplete();
-                }).addOnFailureListener(callback::onFailure);
+            if (task.isSuccessful()) {
+                ArrayList<DocumentSnapshot> response = new ArrayList<>();
+                for (DocumentSnapshot doc : task.getResult()) {
+                    response.add(doc);
+                }
+                callback.onSuccess(response);
+            }else{
+                callback.onFailure(task.getException());
+            }
+            callback.onComplete();
+
+            // idling resource for testing
+            idlingResource.decrement();
+
+        }).addOnFailureListener(error -> {
+            callback.onFailure(error);
+
+            // idling resource for testing
+            idlingResource.decrement();
+        });
     }
 
     public void uploadBannerPic(Uri fileUri, FirebaseCallback<String> callback){

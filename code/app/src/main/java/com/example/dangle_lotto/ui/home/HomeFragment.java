@@ -1,5 +1,6 @@
 package com.example.dangle_lotto.ui.home;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -48,10 +49,9 @@ public class HomeFragment extends Fragment {
     private boolean isLoading;
     private static final int PAGE_SIZE = 4; // or however many events per page
     private DocumentSnapshot lastVisible = null;
-    private ListenerRegistration newEventsListener;
-    private Timestamp newestEventDate = null;
 
 
+    @SuppressLint("NotifyDataSetChanged")
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
         binding = FragmentHomeBinding.inflate(inflater, container, false);
@@ -113,6 +113,13 @@ public class HomeFragment extends Fragment {
         // initialize button for opening filter dialogue
         binding.filterButton.setOnClickListener(v -> openFilterDialogue());
 
+        binding.refreshButton.setOnClickListener(v -> {
+           userViewModel.setHomeEvents(null);
+           events.clear();
+           adapter.notifyDataSetChanged();
+           loadFirstPage();
+        });
+
         return root;
     }
 
@@ -123,11 +130,6 @@ public class HomeFragment extends Fragment {
 
         // update the view model
         userViewModel.setHomeEvents(events);
-
-        if (newEventsListener != null) {
-            newEventsListener.remove();
-            newEventsListener = null;
-        }
     }
 
     /**
@@ -171,13 +173,11 @@ public class HomeFragment extends Fragment {
                 isLoading = false;
                 if (!result.isEmpty()) {
                     lastVisible = result.get(result.size() - 1);
-                    newestEventDate = result.get(0).getTimestamp("Date");
 
                 } else {
                     // No more pages
                     lastVisible = null;
                 }
-                startNewEventsListener();
             }
 
             @Override
@@ -230,33 +230,6 @@ public class HomeFragment extends Fragment {
 
             }
         });
-    }
-
-    private void startNewEventsListener() {
-        if (newestEventDate == null) return;
-
-        newEventsListener = firebaseManager.getEventsReference()
-                .orderBy("Date", Query.Direction.DESCENDING)
-                .whereGreaterThan("Date", newestEventDate)
-                .addSnapshotListener((snap, e) -> {
-                    if (e != null) return;
-
-                    if (snap != null && !snap.isEmpty()) {
-                        for (DocumentSnapshot doc : snap.getDocuments()) {
-                            Event event = firebaseManager.documentToEvent(doc);
-
-                            // add at top
-                            events.add(0, event);
-
-                            // update newest timestamp
-                            Timestamp eventTime = doc.getTimestamp("Date");
-                            if (eventTime != null && eventTime.compareTo(newestEventDate) > 0) {
-                                newestEventDate = eventTime;
-                            }
-                        }
-                        adapter.notifyItemRangeInserted(0, snap.size());
-                    }
-                });
     }
 
 

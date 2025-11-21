@@ -90,7 +90,8 @@ public class EventDetailFragment extends Fragment {
         binding.eventTitle.setText(selectedEvent.getName());
         binding.eventDescription.setText(selectedEvent.getDescription());
         binding.eventDate.setText("Deadline: " + formatTimestamp(selectedEvent.getDate()));
-        Glide.with(requireContext()).load(selectedEvent.getPhotoID()).into(binding.imgPoster);
+        if (!(selectedEvent.getPhotoID().isEmpty() || selectedEvent.getPhotoID() == null))
+            Glide.with(requireContext()).load(selectedEvent.getPhotoID()).into(binding.imgPoster);
 
         updateSpotsUI();
 

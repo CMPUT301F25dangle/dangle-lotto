@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.dangle_lotto.Event;
+import com.example.dangle_lotto.FirebaseIdlingResource;
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.R;
@@ -41,7 +42,7 @@ public class HomeFragment extends Fragment {
     private FragmentHomeBinding binding;
     private RecyclerView recyclerView;
     private ArrayList<String> selectedFilters = new ArrayList<>();
-    private FirebaseManager firebaseManager = new FirebaseManager();
+    private FirebaseManager firebaseManager = FirebaseManager.getInstance();
     private UserViewModel userViewModel;
     private ArrayList<Event> events;
     private EventCardAdapter adapter;

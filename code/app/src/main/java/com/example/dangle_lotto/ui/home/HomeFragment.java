@@ -160,7 +160,10 @@ public class HomeFragment extends Fragment {
         isLoading = true;
         String userId = userViewModel.getUser().getValue().getUid();
 
-        Query query = firebaseManager.getEventsReference().orderBy("Date", Query.Direction.DESCENDING).limit(PAGE_SIZE);
+        Query query = firebaseManager.getEventsReference()
+                .orderBy("Date", Query.Direction.DESCENDING)
+                .whereNotEqualTo("Organizer", userId)
+                .limit(PAGE_SIZE);
         firebaseManager.getQuery(null, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
@@ -200,6 +203,7 @@ public class HomeFragment extends Fragment {
         Toast.makeText(getContext(), "Loading more events...", Toast.LENGTH_SHORT).show();
         Query query = firebaseManager.getEventsReference()
                 .orderBy("Date", Query.Direction.DESCENDING)
+                .whereNotEqualTo("Organizer", userId)
                 .startAfter(lastVisible)
                 .limit(PAGE_SIZE);
         firebaseManager.getQuery(lastVisible, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {

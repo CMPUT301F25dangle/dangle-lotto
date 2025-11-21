@@ -58,7 +58,7 @@ import com.google.zxing.common.BitMatrix;
  */
 public class CreateEventFragment extends Fragment {
     private FragmentCreateEventBinding binding;
-    private FirebaseManager firebaseManager = new FirebaseManager();
+    private FirebaseManager firebaseManager = FirebaseManager.getInstance();
     private UserViewModel userViewModel;
     private int maxEntrants;
     private Bitmap qr = null;
@@ -92,6 +92,7 @@ public class CreateEventFragment extends Fragment {
 
         selectedDateTimeMillis = System.currentTimeMillis() + 1000*60*60; // an hour ahead is default time
 
+        // initialize viewmodel
         // initalize image picker
         pickMedia = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(),
             uri -> {

@@ -141,7 +141,10 @@ public class FirebaseManager {
      * @param canOrganize  Boolean value indicating whether the user can organize events
      * @param callback  Callback function to call when user is created
      */
-    public void signUp(String email, String password, String name, String phone, String photo_id, boolean canOrganize, FirebaseCallback<String> callback){
+    public void signUp(String email, String password, String name, String phone, String photo_id, boolean canOrganize, FirebaseCallback<String> callback) {
+        // idling resource for testing
+        idlingResource.increment();
+
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
@@ -157,6 +160,9 @@ public class FirebaseManager {
                         callback.onFailure(task.getException());
                     }
                     callback.onComplete();
+
+                    // idling resource for testing
+                    idlingResource.decrement();
                 });
     }
     /**
@@ -204,7 +210,11 @@ public class FirebaseManager {
      * @param uid User ID to delete.
      */
     public void deleteUser(String uid) {
+        // idling resource for testing
+        idlingResource.increment();
+
         List<Task<Void>> allTasks = new ArrayList<>();
+
         // 1. Delete user from all subcollections their corresponding event refs
         for (String collection : collections) {
             Task<Void> t = users.document(uid).collection(collection).get().continueWithTask(task -> {
@@ -239,10 +249,22 @@ public class FirebaseManager {
                         if (currentUser != null) {
                             currentUser.delete()
                                     .addOnSuccessListener(v -> Log.d("DeleteUser", "User deleted successfully"))
-                                    .addOnFailureListener(e -> Log.w("DeleteUser", "User Auth Deletion Failed", e));
+                                    .addOnFailureListener(e -> Log.w("DeleteUser", "User Auth Deletion Failed", e))
+                                    .addOnCompleteListener(done -> {
+                                        // idling resource for testing
+                                        idlingResource.decrement();
+                                    });
 ;
+                        } else {
+                            // idling resource for testing
+                            idlingResource.decrement();
                         }
-                    }).addOnFailureListener(e -> Log.w("DeleteUser", "User doc deletion failed", e));
+                    }).addOnFailureListener(e -> {
+                        Log.w("DeleteUser", "User doc deletion failed", e);
+
+                        // idling resource for testing
+                        idlingResource.decrement();
+                    });
                 });
 
     }
@@ -254,6 +276,9 @@ public class FirebaseManager {
      * @param callback  Callback that receives the retrieved user object.
      */
     public void getUser(String uid, FirebaseCallback<GeneralUser> callback) {
+        // idling resource for testing
+        idlingResource.increment();
+
         users.document(uid).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 DocumentSnapshot doc = task.getResult();
@@ -273,7 +298,16 @@ public class FirebaseManager {
             }else{
                 callback.onFailure(task.getException());
             }
-        }).addOnFailureListener(callback::onFailure);
+
+            // idling resource for testing
+            idlingResource.decrement();
+
+        }).addOnFailureListener(error -> {
+            callback.onFailure(error);
+
+            // idling resource for testing
+            idlingResource.decrement();
+        });
     }
 
     /**
@@ -331,7 +365,11 @@ public class FirebaseManager {
      * @param eid  string of user id to search for and retrieve all attributes
      */
     public Task<Void> deleteEvent(String eid) {
+        // idling resource for testing
+        idlingResource.increment();
+
         List<Task<Void>> allTasks = new ArrayList<>();
+
         // 1. delete all event references in user subcollections
         for (String collection : collections) {
             Task<Void> t = events.document(eid).collection(collection).get().continueWithTask(task -> {
@@ -347,7 +385,7 @@ public class FirebaseManager {
                     });
             allTasks.add(t);
         }
-        // Delete reference from organizer collection
+        // 2. Delete reference from organizer collection
         Task<Void> deleteOrganizer = events.document(eid).get().continueWithTask(task -> {
             String oid = task.getResult().getString("Organizer");
             if (oid != null) {
@@ -356,8 +394,13 @@ public class FirebaseManager {
             return Tasks.forResult(null);
         });
         allTasks.add(deleteOrganizer);
-        // Delete event from database
-        return Tasks.whenAllComplete(allTasks).continueWithTask(task -> events.document(eid).delete());
+        // 3. Delete event from database
+        return Tasks.whenAllComplete(allTasks)
+                .continueWithTask(task -> events.document(eid).delete())
+                .addOnCompleteListener(task -> {
+                    // idling resource for testing
+                    idlingResource.decrement();
+                });
     }
 
     /**
@@ -393,6 +436,9 @@ public class FirebaseManager {
      * @param callback callback function to call when event is retrieved
      */
     public void getEvent(String eid, FirebaseCallback<Event> callback){
+        // idling resource for testing
+        idlingResource.increment();
+
         events.document(eid).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 DocumentSnapshot doc = task.getResult();
@@ -404,7 +450,16 @@ public class FirebaseManager {
             }else {
                 callback.onFailure(task.getException());
             }
-        }).addOnFailureListener(callback::onFailure);
+
+            // idling resource for testing
+            idlingResource.decrement();
+
+        }).addOnFailureListener(error -> {
+            callback.onFailure(error);
+
+            // idling resource for testing
+            idlingResource.decrement();
+        });
     }
 
     /**
@@ -428,6 +483,9 @@ public class FirebaseManager {
      * @param callback callback function to call when event is retrieved
      */
     public void getUserSubcollection(String uid, String subcollection, FirebaseCallback<ArrayList<String>> callback){
+        // idling resource for testing
+        idlingResource.increment();
+
         users.document(uid).collection(subcollection).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 ArrayList<String> ids = new ArrayList<>();
@@ -438,7 +496,16 @@ public class FirebaseManager {
             }else {
                 callback.onFailure(task.getException());
             }
-        }).addOnFailureListener(callback::onFailure);
+
+            // idling resource for testing
+            idlingResource.decrement();
+
+        }).addOnFailureListener(error -> {
+            callback.onFailure(error);
+
+            // idling resource for testing
+            idlingResource.decrement();
+        });
     }
 
     /**
@@ -462,6 +529,9 @@ public class FirebaseManager {
      * @param callback callback function to call when event is retrieved
      */
     public void getEventSubcollection(String eid, String subcollection, FirebaseCallback<ArrayList<String>> callback){
+        // idling resource for testing
+        idlingResource.increment();
+
         events.document(eid).collection(subcollection).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 ArrayList<String> ids = new ArrayList<>();
@@ -472,7 +542,16 @@ public class FirebaseManager {
             }else {
                 callback.onFailure(task.getException());
             }
-        }).addOnFailureListener(callback::onFailure);
+
+            // idling resource for testing
+            idlingResource.decrement();
+
+        }).addOnFailureListener(error -> {
+            callback.onFailure(error);
+
+            // idling resource for testing
+            idlingResource.decrement();
+        });
     }
 
     /**
@@ -516,6 +595,7 @@ public class FirebaseManager {
     public void getQuery(DocumentSnapshot lastVisible, Query query, FirebaseCallback<ArrayList<DocumentSnapshot>> callback){
         if (lastVisible != null) query = query.startAfter(lastVisible);
 
+        // idling resource for testing
         idlingResource.increment();
 
         query.get().addOnCompleteListener(task -> {

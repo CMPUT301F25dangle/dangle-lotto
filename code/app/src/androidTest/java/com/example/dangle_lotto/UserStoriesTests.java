@@ -17,6 +17,7 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -26,6 +27,8 @@ import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.ArrayList;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
@@ -73,6 +76,40 @@ public class UserStoriesTests {
     }
 
     /**
+     * Joins the waiting list for an event. We call it registering.
+     * <p>
+     * US 01.01.01 As an entrant, I want to join the waiting list for a specific event
+     */
+    @Test
+    public void JoinWaitingList() {
+        // Click on the event
+        onView(withText("Good Party")).perform(ViewActions.click());
+
+        // Click on the join button
+        onView(withText("Register for Lottery")).perform(ViewActions.click());
+
+        // Check if button says "Withdraw Registration"
+        onView(withText("Withdraw Registration")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Leaves the waiting list for an event. We call it unregistering.
+     * <p>
+     * US 01.01.02 As an entrant, I want to leave the waiting list for a specific event
+     */
+    @Test
+    public void LeaveWaitingList() {
+        // Click on the event
+        onView(withText("Good Party")).perform(ViewActions.click());
+
+        // Click on the join button
+        onView(withText("Withdraw Registration")).perform(ViewActions.click());
+
+        // Check if button says "Register for Lottery"
+        onView(withText("Register for Lottery")).check(matches(isDisplayed()));
+    }
+
+    /**
      * Checks if the home page opens and has events.
      * <p>
      * US 01.01.03 As an entrant, I want to be able to see a list of events that I can join the waiting list for.
@@ -83,6 +120,6 @@ public class UserStoriesTests {
         onView(withId(R.id.home_fragment_title)).check(matches(isDisplayed()));
 
         // Check if an event is displayed on the home page
-        onView(withText("Diddy Party")).check(matches(isDisplayed()));
+        onView(withText("Good Party")).check(matches(isDisplayed()));
     }
 }

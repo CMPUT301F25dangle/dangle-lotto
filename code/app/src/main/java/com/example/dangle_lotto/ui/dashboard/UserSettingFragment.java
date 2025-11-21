@@ -40,7 +40,7 @@ public class UserSettingFragment extends Fragment {
         View root = binding.getRoot();
 
         // initializing firebase
-        firebaseManager = new FirebaseManager();
+        firebaseManager = FirebaseManager.getInstance();
 
         // initializing view model
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);

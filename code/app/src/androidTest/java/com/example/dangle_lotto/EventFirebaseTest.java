@@ -31,7 +31,7 @@ public class EventFirebaseTest {
     private final GeneralUser testRegistrant;
 
     public EventFirebaseTest() {
-        firebaseManager = new FirebaseManager();
+        firebaseManager = FirebaseManager.getInstance();
         testOrganizer = new GeneralUser("FvKUWJ366kM80HcFeM6gqZxGaIPU", "Mahd", "afzalmahd@gmail.com", "", "", firebaseManager, true);
         testRegistrant = new GeneralUser("RPkgAupyndxOZNRTAlad4wQRE2A6", "Tirth", "qbin57@gmail.com", "", "", firebaseManager, false);
     }

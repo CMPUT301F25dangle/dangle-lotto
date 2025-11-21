@@ -64,7 +64,7 @@ public class EventDetailFragment extends Fragment {
         binding = FragmentEventDetailBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        firebaseManager = new FirebaseManager();
+        firebaseManager = FirebaseManager.getInstance();
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
         selectedEvent = userViewModel.getSelectedHomeEvent().getValue();
 
@@ -137,7 +137,7 @@ public class EventDetailFragment extends Fragment {
      */
     private void updateSpotsUI() {
         Integer registrantsLimit = selectedEvent.getMaxEntrants();
-        int registrantsCount = selectedEvent.getSignUps().size() + selectedEvent.getCancelled().size() +selectedEvent.getChosen().size() + selectedEvent.getRegistered().size();
+        int registrantsCount = selectedEvent.getSignUps().size() + selectedEvent.getCancelled().size() + selectedEvent.getChosen().size() + selectedEvent.getRegistered().size();
 
         if (registrantsLimit != null) {
             int spotsRemaining = Math.max(0, registrantsLimit - registrantsCount);
@@ -156,10 +156,10 @@ public class EventDetailFragment extends Fragment {
         if (!postDraw) {
             // BEFORE LOTTERY — join or leave the registration list
             if (isRegistered) {
-                performTask(selectedEvent.deleteRegistered(uid), "Registration removed");
+                performTask(selectedEvent.deleteRegistered(uid));
                 isRegistered = false;
             } else {
-                performTask(selectedEvent.addRegistered(uid), "Registered for lottery");
+                performTask(selectedEvent.addRegistered(uid));
                 isRegistered = true;
             }
 
@@ -176,10 +176,10 @@ public class EventDetailFragment extends Fragment {
             // If not chosen, allow waitlist toggling
             if (!isChosen && !isSignedUp && !isCancelled) {
                 if (isRegistered) {
-                    performTask(selectedEvent.deleteRegistered(uid), "Left waitlist");
+                    performTask(selectedEvent.deleteRegistered(uid));
                     isRegistered = false;
                 } else {
-                    performTask(selectedEvent.addRegistered(uid), "Joined waitlist");
+                    performTask(selectedEvent.addRegistered(uid));
                     isRegistered = true;
                 }
 
@@ -187,8 +187,6 @@ public class EventDetailFragment extends Fragment {
 
             }
         }
-
-        updateButtonState();
     }
 
     /**
@@ -201,16 +199,14 @@ public class EventDetailFragment extends Fragment {
                 .setTitle("You’ve Been Chosen!")
                 .setMessage("Would you like to attend this event?")
                 .setPositiveButton("Attend", (dialog, which) -> {
-                    performTask(selectedEvent.addSignUp(uid), "Confirmed attendance");
+                    performTask(selectedEvent.addSignUp(uid));
                     isSignedUp = true;
                     isCancelled = false;
-                    updateButtonState();
                 })
                 .setNegativeButton("Decline", (dialog, which) -> {
-                    performTask(selectedEvent.addCancelled(uid), "Declined invitation");
+                    performTask(selectedEvent.addCancelled(uid));
                     isCancelled = true;
                     isSignedUp = false;
-                    updateButtonState();
                 })
                 .show();
     }
@@ -243,25 +239,15 @@ public class EventDetailFragment extends Fragment {
      * Executes a Firebase Task safely with toast feedback.
      *
      * @param task Firebase Task to execute.
-     * @param successMsg Message to display on success.
      */
-    private void performTask(Task<Void> task, String successMsg) {
+    private void performTask(Task<Void> task) {
         binding.btnSignUp.setEnabled(false);
         task.addOnCompleteListener(t -> {
             binding.btnSignUp.setEnabled(true);
             if (t.isSuccessful()) {
-                showMessage(successMsg);
-            } else {
-                showMessage("Error: " + (t.getException() != null ? t.getException().getMessage() : "Unknown"));
+                updateButtonState();
             }
         });
-    }
-
-    /**
-     * Displays a toast message.
-     */
-    private void showMessage(String msg) {
-        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
     }
 
     /**

@@ -59,7 +59,7 @@ public class LoginFragment extends Fragment {
         btnLogin = view.findViewById(R.id.btnLogin);
         tvToSignUp = view.findViewById(R.id.tvGoToSignup);
 
-        firebaseManager = new FirebaseManager();
+        firebaseManager = FirebaseManager.getInstance();
 
         btnLogin.setOnClickListener(v -> loginUser());
         tvToSignUp.setOnClickListener(v -> switchToSignUp());

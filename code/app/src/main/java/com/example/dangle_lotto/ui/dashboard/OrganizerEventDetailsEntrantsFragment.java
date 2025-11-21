@@ -72,7 +72,7 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
         event = userViewModel.getSelectedOrganizedEvent().getValue();
 
         // firebase
-        firebase = new FirebaseManager();
+        firebase = FirebaseManager.getInstance();
 
         // button
         dynamicButton = binding.eventDetailsEntrantsButton;

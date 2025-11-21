@@ -248,7 +248,19 @@ public class FirebaseManager {
                 return Tasks.whenAllComplete(eventDeletes).continueWith(task1 -> null);
             });
         allTasks.add(organizedTask);
-        // 3. Delete user from database
+
+        // 3. Delete profile picture
+        Task<Void> deletePhoto = events.document(uid).get().continueWithTask(task -> {
+            String photo_url = task.getResult().getString("Picture");
+            if (photo_url != null && !photo_url.isEmpty()) {
+                StorageReference ref = storage.getReferenceFromUrl(photo_url);
+                return ref.delete();
+            }
+            return null;
+        });
+
+        allTasks.add(deletePhoto);
+        // 4. Delete user from database
         Tasks.whenAllComplete(allTasks).addOnCompleteListener(task -> {
                     users.document(uid).delete().addOnCompleteListener(task1 -> {
                         FirebaseUser currentUser = mAuth.getCurrentUser();
@@ -417,6 +429,18 @@ public class FirebaseManager {
             return Tasks.forResult(null);
         });
         allTasks.add(deleteOrganizer);
+
+        // Delete profile picture if it exists
+        Task<Void> deletePhoto = events.document(eid).get().continueWithTask(task -> {
+                    String photo_url = task.getResult().getString("Picture");
+                    if (photo_url != null && !photo_url.isEmpty()) {
+                        StorageReference ref = storage.getReferenceFromUrl(photo_url);
+                        return ref.delete();
+                    }
+            return null;
+        });
+
+        allTasks.add(deletePhoto);
         // Delete event from database
         return Tasks.whenAllComplete(allTasks).continueWithTask(task -> events.document(eid).delete());
     }

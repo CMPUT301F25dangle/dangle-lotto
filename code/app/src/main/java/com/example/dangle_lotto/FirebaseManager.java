@@ -165,6 +165,7 @@ public class FirebaseManager {
                     idlingResource.decrement();
                 });
     }
+
     /**
      * Creates and stores a new user document in Firestore.
      *

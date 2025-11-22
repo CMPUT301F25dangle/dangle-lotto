@@ -17,11 +17,19 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 
+import com.example.dangle_lotto.FirebaseCallback;
+import com.example.dangle_lotto.FirebaseManager;
+import com.example.dangle_lotto.LoginActivity;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -29,6 +37,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
+import java.util.List;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
@@ -37,40 +46,75 @@ public class UserStoriesTests {
     public ActivityScenarioRule<LoginActivity> scenario = new
             ActivityScenarioRule<>(LoginActivity.class);
 
-    private final FirebaseManager firebaseManager = FirebaseManager.getInstance();
+    private static FirebaseManager firebaseManager;
     private IdlingResource firebaseIdlingResource;
+
+    private static String ownerUid;
+    private static String testerUid;
 
     /**
      * Sets up the Firebase emulator for testing.
      */
     @BeforeClass
-    public static void setupOnce() {
+    public static void setupOnce() throws InterruptedException {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
 
         db.useEmulator("10.0.2.2", 8080);
         mAuth.useEmulator("10.0.2.2", 9099);
 
+        firebaseManager = FirebaseManager.getInstance();
+
         System.out.println("✅ Firebase emulator connected once before all tests.");
+
+        // Creates owner user
+        firebaseManager.signUp("owner@gmail.com", "password", "Owner User", "", "", true, new FirebaseCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                ownerUid = result;
+            }
+
+            @Override
+            public void onFailure(Exception e) { }
+        });
+
+        Thread.sleep(1000);
     }
 
     /**
-     * Logs in the user before each test.
+     *
      */
     @Before
-    public void setup() {
+    public void setup() throws InterruptedException {
         // Register idling resource so Espresso waits for Firebase calls
         firebaseIdlingResource = firebaseManager.getIdlingResource();
         IdlingRegistry.getInstance().register(firebaseIdlingResource);
 
-        // Logs the user in
-        onView(withHint("Email")).perform(typeText("afzalmahd@gmail.com"), closeSoftKeyboard());
-        onView(withHint("Password")).perform(typeText("password"), closeSoftKeyboard());
-        onView(withText("LOGIN")).perform(ViewActions.click());
+        // Create tester AFTER owner is created
+        firebaseManager.signUp("tester@gmail.com", "password", "Tester User", "", "", true, new FirebaseCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                testerUid = result;
+            }
+
+            @Override
+            public void onFailure(Exception e) { }
+        });
+
+        Thread.sleep(1000);
+
+        // Create an event to test on
+        firebaseManager.createEvent(ownerUid, "Good Party", Timestamp.now(), "Da House", "A party for good people", 10, 100, "", new ArrayList<String>());
+
+        Thread.sleep(1000);
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws InterruptedException {
+        clearFirestore();
+
+        Thread.sleep(1000);
+
         // Unregister idling resource
         IdlingRegistry.getInstance().unregister(firebaseIdlingResource);
     }
@@ -82,6 +126,9 @@ public class UserStoriesTests {
      */
     @Test
     public void JoinWaitingList() {
+        // Login the user
+        login();
+
         // Click on the event
         onView(withText("Good Party")).perform(ViewActions.click());
 
@@ -99,8 +146,14 @@ public class UserStoriesTests {
      */
     @Test
     public void LeaveWaitingList() {
+        // Login the user
+        login();
+
         // Click on the event
         onView(withText("Good Party")).perform(ViewActions.click());
+
+        // Click on the join button
+        onView(withText("Register for Lottery")).perform(ViewActions.click());
 
         // Click on the join button
         onView(withText("Withdraw Registration")).perform(ViewActions.click());
@@ -116,10 +169,55 @@ public class UserStoriesTests {
      */
     @Test
     public void HomePageOpensAndHasEvents() {
+        // Login the user
+        login();
+
         // check if home page opens by scanning for id
         onView(withId(R.id.home_fragment_title)).check(matches(isDisplayed()));
 
         // Check if an event is displayed on the home page
         onView(withText("Good Party")).check(matches(isDisplayed()));
     }
+
+    /**
+     * Deletes all users and events from the database.
+     *
+     * @return A Firebase {@link Task} representing the operation.
+     */
+    public static void clearFirestore() throws InterruptedException {
+        // Delete users
+        firebaseManager.getUsersReference().get().addOnSuccessListener(snap -> {
+            for (DocumentSnapshot doc : snap) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                firebaseManager.deleteUser(doc.getId());
+            }
+        });
+
+        // Delete events
+        firebaseManager.getEventsReference().get().addOnSuccessListener(snap -> {
+            for (DocumentSnapshot doc : snap) {
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    throw new RuntimeException(e);
+                }
+                firebaseManager.deleteEvent(doc.getId());
+            }
+        });
+
+        // Wait a bit for deletions to propagate
+        Thread.sleep(1000);
+    }
+
+    public void login() {
+        // Logs the user in
+        onView(withHint("Email")).perform(typeText("tester@gmail.com"), closeSoftKeyboard());
+        onView(withHint("Password")).perform(typeText("password"), closeSoftKeyboard());
+        onView(withText("LOGIN")).perform(ViewActions.click());
+    }
+
 }

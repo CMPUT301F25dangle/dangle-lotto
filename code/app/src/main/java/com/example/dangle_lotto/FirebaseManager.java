@@ -16,6 +16,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.functions.FirebaseFunctions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
@@ -23,6 +24,7 @@ import java.io.ByteArrayOutputStream;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -263,13 +265,15 @@ public class FirebaseManager {
         // 4. Delete user from database
         Tasks.whenAllComplete(allTasks).addOnCompleteListener(task -> {
                     users.document(uid).delete().addOnCompleteListener(task1 -> {
-                        FirebaseUser currentUser = mAuth.getCurrentUser();
-                        if (currentUser != null) {
-                            currentUser.delete()
-                                    .addOnSuccessListener(v -> Log.d("DeleteUser", "User deleted successfully"))
-                                    .addOnFailureListener(e -> Log.w("DeleteUser", "User Auth Deletion Failed", e));
-;
-                        }
+                        FirebaseFunctions.getInstance()
+                                .getHttpsCallable("deleteUserAuth")
+                                .call(Collections.singletonMap("uid", uid))
+                                .addOnSuccessListener(result -> {
+                                    Log.d("Functions", "User deleted from Auth");
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e("Functions", "Error: ", e);
+                                });
                     }).addOnFailureListener(e -> Log.w("DeleteUser", "User doc deletion failed", e));
                 });
 

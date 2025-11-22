@@ -16,12 +16,15 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.functions.FirebaseFunctions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -166,6 +169,20 @@ public class FirebaseManager {
                 });
     }
 
+    public void getAllUsers(FirebaseCallback<ArrayList<String>> callback){
+        users.get().addOnCompleteListener(task -> {
+            ArrayList<String> userList = new ArrayList<>();
+            if (task.isSuccessful()) {
+                for (DocumentSnapshot doc : task.getResult()) {
+                    userList.add(doc.getId());
+                }
+                callback.onSuccess(userList);
+            }else{
+                callback.onFailure(task.getException());
+            }
+        });
+    }
+
     /**
      * Creates and stores a new user document in Firestore.
      *
@@ -243,29 +260,33 @@ public class FirebaseManager {
                 return Tasks.whenAllComplete(eventDeletes).continueWith(task1 -> null);
             });
         allTasks.add(organizedTask);
-        // 3. Delete user from database
+
+        // 3. Delete profile picture
+        Task<Void> deletePhoto = events.document(uid).get().continueWithTask(task -> {
+            String photo_url = task.getResult().getString("Picture");
+            if (photo_url != null && !photo_url.isEmpty()) {
+                StorageReference ref = storage.getReferenceFromUrl(photo_url);
+                return ref.delete();
+            }
+            return null;
+        });
+
+        allTasks.add(deletePhoto);
+        // 4. Delete user from database
         Tasks.whenAllComplete(allTasks).addOnCompleteListener(task -> {
                     users.document(uid).delete().addOnCompleteListener(task1 -> {
-                        FirebaseUser currentUser = mAuth.getCurrentUser();
-                        if (currentUser != null) {
-                            currentUser.delete()
-                                    .addOnSuccessListener(v -> Log.d("DeleteUser", "User deleted successfully"))
-                                    .addOnFailureListener(e -> Log.w("DeleteUser", "User Auth Deletion Failed", e))
-                                    .addOnCompleteListener(done -> {
-                                        // idling resource for testing
-                                        idlingResource.decrement();
-                                    });
-;
-                        } else {
-                            // idling resource for testing
-                            idlingResource.decrement();
-                        }
-                    }).addOnFailureListener(e -> {
-                        Log.w("DeleteUser", "User doc deletion failed", e);
-
-                        // idling resource for testing
-                        idlingResource.decrement();
-                    });
+                        FirebaseFunctions.getInstance()
+                                .getHttpsCallable("deleteUserAuth")
+                                .call(Collections.singletonMap("uid", uid))
+                                .addOnSuccessListener(result -> {
+                                    Log.d("Functions", "User deleted from Auth");
+                                    idlingResource.decrement();
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e("Functions", "Error: ", e);
+                                    idlingResource.decrement();
+                                });
+                    }).addOnFailureListener(e -> Log.w("DeleteUser", "User doc deletion failed", e));
                 });
 
     }
@@ -310,6 +331,51 @@ public class FirebaseManager {
             idlingResource.decrement();
         });
     }
+
+    public void revokeOrganizer(String uid){
+        users.document(uid).update("CanOrganize", false);
+    }
+
+    public void grantOrganizer(String uid){
+        users.document(uid).update("CanOrganize", true);
+    }
+
+    public void getAdmin(String uid, FirebaseCallback<AdminUser> callback){
+        users.document(uid).get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot doc = task.getResult();
+                if (doc.exists()) {
+                    Map<String, Object> data = doc.getData();
+                    assert data != null;
+                    String name = (String) data.get("Name");
+                    String email = (String) data.get("Email");
+                    String phone = (String) data.get("Phone");
+                    String pid = (String) data.get("Picture");
+                    AdminUser user = new AdminUser(uid, name, email, phone, pid, this);
+                    callback.onSuccess(user);
+                } else {
+                    callback.onFailure(new Exception("User not found"));
+                }
+            }else{
+                callback.onFailure(task.getException());
+            }
+        }).addOnFailureListener(callback::onFailure);
+    }
+
+    public void getAllEvents(FirebaseCallback<ArrayList<String>> callback){
+        events.get().addOnCompleteListener(task -> {
+            ArrayList<String> eventList = new ArrayList<>();
+            if (task.isSuccessful()) {
+                for (DocumentSnapshot doc : task.getResult()) {
+                    eventList.add(doc.getId());
+                }
+                callback.onSuccess(eventList);
+            }else{
+                callback.onFailure(task.getException());
+            }
+        });
+    }
+
 
     /**
      * Creates and uploads a new event document to Firestore.
@@ -395,6 +461,7 @@ public class FirebaseManager {
             return Tasks.forResult(null);
         });
         allTasks.add(deleteOrganizer);
+<<<<<<< HEAD
         // 3. Delete event from database
         return Tasks.whenAllComplete(allTasks)
                 .continueWithTask(task -> events.document(eid).delete())
@@ -402,6 +469,22 @@ public class FirebaseManager {
                     // idling resource for testing
                     idlingResource.decrement();
                 });
+=======
+
+        // Delete profile picture if it exists
+        Task<Void> deletePhoto = events.document(eid).get().continueWithTask(task -> {
+                    String photo_url = task.getResult().getString("Picture");
+                    if (photo_url != null && !photo_url.isEmpty()) {
+                        StorageReference ref = storage.getReferenceFromUrl(photo_url);
+                        return ref.delete();
+                    }
+            return null;
+        });
+
+        allTasks.add(deletePhoto);
+        // Delete event from database
+        return Tasks.whenAllComplete(allTasks).continueWithTask(task -> events.document(eid).delete());
+>>>>>>> d46c12eb57fedad72317ced92377a31df2e9260b
     }
 
     /**
@@ -585,7 +668,6 @@ public class FirebaseManager {
     }
 
 
-
     /**
      * Retrieve a list of events from the database.
      *
@@ -621,6 +703,7 @@ public class FirebaseManager {
             idlingResource.decrement();
         });
     }
+
 
     public void uploadBannerPic(Uri fileUri, FirebaseCallback<String> callback){
         String pid = UUID.randomUUID().toString(); // unique id for picture

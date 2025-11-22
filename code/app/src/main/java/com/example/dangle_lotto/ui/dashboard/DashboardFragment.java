@@ -15,6 +15,7 @@ import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.dangle_lotto.GeneralUser;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.R;
@@ -125,6 +126,10 @@ public class DashboardFragment extends Fragment {
         if (organizedEvents.isEmpty()) {
             loadFirstPage();
         }
+
+        // load profile picture into image view
+        if (!(user.getPhotoID().isEmpty() || user.getPhotoID() == null))
+            Glide.with(requireContext()).load(user.getPhotoID()).into(binding.dashboardFragmentUserPicture);
 
         return root;
     }

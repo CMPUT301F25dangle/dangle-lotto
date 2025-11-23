@@ -56,6 +56,7 @@ public class UserStoriesTests {
 
     private static String ownerUid;
     private static String testerUid;
+    private Event eventOfInterest;
 
     /**
      * Sets up the Firebase emulator for testing.
@@ -113,7 +114,7 @@ public class UserStoriesTests {
         Thread.sleep(1500);
 
         // Create an event to test on
-        firebaseManager.createEvent(ownerUid, "Good Party", Timestamp.now(), "Da House", "A party for good people", 10, 100, "", "", new ArrayList<String>());
+        eventOfInterest = firebaseManager.createEvent(ownerUid, "Good Party", Timestamp.now(), "Da House", "A party for good people", 10, 100, "", new ArrayList<String>());
 
         Thread.sleep(500);
 
@@ -125,6 +126,40 @@ public class UserStoriesTests {
 
         // Unregister idling resource
         IdlingRegistry.getInstance().unregister(firebaseIdlingResource);
+    }
+
+    /**
+     * Deletes all users and events from the database.
+     *
+     * @return A Firebase {@link Task} representing the operation.
+     */
+    public static void clearFirestore() throws InterruptedException {
+        try {
+            // Delete users collection
+            QuerySnapshot users = Tasks.await(firebaseManager.getUsersReference().get());
+            for (DocumentSnapshot doc : users) {
+                System.out.println("Deleting user: " + doc.getId());
+                Tasks.await(firebaseManager.deleteUser(doc.getId()));
+            }
+
+            // Delete events collection
+            QuerySnapshot events = Tasks.await(firebaseManager.getEventsReference().get());
+            for (DocumentSnapshot doc : events) {
+                Tasks.await(firebaseManager.deleteEvent(doc.getId()));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        Thread.sleep(1000);
+    }
+
+    public void login(String email, String password) {
+        // Logs the user in
+        onView(withHint("Email")).perform(typeText(email), closeSoftKeyboard());
+        onView(withHint("Password")).perform(typeText(password), closeSoftKeyboard());
+        onView(withText("LOGIN")).perform(ViewActions.click());
     }
 
     /**
@@ -190,37 +225,77 @@ public class UserStoriesTests {
     }
 
     /**
-     * Deletes all users and events from the database.
-     *
-     * @return A Firebase {@link Task} representing the operation.
+     * Checks if user can accept an event invitation.
+     * <p>
+     * US 01.05.02 As an entrant I want to be able to accept the invitation to register/sign up when chosen to participate in an event.
      */
-    public static void clearFirestore() throws InterruptedException {
-        try {
-            // Delete users collection
-            QuerySnapshot users = Tasks.await(firebaseManager.getUsersReference().get());
-            for (DocumentSnapshot doc : users) {
-                System.out.println("Deleting user: " + doc.getId());
-                Tasks.await(firebaseManager.deleteUser(doc.getId()));
-            }
+    @Test
+    public void AcceptEventInvitation() {
+        // Add the user to the event chosen list
+        firebaseManager.userAddStatus(testerUid, eventOfInterest.getEid(), "Chosen");
 
-            // Delete events collection
-            QuerySnapshot events = Tasks.await(firebaseManager.getEventsReference().get());
-            for (DocumentSnapshot doc : events) {
-                Tasks.await(firebaseManager.deleteEvent(doc.getId()));
-            }
+        // Login the user
+        login("tester@gmail.com", "password");
 
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+        // Click on the event
+        onView(withText("Good Party")).perform(ViewActions.click());
 
-        Thread.sleep(1000);
+        // Click on the join button
+        onView(withText("You’ve Been Chosen!")).perform(ViewActions.click());
+
+        // Click on the attend button to accept
+        onView(withText("Attend")).perform(ViewActions.click());
+
+        // Check if button says "Attending"
+        onView(withText("Attending")).check(matches(isDisplayed()));
     }
 
-    public void login(String email, String password) {
-        // Logs the user in
-        onView(withHint("Email")).perform(typeText(email), closeSoftKeyboard());
-        onView(withHint("Password")).perform(typeText(password), closeSoftKeyboard());
-        onView(withText("LOGIN")).perform(ViewActions.click());
+    /**
+     * Checks if user can decline an event invitation.
+     * <p>
+     * US 01.05.03 As an entrant I want to be able to decline an invitation when chosen to participate in an event.
+     */
+    @Test
+    public void DeclineEventInvitation() {
+        // Add the user to the event chosen list
+        firebaseManager.userAddStatus(testerUid, eventOfInterest.getEid(), "Chosen");
+
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Click on the event
+        onView(withText("Good Party")).perform(ViewActions.click());
+
+        // Click on the join button
+        onView(withText("You’ve Been Chosen!")).perform(ViewActions.click());
+
+        // Click on the decline button to not accept
+        onView(withText("Decline")).perform(ViewActions.click());
+
+        // Check if button says "Cancelled"
+        onView(withText("Cancelled")).check(matches(isDisplayed()));
     }
 
+    /**
+     * Checks if user can see how many entrants are on the waiting list for an event.
+     * <p>
+     * US 01.05.04 As an entrant, I want to know how many total entrants are on the waiting list for an event.
+     */
+    @Test
+    public void WaitingListSize() {
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Click on the event
+        onView(withText("Good Party")).perform(ViewActions.click());
+
+        // Check number of registrants
+        onView(withText("Spots Remaining: 100/100")).check(matches(isDisplayed()));
+
+        // Click on the join button
+        onView(withText("Register for Lottery")).perform(ViewActions.click());
+
+        // Check number of registrants
+        onView(withText("Spots Remaining: 99/100")).check(matches(isDisplayed()));
+    }
 }

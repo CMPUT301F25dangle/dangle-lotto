@@ -1,6 +1,8 @@
 package com.example.dangle_lotto.ui.home;
 
+import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -8,7 +10,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
@@ -50,7 +55,6 @@ public class HomeFragment extends Fragment {
     private boolean isLoading;
     private static final int PAGE_SIZE = 4; // or however many events per page
     private DocumentSnapshot lastVisible = null;
-
 
     @SuppressLint("NotifyDataSetChanged")
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -121,6 +125,16 @@ public class HomeFragment extends Fragment {
            loadFirstPage();
         });
 
+        // initialize button for qr code scanning
+        binding.openQrFragmentButton.setOnClickListener(v -> {
+            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA)
+                    == PackageManager.PERMISSION_GRANTED) {
+                openScannerDialog();
+            } else {
+                cameraPermissionLauncher.launch(Manifest.permission.CAMERA);
+            }
+        });
+
         return root;
     }
 
@@ -132,6 +146,38 @@ public class HomeFragment extends Fragment {
         // update the view model
         userViewModel.setHomeEvents(events);
     }
+
+    private final ActivityResultLauncher<String> cameraPermissionLauncher =
+            registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+                if (isGranted) {
+                    openScannerDialog();
+                } else {
+                    Toast.makeText(requireContext(), "Camera permission is required to scan QR codes", Toast.LENGTH_LONG).show();
+                }
+            });
+
+    private void openScannerDialog() {
+        QRScannerDialogFragment dialog = new QRScannerDialogFragment();
+        dialog.setListener(qr -> {
+            firebaseManager.getEvent(qr, new FirebaseCallback<Event>() {
+
+                @Override
+                public void onSuccess(Event result) {
+                    userViewModel.setSelectedHomeEvent(result);
+                    NavController navController = NavHostFragment.findNavController(HomeFragment.this);
+                    navController.navigate(R.id.action_home_to_eventDetail);
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Toast.makeText(requireContext(), "Invalid QR Code", Toast.LENGTH_SHORT).show();
+                }
+            });
+        });
+        dialog.show(getChildFragmentManager(), "QRScannerDialog");
+
+    }
+
 
     /**
      * Opens the filter dialogue

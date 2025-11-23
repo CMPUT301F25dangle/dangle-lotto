@@ -7,6 +7,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -25,6 +26,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -144,7 +146,10 @@ public class FirebaseManager {
      * @param canOrganize  Boolean value indicating whether the user can organize events
      * @param callback  Callback function to call when user is created
      */
-    public void signUp(String email, String password, String name, String phone, String photo_id, boolean canOrganize, FirebaseCallback<String> callback){
+    public void signUp(String email, String password, String name, String phone, String photo_id, boolean canOrganize, FirebaseCallback<String> callback) {
+        // idling resource for testing
+        idlingResource.increment();
+
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
@@ -160,6 +165,9 @@ public class FirebaseManager {
                         callback.onFailure(task.getException());
                     }
                     callback.onComplete();
+
+                    // idling resource for testing
+                    idlingResource.decrement();
                 });
     }
 
@@ -221,63 +229,94 @@ public class FirebaseManager {
      *
      * @param uid User ID to delete.
      */
-    public void deleteUser(String uid) {
+    public Task<Void> deleteUser(String uid) {
+        idlingResource.increment();
+
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
+
         List<Task<Void>> allTasks = new ArrayList<>();
-        // 1. Delete user from all subcollections their corresponding event refs
+
+        // 1. Delete from all subcollections
         for (String collection : collections) {
-            Task<Void> t = users.document(uid).collection(collection).get().continueWithTask(task -> {
+            Task<Void> t = users.document(uid).collection(collection).get()
+                    .continueWithTask(task -> {
+
                         List<Task<Void>> innerDeletes = new ArrayList<>();
+
                         if (task.isSuccessful() && task.getResult() != null) {
                             for (DocumentSnapshot doc : task.getResult()) {
                                 String eid = doc.getId();
-                                innerDeletes.add(events.document(eid).collection(collection).document(uid).delete());
+                                // delete user from event subcollection
+                                innerDeletes.add(events.document(eid)
+                                        .collection(collection)
+                                        .document(uid)
+                                        .delete());
+
+                                // delete the subcollection doc from user
                                 innerDeletes.add(doc.getReference().delete());
                             }
                         }
-                        return Tasks.whenAllComplete(innerDeletes).continueWith(task1 -> null);
-                    });
+                        return Tasks.whenAllComplete(innerDeletes);
+                    }).continueWith(task -> null); // normalize to Task<Void>
+
             allTasks.add(t);
         }
-        // 2. Delete all events user organized
-        Task<Void> organizedTask = users.document(uid).collection("Organize").get().continueWithTask(task -> {
-                List<Task<Void>> eventDeletes = new ArrayList<>();
-                if (task.isSuccessful() && task.getResult() != null) {
+
+        // 2. Delete events user organized
+        Task<Void> organizedTask = users.document(uid)
+                .collection("Organize")
+                .get()
+                .continueWithTask(task -> {
+                    List<Task<Void>> eventDeletes = new ArrayList<>();
+                    if (task.isSuccessful() && task.getResult() != null) {
                         for (DocumentSnapshot doc : task.getResult()) {
-                            String eid = doc.getId();
-                            eventDeletes.add(deleteEvent(eid));
+                            eventDeletes.add(deleteEvent(doc.getId()));
                         }
                     }
-                return Tasks.whenAllComplete(eventDeletes).continueWith(task1 -> null);
-            });
+                    return Tasks.whenAllComplete(eventDeletes);
+                }).continueWith(task -> null);
+
         allTasks.add(organizedTask);
 
-        // 3. Delete profile picture
-        Task<Void> deletePhoto = events.document(uid).get().continueWithTask(task -> {
-            String photo_url = task.getResult().getString("Picture");
-            if (photo_url != null && !photo_url.isEmpty()) {
-                StorageReference ref = storage.getReferenceFromUrl(photo_url);
-                return ref.delete();
-            }
-            return null;
-        });
-
-        allTasks.add(deletePhoto);
-        // 4. Delete user from database
-        Tasks.whenAllComplete(allTasks).addOnCompleteListener(task -> {
-                    users.document(uid).delete().addOnCompleteListener(task1 -> {
-                        FirebaseFunctions.getInstance()
-                                .getHttpsCallable("deleteUserAuth")
-                                .call(Collections.singletonMap("uid", uid))
-                                .addOnSuccessListener(result -> {
-                                    Log.d("Functions", "User deleted from Auth");
-                                })
-                                .addOnFailureListener(e -> {
-                                    Log.e("Functions", "Error: ", e);
-                                });
-                    }).addOnFailureListener(e -> Log.w("DeleteUser", "User doc deletion failed", e));
+        // 3. Delete profile picture if exists
+        Task<Void> deletePhoto = users.document(uid).get()
+                .continueWithTask(task -> {
+                    String url = task.getResult().getString("Picture");
+                    if (url != null && !url.isEmpty()) {
+                        StorageReference ref = storage.getReferenceFromUrl(url);
+                        return ref.delete();
+                    }
+                    return Tasks.forResult(null);
                 });
 
+        allTasks.add(deletePhoto);
+
+        // 4. Join all operations
+        Tasks.whenAllComplete(allTasks)
+                .continueWithTask(task -> {
+                    // delete user document
+                    return users.document(uid).delete();
+                })
+                .continueWithTask(task -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("uid", uid);
+                    // cloud function: delete auth user
+                    return FirebaseFunctions.getInstance()
+                            .getHttpsCallable("deleteUserAuth")
+                            .call(data);
+                })
+                .addOnSuccessListener(r -> {
+                    idlingResource.decrement();
+                    tcs.setResult(null);
+                })
+                .addOnFailureListener(e -> {
+                    idlingResource.decrement();
+                    tcs.setException(e);
+                });
+
+        return tcs.getTask();
     }
+
 
     /**
      * Retrieves a {@link GeneralUser} by UID from Firestore.
@@ -286,6 +325,9 @@ public class FirebaseManager {
      * @param callback  Callback that receives the retrieved user object.
      */
     public void getUser(String uid, FirebaseCallback<GeneralUser> callback) {
+        // idling resource for testing
+        idlingResource.increment();
+
         users.document(uid).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 DocumentSnapshot doc = task.getResult();
@@ -305,7 +347,16 @@ public class FirebaseManager {
             }else{
                 callback.onFailure(task.getException());
             }
-        }).addOnFailureListener(callback::onFailure);
+
+            // idling resource for testing
+            idlingResource.decrement();
+
+        }).addOnFailureListener(error -> {
+            callback.onFailure(error);
+
+            // idling resource for testing
+            idlingResource.decrement();
+        });
     }
 
     public void revokeOrganizer(String uid){
@@ -368,22 +419,23 @@ public class FirebaseManager {
      * @return Instantiated {@link Event} object.
      */
     public Event createEvent(String oid, String name, Timestamp datetime, String location, String description, int eventSize,
-                             int maxEntrants, String photo_url, ArrayList<String> categories){
+                             int maxEntrants, String photo_url, String qr_url, ArrayList<String> categories){
         String eid = events.document().getId();
-        Map<String, Object> data = Map.of(
-                "Organizer", oid,
-                "Name", name,
-                "Date", datetime,
-                "Location", location,
-                "Description", description,
-                "Event Size", eventSize,
-                "Max Entrants", maxEntrants,
-                "Picture", photo_url,
-                "Categories", categories
-        );
+        Map<String, Object> data = new HashMap<>();
+        data.put("Organizer", oid);
+        data.put("Name", name);
+        data.put("Date", datetime);
+        data.put("Location", location);
+        data.put("Description", description);
+        data.put("Event Size", eventSize);
+        data.put("Max Entrants", maxEntrants);
+        data.put("Picture", photo_url);
+        data.put("QR", qr_url);
+        data.put("Categories", categories);
+
         users.document(oid).collection("Organize").document(eid).set(Map.of("Timestamp", datetime));
         events.document(eid).set(data);
-        return new Event(eid, oid, name, datetime, location, description, photo_url, eventSize, maxEntrants, categories, this);
+        return new Event(eid, oid, name, datetime, location, description, photo_url, qr_url, eventSize, maxEntrants, categories, this);
     }
 
     /**
@@ -397,7 +449,10 @@ public class FirebaseManager {
                 "Date", event.getDate(),
                 "Location", event.getLocation(),
                 "Description", event.getDescription(),
-                "Event Size", event.getEventSize()
+                "Event Size", event.getEventSize(),
+                "Max Entrants", event.getMaxEntrants(),
+                "Picture", event.getPhotoID(),
+                "QR", event.getQR()
         );
     }
 
@@ -408,7 +463,11 @@ public class FirebaseManager {
      * @param eid  string of user id to search for and retrieve all attributes
      */
     public Task<Void> deleteEvent(String eid) {
+        // idling resource for testing
+        idlingResource.increment();
+
         List<Task<Void>> allTasks = new ArrayList<>();
+
         // 1. delete all event references in user subcollections
         for (String collection : collections) {
             Task<Void> t = events.document(eid).collection(collection).get().continueWithTask(task -> {
@@ -424,7 +483,7 @@ public class FirebaseManager {
                     });
             allTasks.add(t);
         }
-        // Delete reference from organizer collection
+        // 2. Delete reference from organizer collection
         Task<Void> deleteOrganizer = events.document(eid).get().continueWithTask(task -> {
             String oid = task.getResult().getString("Organizer");
             if (oid != null) {
@@ -446,7 +505,11 @@ public class FirebaseManager {
 
         allTasks.add(deletePhoto);
         // Delete event from database
-        return Tasks.whenAllComplete(allTasks).continueWithTask(task -> events.document(eid).delete());
+        return Tasks.whenAllComplete(allTasks).continueWithTask(task -> {
+            events.document(eid).delete();
+            idlingResource.decrement();
+            return null;
+        });
     }
 
     /**
@@ -468,6 +531,7 @@ public class FirebaseManager {
                 doc.getString("Location"),
                 doc.getString("Description"),
                 doc.getString("Picture") != null ? doc.getString("Picture") : "",
+                doc.getString("QR") != null ? doc.getString("QR") : "",
                 Objects.requireNonNull(doc.getLong("Event Size")).intValue(),
                 maxEntrants,
                 doc.get("Categories") != null ? (ArrayList<String>) doc.get("Categories") : new ArrayList<>(),
@@ -482,6 +546,9 @@ public class FirebaseManager {
      * @param callback callback function to call when event is retrieved
      */
     public void getEvent(String eid, FirebaseCallback<Event> callback){
+        // idling resource for testing
+        idlingResource.increment();
+
         events.document(eid).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 DocumentSnapshot doc = task.getResult();
@@ -493,7 +560,16 @@ public class FirebaseManager {
             }else {
                 callback.onFailure(task.getException());
             }
-        }).addOnFailureListener(callback::onFailure);
+
+            // idling resource for testing
+            idlingResource.decrement();
+
+        }).addOnFailureListener(error -> {
+            callback.onFailure(error);
+
+            // idling resource for testing
+            idlingResource.decrement();
+        });
     }
 
     /**
@@ -517,6 +593,9 @@ public class FirebaseManager {
      * @param callback callback function to call when event is retrieved
      */
     public void getUserSubcollection(String uid, String subcollection, FirebaseCallback<ArrayList<String>> callback){
+        // idling resource for testing
+        idlingResource.increment();
+
         users.document(uid).collection(subcollection).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 ArrayList<String> ids = new ArrayList<>();
@@ -527,7 +606,16 @@ public class FirebaseManager {
             }else {
                 callback.onFailure(task.getException());
             }
-        }).addOnFailureListener(callback::onFailure);
+
+            // idling resource for testing
+            idlingResource.decrement();
+
+        }).addOnFailureListener(error -> {
+            callback.onFailure(error);
+
+            // idling resource for testing
+            idlingResource.decrement();
+        });
     }
 
     /**
@@ -551,6 +639,9 @@ public class FirebaseManager {
      * @param callback callback function to call when event is retrieved
      */
     public void getEventSubcollection(String eid, String subcollection, FirebaseCallback<ArrayList<String>> callback){
+        // idling resource for testing
+        idlingResource.increment();
+
         events.document(eid).collection(subcollection).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 ArrayList<String> ids = new ArrayList<>();
@@ -561,7 +652,16 @@ public class FirebaseManager {
             }else {
                 callback.onFailure(task.getException());
             }
-        }).addOnFailureListener(callback::onFailure);
+
+            // idling resource for testing
+            idlingResource.decrement();
+
+        }).addOnFailureListener(error -> {
+            callback.onFailure(error);
+
+            // idling resource for testing
+            idlingResource.decrement();
+        });
     }
 
     /**
@@ -604,6 +704,7 @@ public class FirebaseManager {
     public void getQuery(DocumentSnapshot lastVisible, Query query, FirebaseCallback<ArrayList<DocumentSnapshot>> callback){
         if (lastVisible != null) query = query.startAfter(lastVisible);
 
+        // idling resource for testing
         idlingResource.increment();
 
         query.get().addOnCompleteListener(task -> {

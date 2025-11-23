@@ -3,14 +3,22 @@ const admin = require("firebase-admin");
 
 admin.initializeApp();
 
+// ✔ Required: direct Admin SDK to Auth emulator
+if (process.env.FUNCTIONS_EMULATOR) {
+    process.env.FIREBASE_AUTH_EMULATOR_HOST = "127.0.0.1:9099";
+    console.log("🔥 Running Auth Admin SDK against emulator");
+}
+
 exports.deleteUserAuth = functions.https.onCall(async (data, context) => {
-  const uid = data.uid;
+  console.log("Deleting user:", data.data);
+  const uid = data.data.uid;
 
   try {
     await admin.auth().deleteUser(uid);
-    return {success: true};
+    console.log("✅ Deleted:", uid);
+    return { success: true };
   } catch (err) {
-    console.error(err);
-    throw new functions.https.HttpsError("unknown", "Failed to delete user");
+    console.error("❌ Auth delete failed:", err);
+    throw new functions.https.HttpsError("internal", err.message);
   }
 });

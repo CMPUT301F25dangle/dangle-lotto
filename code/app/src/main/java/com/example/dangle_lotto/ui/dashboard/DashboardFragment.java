@@ -43,7 +43,7 @@ import java.util.ArrayList;
 public class DashboardFragment extends Fragment {
     private FragmentDashboardBinding binding;
     private UserViewModel userViewModel;
-    private FirebaseManager firebaseManager = new FirebaseManager();
+    private FirebaseManager firebaseManager = FirebaseManager.getInstance();
     private RecyclerView recyclerView;
     private LinearLayoutManager layoutManager;
     private EventCardAdapter adapter;

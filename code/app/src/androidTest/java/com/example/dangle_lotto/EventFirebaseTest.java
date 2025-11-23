@@ -31,13 +31,13 @@ public class EventFirebaseTest {
     private final GeneralUser testRegistrant;
 
     public EventFirebaseTest() {
-        firebaseManager = new FirebaseManager();
+        firebaseManager = FirebaseManager.getInstance();
         testOrganizer = new GeneralUser("FvKUWJ366kM80HcFeM6gqZxGaIPU", "Mahd", "afzalmahd@gmail.com", "", "", firebaseManager, true);
         testRegistrant = new GeneralUser("RPkgAupyndxOZNRTAlad4wQRE2A6", "Tirth", "qbin57@gmail.com", "", "", firebaseManager, false);
     }
 
     public Event createTemplateEvent(){
-        return firebaseManager.createEvent(testOrganizer.getUid(), "Big ahh midterm", Timestamp.now(), "Da House", "Calculussy", 10, 0, "", new ArrayList<>());
+        return firebaseManager.createEvent(testOrganizer.getUid(), "Big ahh midterm", Timestamp.now(), "Da House", "Calculussy", 10, 0, "", "", new ArrayList<>());
     }
 
     @BeforeClass
@@ -89,6 +89,7 @@ public class EventFirebaseTest {
                 new Timestamp(date),
                 null,
                 "A party for diddy kong",
+                null,
                 null,
                 69,
                 -1,

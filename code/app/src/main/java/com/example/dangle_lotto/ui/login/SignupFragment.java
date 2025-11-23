@@ -33,7 +33,6 @@ public class SignupFragment extends Fragment {
     private Button btnSignUp;
     private FirebaseManager firebaseManager;
 
-
     public SignupFragment() {
         // Required empty public constructor
     }
@@ -50,7 +49,7 @@ public class SignupFragment extends Fragment {
         etSignupPassword = view.findViewById(R.id.etSignupPassword);
         btnSignUp = view.findViewById(R.id.btnSignUp);
 
-        firebaseManager = new FirebaseManager();
+        firebaseManager = FirebaseManager.getInstance();
 
         btnSignUp.setOnClickListener(v -> registerUser());
 

@@ -58,7 +58,7 @@ public class NotificationsFragment extends Fragment {
 
         // initialize listview and firebase manager
         notificationListView = root.findViewById(R.id.notification_lv);
-        firebaseManager = new FirebaseManager();
+        firebaseManager = FirebaseManager.getInstance();
 
         // list of all notifications related to a user
         List<Notification> totalNotifications = new ArrayList<>();

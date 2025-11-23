@@ -96,7 +96,7 @@ public class UserStoriesTests {
             public void onFailure(Exception e) { }
         });
 
-        Thread.sleep(2000);
+        Thread.sleep(1500);
 
 
         // Create tester AFTER owner is created
@@ -110,14 +110,12 @@ public class UserStoriesTests {
             public void onFailure(Exception e) { }
         });
 
-        Thread.sleep(2000);
+        Thread.sleep(1500);
 
         // Create an event to test on
         firebaseManager.createEvent(ownerUid, "Good Party", Timestamp.now(), "Da House", "A party for good people", 10, 100, "", "", new ArrayList<String>());
 
-        Thread.sleep(2000);
-
-
+        Thread.sleep(500);
 
     }
 
@@ -125,26 +123,20 @@ public class UserStoriesTests {
     public void tearDown() throws InterruptedException {
         clearFirestore();
 
-        Thread.sleep(1000);
-
         // Unregister idling resource
         IdlingRegistry.getInstance().unregister(firebaseIdlingResource);
     }
-
-//    @Test
-//    public void testClear() throws InterruptedException {
-//       return;
-//    }
 
     /**
      * Joins the waiting list for an event. We call it registering.
      * <p>
      * US 01.01.01 As an entrant, I want to join the waiting list for a specific event
+     * This test works because the buttons appearance only changes if the callback is successful for registering.
      */
     @Test
     public void JoinWaitingList() {
         // Login the user
-        login();
+        login("tester@gmail.com", "password");
 
         // Click on the event
         onView(withText("Good Party")).perform(ViewActions.click());
@@ -160,11 +152,12 @@ public class UserStoriesTests {
      * Leaves the waiting list for an event. We call it unregistering.
      * <p>
      * US 01.01.02 As an entrant, I want to leave the waiting list for a specific event
+     * This test works because the buttons appearance only changes if the callback is successful for registering.
      */
     @Test
     public void LeaveWaitingList() {
         // Login the user
-        login();
+        login("tester@gmail.com", "password");
 
         // Click on the event
         onView(withText("Good Party")).perform(ViewActions.click());
@@ -187,7 +180,7 @@ public class UserStoriesTests {
     @Test
     public void HomePageOpensAndHasEvents() {
         // Login the user
-        login();
+        login("tester@gmail.com", "password");
 
         // check if home page opens by scanning for id
         onView(withId(R.id.home_fragment_title)).check(matches(isDisplayed()));
@@ -201,7 +194,7 @@ public class UserStoriesTests {
      *
      * @return A Firebase {@link Task} representing the operation.
      */
-    public static void clearFirestore() {
+    public static void clearFirestore() throws InterruptedException {
         try {
             // Delete users collection
             QuerySnapshot users = Tasks.await(firebaseManager.getUsersReference().get());
@@ -219,12 +212,14 @@ public class UserStoriesTests {
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
+
+        Thread.sleep(1000);
     }
 
-    public void login() {
+    public void login(String email, String password) {
         // Logs the user in
-        onView(withHint("Email")).perform(typeText("tester@gmail.com"), closeSoftKeyboard());
-        onView(withHint("Password")).perform(typeText("password"), closeSoftKeyboard());
+        onView(withHint("Email")).perform(typeText(email), closeSoftKeyboard());
+        onView(withHint("Password")).perform(typeText(password), closeSoftKeyboard());
         onView(withText("LOGIN")).perform(ViewActions.click());
     }
 

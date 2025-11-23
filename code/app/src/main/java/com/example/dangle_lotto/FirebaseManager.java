@@ -7,6 +7,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -25,6 +26,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -227,69 +229,94 @@ public class FirebaseManager {
      *
      * @param uid User ID to delete.
      */
-    public void deleteUser(String uid) {
-        // idling resource for testing
+    public Task<Void> deleteUser(String uid) {
         idlingResource.increment();
+
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
 
         List<Task<Void>> allTasks = new ArrayList<>();
 
-        // 1. Delete user from all subcollections their corresponding event refs
+        // 1. Delete from all subcollections
         for (String collection : collections) {
-            Task<Void> t = users.document(uid).collection(collection).get().continueWithTask(task -> {
+            Task<Void> t = users.document(uid).collection(collection).get()
+                    .continueWithTask(task -> {
+
                         List<Task<Void>> innerDeletes = new ArrayList<>();
+
                         if (task.isSuccessful() && task.getResult() != null) {
                             for (DocumentSnapshot doc : task.getResult()) {
                                 String eid = doc.getId();
-                                innerDeletes.add(events.document(eid).collection(collection).document(uid).delete());
+                                // delete user from event subcollection
+                                innerDeletes.add(events.document(eid)
+                                        .collection(collection)
+                                        .document(uid)
+                                        .delete());
+
+                                // delete the subcollection doc from user
                                 innerDeletes.add(doc.getReference().delete());
                             }
                         }
-                        return Tasks.whenAllComplete(innerDeletes).continueWith(task1 -> null);
-                    });
+                        return Tasks.whenAllComplete(innerDeletes);
+                    }).continueWith(task -> null); // normalize to Task<Void>
+
             allTasks.add(t);
         }
-        // 2. Delete all events user organized
-        Task<Void> organizedTask = users.document(uid).collection("Organize").get().continueWithTask(task -> {
-                List<Task<Void>> eventDeletes = new ArrayList<>();
-                if (task.isSuccessful() && task.getResult() != null) {
+
+        // 2. Delete events user organized
+        Task<Void> organizedTask = users.document(uid)
+                .collection("Organize")
+                .get()
+                .continueWithTask(task -> {
+                    List<Task<Void>> eventDeletes = new ArrayList<>();
+                    if (task.isSuccessful() && task.getResult() != null) {
                         for (DocumentSnapshot doc : task.getResult()) {
-                            String eid = doc.getId();
-                            eventDeletes.add(deleteEvent(eid));
+                            eventDeletes.add(deleteEvent(doc.getId()));
                         }
                     }
-                return Tasks.whenAllComplete(eventDeletes).continueWith(task1 -> null);
-            });
+                    return Tasks.whenAllComplete(eventDeletes);
+                }).continueWith(task -> null);
+
         allTasks.add(organizedTask);
 
-        // 3. Delete profile picture
-        Task<Void> deletePhoto = events.document(uid).get().continueWithTask(task -> {
-            String photo_url = task.getResult().getString("Picture");
-            if (photo_url != null && !photo_url.isEmpty()) {
-                StorageReference ref = storage.getReferenceFromUrl(photo_url);
-                return ref.delete();
-            }
-            return null;
-        });
-
-        allTasks.add(deletePhoto);
-        // 4. Delete user from database
-        Tasks.whenAllComplete(allTasks).addOnCompleteListener(task -> {
-                    users.document(uid).delete().addOnCompleteListener(task1 -> {
-                        FirebaseFunctions.getInstance()
-                                .getHttpsCallable("deleteUserAuth")
-                                .call(Collections.singletonMap("uid", uid))
-                                .addOnSuccessListener(result -> {
-                                    Log.d("Functions", "User deleted from Auth");
-                                    idlingResource.decrement();
-                                })
-                                .addOnFailureListener(e -> {
-                                    Log.e("Functions", "Error: ", e);
-                                    idlingResource.decrement();
-                                });
-                    }).addOnFailureListener(e -> Log.w("DeleteUser", "User doc deletion failed", e));
+        // 3. Delete profile picture if exists
+        Task<Void> deletePhoto = users.document(uid).get()
+                .continueWithTask(task -> {
+                    String url = task.getResult().getString("Picture");
+                    if (url != null && !url.isEmpty()) {
+                        StorageReference ref = storage.getReferenceFromUrl(url);
+                        return ref.delete();
+                    }
+                    return Tasks.forResult(null);
                 });
 
+        allTasks.add(deletePhoto);
+
+        // 4. Join all operations
+        Tasks.whenAllComplete(allTasks)
+                .continueWithTask(task -> {
+                    // delete user document
+                    return users.document(uid).delete();
+                })
+                .continueWithTask(task -> {
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("uid", uid);
+                    // cloud function: delete auth user
+                    return FirebaseFunctions.getInstance()
+                            .getHttpsCallable("deleteUserAuth")
+                            .call(data);
+                })
+                .addOnSuccessListener(r -> {
+                    idlingResource.decrement();
+                    tcs.setResult(null);
+                })
+                .addOnFailureListener(e -> {
+                    idlingResource.decrement();
+                    tcs.setException(e);
+                });
+
+        return tcs.getTask();
     }
+
 
     /**
      * Retrieves a {@link GeneralUser} by UID from Firestore.
@@ -461,15 +488,6 @@ public class FirebaseManager {
             return Tasks.forResult(null);
         });
         allTasks.add(deleteOrganizer);
-<<<<<<< HEAD
-        // 3. Delete event from database
-        return Tasks.whenAllComplete(allTasks)
-                .continueWithTask(task -> events.document(eid).delete())
-                .addOnCompleteListener(task -> {
-                    // idling resource for testing
-                    idlingResource.decrement();
-                });
-=======
 
         // Delete profile picture if it exists
         Task<Void> deletePhoto = events.document(eid).get().continueWithTask(task -> {
@@ -483,8 +501,11 @@ public class FirebaseManager {
 
         allTasks.add(deletePhoto);
         // Delete event from database
-        return Tasks.whenAllComplete(allTasks).continueWithTask(task -> events.document(eid).delete());
->>>>>>> d46c12eb57fedad72317ced92377a31df2e9260b
+        return Tasks.whenAllComplete(allTasks).continueWithTask(task -> {
+            events.document(eid).delete();
+            idlingResource.decrement();
+            return null;
+        });
     }
 
     /**

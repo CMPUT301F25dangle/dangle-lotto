@@ -10,6 +10,8 @@ import static androidx.test.espresso.matcher.ViewMatchers.withHint;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import android.util.Log;
+
 import androidx.test.espresso.IdlingRegistry;
 import androidx.test.espresso.IdlingResource;
 import androidx.test.espresso.action.ViewActions;
@@ -27,6 +29,7 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.functions.FirebaseFunctions;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -37,7 +40,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
@@ -59,13 +64,26 @@ public class UserStoriesTests {
     public static void setupOnce() throws InterruptedException {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        FirebaseFunctions func = FirebaseFunctions.getInstance();
 
         db.useEmulator("10.0.2.2", 8080);
         mAuth.useEmulator("10.0.2.2", 9099);
+        func.useEmulator("10.0.2.2", 5001);
 
         firebaseManager = FirebaseManager.getInstance();
 
         System.out.println("✅ Firebase emulator connected once before all tests.");
+
+    }
+
+    /**
+     *
+     */
+    @Before
+    public void setup() throws InterruptedException {
+        // Register idling resource so Espresso waits for Firebase calls
+        firebaseIdlingResource = firebaseManager.getIdlingResource();
+        IdlingRegistry.getInstance().register(firebaseIdlingResource);
 
         // Creates owner user
         firebaseManager.signUp("owner@gmail.com", "password", "Owner User", "", "", true, new FirebaseCallback<String>() {
@@ -78,17 +96,8 @@ public class UserStoriesTests {
             public void onFailure(Exception e) { }
         });
 
-        Thread.sleep(1000);
-    }
+        Thread.sleep(2000);
 
-    /**
-     *
-     */
-    @Before
-    public void setup() throws InterruptedException {
-        // Register idling resource so Espresso waits for Firebase calls
-        firebaseIdlingResource = firebaseManager.getIdlingResource();
-        IdlingRegistry.getInstance().register(firebaseIdlingResource);
 
         // Create tester AFTER owner is created
         firebaseManager.signUp("tester@gmail.com", "password", "Tester User", "", "", true, new FirebaseCallback<String>() {
@@ -101,12 +110,15 @@ public class UserStoriesTests {
             public void onFailure(Exception e) { }
         });
 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
 
         // Create an event to test on
         firebaseManager.createEvent(ownerUid, "Good Party", Timestamp.now(), "Da House", "A party for good people", 10, 100, "", new ArrayList<String>());
 
-        Thread.sleep(1000);
+        Thread.sleep(2000);
+
+
+
     }
 
     @After
@@ -118,6 +130,11 @@ public class UserStoriesTests {
         // Unregister idling resource
         IdlingRegistry.getInstance().unregister(firebaseIdlingResource);
     }
+
+//    @Test
+//    public void testClear() throws InterruptedException {
+//       return;
+//    }
 
     /**
      * Joins the waiting list for an event. We call it registering.
@@ -184,33 +201,24 @@ public class UserStoriesTests {
      *
      * @return A Firebase {@link Task} representing the operation.
      */
-    public static void clearFirestore() throws InterruptedException {
-        // Delete users
-        firebaseManager.getUsersReference().get().addOnSuccessListener(snap -> {
-            for (DocumentSnapshot doc : snap) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                firebaseManager.deleteUser(doc.getId());
+    public static void clearFirestore() {
+        try {
+            // Delete users collection
+            QuerySnapshot users = Tasks.await(firebaseManager.getUsersReference().get());
+            for (DocumentSnapshot doc : users) {
+                System.out.println("Deleting user: " + doc.getId());
+                Tasks.await(firebaseManager.deleteUser(doc.getId()));
             }
-        });
 
-        // Delete events
-        firebaseManager.getEventsReference().get().addOnSuccessListener(snap -> {
-            for (DocumentSnapshot doc : snap) {
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    throw new RuntimeException(e);
-                }
-                firebaseManager.deleteEvent(doc.getId());
+            // Delete events collection
+            QuerySnapshot events = Tasks.await(firebaseManager.getEventsReference().get());
+            for (DocumentSnapshot doc : events) {
+                Tasks.await(firebaseManager.deleteEvent(doc.getId()));
             }
-        });
 
-        // Wait a bit for deletions to propagate
-        Thread.sleep(1000);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     public void login() {

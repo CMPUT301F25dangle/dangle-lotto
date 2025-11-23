@@ -20,6 +20,7 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.example.dangle_lotto.Event;
 import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.UserViewModel;
@@ -49,19 +50,16 @@ import com.google.zxing.common.BitMatrix;
  * CreateEventFragment - This fragment will be displayed whenever a GeneralUser
  * wants to organize an event.
  *
- * Note: Sometimes the Cancel and Done buttons do not click and I don't know why
- * I will fix that later (i hope)
  *
- * @author Annie Ding
- * @version 1.5
- * @since 2025-11-07
+ * @author Annie Ding, Mahd Afzal
+ * @version 2.0
+ * @since 2025-11-23
  */
 public class CreateEventFragment extends Fragment {
     private FragmentCreateEventBinding binding;
     private FirebaseManager firebaseManager = FirebaseManager.getInstance();
     private UserViewModel userViewModel;
     private int maxEntrants;
-    private Bitmap qr = null;
 
     private long selectedDateTimeMillis;
     private ActivityResultLauncher<PickVisualMediaRequest> pickMedia;
@@ -256,30 +254,21 @@ public class CreateEventFragment extends Fragment {
             // Validate required fields
             String name = binding.createEventNameInput.getText().toString().trim();
             if (name.isEmpty()) {
-                Log.e("CreateEvent", "Event name is required");
-                // Show error to user
                 binding.createEventNameInput.setError("Event name is required");
                 return;
             }
 
             String description = binding.createEventInputDescription.getText().toString().trim();
 
-            Timestamp dateTimeStamp;
-            try {
-                dateTimeStamp = new Timestamp(new Date(selectedDateTimeMillis));
-            } catch (Exception e) {
-                Log.e("CreateEvent", "Error parsing date: " + e.getMessage(), e);
-                return;
-            }
-
+            Timestamp dateTimeStamp = new Timestamp(new Date(selectedDateTimeMillis));
             String location = String.valueOf(binding.cbEnableGeolocation.isChecked());
 
-            if ((binding.cbMaxEntrants.isChecked())) {
+            if (binding.cbMaxEntrants.isChecked()) {
                 maxEntrants = Integer.parseInt(binding.createEventInputMaxEntrants.getText().toString());
             }
 
-            // Create event in Firebase
-            firebaseManager.createEvent(
+            // Create event
+            Event event = firebaseManager.createEvent(
                     userViewModel.getUser().getValue().getUid(),
                     name,
                     dateTimeStamp,
@@ -288,20 +277,50 @@ public class CreateEventFragment extends Fragment {
                     Integer.parseInt(binding.createEventSizeInput.getText().toString()),
                     maxEntrants,
                     photo_url,
+                    null,
                     selectedCategories
             );
-            userViewModel.setOrganizedEvents(null);
-            goBack();
+
+            String eid = event.getEid();
+
+            // Generate the QR image (LOCALLY, not as a global field)
+            Bitmap qrBitmap = generateQRCodeBitmap(eid);
+            if (qrBitmap == null) {
+                Log.e("CreateEvent", "QR generation failed");
+                return;
+            }
+
+            // Upload QR
+            firebaseManager.uploadQR(qrBitmap, new FirebaseCallback<String>() {
+                @Override
+                public void onSuccess(String downloadUrl) {
+                    // Save QR URL on event
+                    event.setQR(downloadUrl);
+
+                    // update list (forces reload)
+                    userViewModel.setOrganizedEvents(null);
+
+                    // 5️⃣ Show dialog ONLY NOW
+                    openQRDialogue(qrBitmap);
+
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Log.e("CreateEvent", "Error uploading QR: " + e.getMessage());
+                }
+            });
 
         } catch (Exception e) {
             Log.e("CreateEvent", "Error creating event: " + e.getMessage(), e);
         }
     }
 
+
     /**
      * Goes back to the previous fragment
      */
-    private void goBack() {
+    public void goBack() {
         NavController navController = NavHostFragment.findNavController(this);
         navController.popBackStack();
     }
@@ -311,16 +330,17 @@ public class CreateEventFragment extends Fragment {
      */
     // The following function was made by chaitanyamunje at
     // https://www.geeksforgeeks.org/android/how-to-generate-qr-code-in-android/
-    private void generateQRCode(String text) {
-        if (qr == null) {
-            BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
-//            try {
-//                qr = barcodeEncoder.encodeBitmap(text + binding.createEventInputTime.getText().toString(), BarcodeFormat.QR_CODE, 600, 600);
-//                openQRDialogue();
-//            } catch (WriterException e) {
-//                e.printStackTrace();
-//            }
+    private Bitmap generateQRCodeBitmap(String text) {
+        try {
+            MultiFormatWriter writer = new MultiFormatWriter();
+            BitMatrix bitMatrix = writer.encode(text, BarcodeFormat.QR_CODE, 600, 600);
+
+            BarcodeEncoder encoder = new BarcodeEncoder();
+            return encoder.createBitmap(bitMatrix);
+        } catch (WriterException e) {
+            e.printStackTrace();
         }
+        return null;
     }
 
 
@@ -329,10 +349,10 @@ public class CreateEventFragment extends Fragment {
      *
      */
 
-    private void openQRDialogue(){
+    private void openQRDialogue(Bitmap qrBitmap){
         QRDialogueFragment dialog = new QRDialogueFragment();
-        dialog.setQr(qr);
-        dialog.show(getParentFragmentManager(), "QRDialog");
+        dialog.setQr(qrBitmap);
+        dialog.show(getChildFragmentManager(), "QRDialog");
     }
 
     @Override

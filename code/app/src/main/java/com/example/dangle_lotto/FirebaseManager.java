@@ -419,22 +419,23 @@ public class FirebaseManager {
      * @return Instantiated {@link Event} object.
      */
     public Event createEvent(String oid, String name, Timestamp datetime, String location, String description, int eventSize,
-                             int maxEntrants, String photo_url, ArrayList<String> categories){
+                             int maxEntrants, String photo_url, String qr_url, ArrayList<String> categories){
         String eid = events.document().getId();
-        Map<String, Object> data = Map.of(
-                "Organizer", oid,
-                "Name", name,
-                "Date", datetime,
-                "Location", location,
-                "Description", description,
-                "Event Size", eventSize,
-                "Max Entrants", maxEntrants,
-                "Picture", photo_url,
-                "Categories", categories
-        );
+        Map<String, Object> data = new HashMap<>();
+        data.put("Organizer", oid);
+        data.put("Name", name);
+        data.put("Date", datetime);
+        data.put("Location", location);
+        data.put("Description", description);
+        data.put("Event Size", eventSize);
+        data.put("Max Entrants", maxEntrants);
+        data.put("Picture", photo_url);
+        data.put("QR", qr_url);
+        data.put("Categories", categories);
+
         users.document(oid).collection("Organize").document(eid).set(Map.of("Timestamp", datetime));
         events.document(eid).set(data);
-        return new Event(eid, oid, name, datetime, location, description, photo_url, eventSize, maxEntrants, categories, this);
+        return new Event(eid, oid, name, datetime, location, description, photo_url, qr_url, eventSize, maxEntrants, categories, this);
     }
 
     /**
@@ -448,7 +449,10 @@ public class FirebaseManager {
                 "Date", event.getDate(),
                 "Location", event.getLocation(),
                 "Description", event.getDescription(),
-                "Event Size", event.getEventSize()
+                "Event Size", event.getEventSize(),
+                "Max Entrants", event.getMaxEntrants(),
+                "Picture", event.getPhotoID(),
+                "QR", event.getQR()
         );
     }
 
@@ -527,6 +531,7 @@ public class FirebaseManager {
                 doc.getString("Location"),
                 doc.getString("Description"),
                 doc.getString("Picture") != null ? doc.getString("Picture") : "",
+                doc.getString("QR") != null ? doc.getString("QR") : "",
                 Objects.requireNonNull(doc.getLong("Event Size")).intValue(),
                 maxEntrants,
                 doc.get("Categories") != null ? (ArrayList<String>) doc.get("Categories") : new ArrayList<>(),

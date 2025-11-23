@@ -74,6 +74,10 @@ public class Event {
      * ID of the associated event photo (if any).
      */
     String photo_id;
+    /**
+     * ID of the associated QR code
+     */
+    String qr_id;
 
     /**
      * List of category tags the event belongs to.
@@ -122,7 +126,7 @@ public class Event {
      * @param firebaseManager Reference to FirebaseManager instance.
      */
     public Event(String eid, String organizer_id, String name, Timestamp deadline, String location,
-                 String description, String photo_id, int eventSize, Integer maxEntrants,
+                 String description, String photo_id, String qr_id, int eventSize, Integer maxEntrants,
                  ArrayList<String> categories, FirebaseManager firebaseManager) {
 
         this.eid = eid;
@@ -132,6 +136,7 @@ public class Event {
         this.location = location;
         this.description = description;
         this.photo_id = photo_id;
+        this.qr_id = qr_id;
         this.eventSize = eventSize;
         this.maxEntrants = maxEntrants;
         this.categories = categories;
@@ -287,6 +292,32 @@ public class Event {
     }
 
     /**
+     * @return The associated photo identifier.
+     */
+    public String getPhotoID() {
+        return photo_id;
+    }
+
+    /**
+     * Sets the event’s photo ID.
+     *
+     * @param photo_id ID of the uploaded event photo.
+     */
+    public void setPhotoID(String photo_id) {
+        this.photo_id = photo_id;
+        firebaseManager.updateEvent(this);
+    }
+
+    public String getQR() {
+        return qr_id;
+    }
+
+    public void setQR(String qr_id) {
+        this.qr_id = qr_id;
+        firebaseManager.updateEvent(this);
+    }
+
+    /**
      * @return A list of category tags for this event.
      */
     public ArrayList<String> getCategories() {
@@ -328,21 +359,6 @@ public class Event {
         return cancelled;
     }
 
-    /**
-     * @return The associated photo identifier.
-     */
-    public String getPhotoID() {
-        return photo_id;
-    }
-
-    /**
-     * Sets the event’s photo ID.
-     *
-     * @param photo_id ID of the uploaded event photo.
-     */
-    public void setPhotoID(String photo_id) {
-        this.photo_id = photo_id;
-    }
 
     // ================================================================
     // Category Management

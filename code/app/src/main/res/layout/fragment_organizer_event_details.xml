@@ -39,6 +39,18 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <Button
+        android:id="@+id/event_qr_view_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="QR"
+        android:textColor="@drawable/text_color_organizer_event_details"
+        android:background="@drawable/rounded_buttons_organizer_event_details"
+        app:layout_constraintEnd_toStartOf="@id/organizer_event_details_event_button"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/organizer_event_details_title" />
+
+    <Button
         android:id="@+id/organizer_event_details_event_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -47,7 +59,7 @@
         android:textColor="@drawable/text_color_organizer_event_details"
         android:background="@drawable/rounded_buttons_organizer_event_details"
         app:layout_constraintEnd_toStartOf="@id/organizer_event_details_entrants_button"
-        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintStart_toEndOf="@id/event_qr_view_button"
         app:layout_constraintTop_toBottomOf="@+id/organizer_event_details_title" />
 
     <Button

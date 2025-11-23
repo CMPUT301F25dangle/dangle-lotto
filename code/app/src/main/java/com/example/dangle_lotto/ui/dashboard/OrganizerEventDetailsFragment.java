@@ -29,6 +29,8 @@ public class OrganizerEventDetailsFragment extends Fragment {
     private FragmentOrganizerEventDetailsBinding binding;
     private UserViewModel userViewModel;
     private Event event;
+
+    private Button qrButton;
     private Button eventButton;
     private Button entrantsButton;
     private Button mapButton;
@@ -58,18 +60,19 @@ public class OrganizerEventDetailsFragment extends Fragment {
         });
 
         // initialize buttons
+        qrButton = binding.eventQrViewButton;
         eventButton = binding.organizerEventDetailsEventButton;
         entrantsButton = binding.organizerEventDetailsEntrantsButton;
         mapButton = binding.organizerEventDetailsMapButton;
-        buttons = new Button[]{eventButton, entrantsButton, mapButton};
+        buttons = new Button[]{qrButton, eventButton, entrantsButton, mapButton};
 
         // set listeners for buttons
         setupButtonListeners();
 
         // default selection & fragment
-        eventButton.setSelected(true);
+        qrButton.setSelected(true);
         getChildFragmentManager().beginTransaction()
-                .replace(R.id.organizer_event_view_display, new OrganizerEventDetailsEventFragment())
+                .replace(R.id.organizer_event_view_display, new OrganizerEventDetailsQrFragment())
                 .commit();
 
         return root;
@@ -106,7 +109,10 @@ public class OrganizerEventDetailsFragment extends Fragment {
 
         Fragment fragment = null;
 
-        if (clickedButton == eventButton) {
+        if (clickedButton == qrButton) {
+            fragment = new OrganizerEventDetailsQrFragment();
+        }
+        else if (clickedButton == eventButton) {
             fragment = new OrganizerEventDetailsEventFragment();
         } else if (clickedButton == entrantsButton) {
             fragment = new OrganizerEventDetailsEntrantsFragment();

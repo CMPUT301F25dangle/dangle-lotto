@@ -569,7 +569,7 @@ public class FirebaseManager {
 
     /**
      * Retrieves a subcollection of an event from the database. Calls the provided callback function when event has been received.
-     *
+     * <p>
      * Usage: getUserSubcollection(uid, "collection name", new FirebaseCallback&lt;ArrayList&lt;String&gt;&gt;() {
      * <pre>{@code
      *      @Override
@@ -666,15 +666,27 @@ public class FirebaseManager {
      * @param eid  Event id
      * @param subcollection  string of subcollection to retrieve
      */
-    public Task<Void> userAddStatus(String uid, String eid, String subcollection){
-        // add register time to user's event document and event's signup document
+    public Task<Void> userAddStatus(String uid, String eid, String subcollection) {
+        // idling resource for testing
+        idlingResource.increment();
+
+        // data for both writes
         Map<String, Object> data = Map.of(
                 "Timestamp", Timestamp.now()
-                );
+        );
+
         Task<Void> t1 = users.document(uid).collection(subcollection).document(eid).set(data);
         Task<Void> t2 = events.document(eid).collection(subcollection).document(uid).set(data);
-        return Tasks.whenAll(t1, t2);
+        Task<Void> combined = Tasks.whenAll(t1, t2);
+
+        // idling resource for testing
+        combined.addOnCompleteListener(task -> {
+            idlingResource.decrement();
+        });
+
+        return combined;
     }
+
     /**
      * Removes a user from the requested list for an event in the database.
      *
@@ -683,10 +695,21 @@ public class FirebaseManager {
      * @param subcollection  string of subcollection to retrieve
      */
     public Task<Void> userRemoveStatus(String uid, String eid, String subcollection) {
+        // idling resource for testing
+        idlingResource.increment();
+
         Task<Void> t1 = users.document(uid).collection(subcollection).document(eid).delete();
         Task<Void> t2 = events.document(eid).collection(subcollection).document(uid).delete();
-        return Tasks.whenAll(t1, t2);
+        Task<Void> combined = Tasks.whenAll(t1, t2);
+
+        // idling resource for testing
+        combined.addOnCompleteListener(task -> {
+            idlingResource.decrement();
+        });
+
+        return combined;
     }
+
 
 
     /**

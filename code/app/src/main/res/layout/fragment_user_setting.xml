@@ -64,7 +64,7 @@
         app:layout_constraintTop_toBottomOf="@+id/settings_fragment_email" />
 
     <Button
-        android:id="@+id/btnSignUp"
+        android:id="@+id/user_settings_update_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
@@ -74,7 +74,7 @@
         app:layout_constraintTop_toBottomOf="@+id/settings_fragment_phone_number" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/user_settings_delete_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Delete Profile"

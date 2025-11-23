@@ -1,14 +1,17 @@
 package com.example.dangle_lotto;
 
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
+import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
 import static androidx.test.espresso.matcher.ViewMatchers.withHint;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+
+import static org.hamcrest.Matchers.not;
 
 import android.util.Log;
 
@@ -56,6 +59,8 @@ public class UserStoriesTests {
 
     private static String ownerUid;
     private static String testerUid;
+    private String tester2Uid;
+
     private Event eventOfInterest;
 
     /**
@@ -87,7 +92,7 @@ public class UserStoriesTests {
         IdlingRegistry.getInstance().register(firebaseIdlingResource);
 
         // Creates owner user
-        firebaseManager.signUp("owner@gmail.com", "password", "Owner User", "", "", true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("owner@gmail.com", "password", "Owner User", "1234123123", "", true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 ownerUid = result;
@@ -98,7 +103,6 @@ public class UserStoriesTests {
         });
 
         Thread.sleep(1500);
-
 
         // Create tester AFTER owner is created
         firebaseManager.signUp("tester@gmail.com", "password", "Tester User", "", "", true, new FirebaseCallback<String>() {
@@ -115,9 +119,6 @@ public class UserStoriesTests {
 
         // Create an event to test on
         eventOfInterest = firebaseManager.createEvent(ownerUid, "Good Party", Timestamp.now(), "Da House", "A party for good people", 10, 100, "", new ArrayList<String>());
-
-        Thread.sleep(500);
-
     }
 
     @After
@@ -159,7 +160,7 @@ public class UserStoriesTests {
         // Logs the user in
         onView(withHint("Email")).perform(typeText(email), closeSoftKeyboard());
         onView(withHint("Password")).perform(typeText(password), closeSoftKeyboard());
-        onView(withText("LOGIN")).perform(ViewActions.click());
+        onView(withText("LOGIN")).perform(click());
     }
 
     /**
@@ -174,10 +175,10 @@ public class UserStoriesTests {
         login("tester@gmail.com", "password");
 
         // Click on the event
-        onView(withText("Good Party")).perform(ViewActions.click());
+        onView(withText("Good Party")).perform(click());
 
         // Click on the join button
-        onView(withText("Register for Lottery")).perform(ViewActions.click());
+        onView(withText("Register for Lottery")).perform(click());
 
         // Check if button says "Withdraw Registration"
         onView(withText("Withdraw Registration")).check(matches(isDisplayed()));
@@ -195,13 +196,13 @@ public class UserStoriesTests {
         login("tester@gmail.com", "password");
 
         // Click on the event
-        onView(withText("Good Party")).perform(ViewActions.click());
+        onView(withText("Good Party")).perform(click());
 
         // Click on the join button
-        onView(withText("Register for Lottery")).perform(ViewActions.click());
+        onView(withText("Register for Lottery")).perform(click());
 
         // Click on the join button
-        onView(withText("Withdraw Registration")).perform(ViewActions.click());
+        onView(withText("Withdraw Registration")).perform(click());
 
         // Check if button says "Register for Lottery"
         onView(withText("Register for Lottery")).check(matches(isDisplayed()));
@@ -225,6 +226,135 @@ public class UserStoriesTests {
     }
 
     /**
+     * Checks if user can provide optional personal information.
+     * <p>
+     * US 01.02.01 As an entrant, I want to provide my personal information such as name, email and optional phone number in the app
+     */
+    @Test
+    public void UserCanProvidePersonalInfo() {
+        // User wants to sign up
+        onView(withText("Don’t have an account? Sign Up")).perform(click());
+
+        // Check for optional fields
+        onView(withHint("Email")).check(matches(isDisplayed()));
+        onView(withHint("Phone Number")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Checks if user can update their personal information
+     * <p>
+     * US 01.02.02 As an entrant I want to update information such as name, email and contact information on my profile
+     */
+    @Test
+    public void UserCanUpdatePersonalInfo() {
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // User navigates to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // User clicks on settings button
+        onView(withId(R.id.dashboard_fragment_setting_button)).perform(click());
+
+        // User updates email
+        onView(withId(R.id.settings_fragment_email)).perform(typeText("s"), closeSoftKeyboard());
+
+        // User updates phone number
+        onView(withId(R.id.settings_fragment_phone_number)).perform(typeText("000"), closeSoftKeyboard());
+
+        // User clicks on update button
+        onView(withText("Update Profile")).perform(click());
+        onView(withText("Confirm Update")).perform(click());
+
+        // Update button is unclickable
+        onView(withId(R.id.user_settings_update_button)).check(matches(not(isEnabled())));
+    }
+
+    /**
+     * Checks if user can view their history of events.
+     * <p>
+     * US 01.02.03 As an entrant, I want to have a history of events I have registered for, whether I was selected or not.
+     */
+    @Test
+    public void UserCanViewHistoryOfEvents() {
+
+    }
+
+    /**
+     * Checks if user can delete their account.
+     * <p>
+     * US 01.02.04 As an entrant, I want to delete my profile if I no longer wish to use the app.
+     */
+    @Test
+    public void UserCanDeleteAccount() {
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // User navigates to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // User clicks on settings button
+        onView(withId(R.id.dashboard_fragment_setting_button)).perform(click());
+
+        // User clicks on delete button
+        onView(withText("Delete Profile")).perform(click());
+        onView(withText("Confirm Delete")).perform(click());
+
+        // Check if back on login page
+        onView(withText("LOGIN")).check(matches(isDisplayed()));
+    }
+
+    /** Check if user can get another chance to sign up.
+     * <p>
+     * US 01.05.01 As an entrant I want another chance to be chosen from the waiting list if a selected user declines an invitation to sign up.
+     * Users are automatically given a chance to be drawn if they have registered for the event.
+     */
+    @Test
+    public void UserCanGetAnotherChanceToSignUp() throws InterruptedException {
+        // Create a user to add to the event chosen list
+        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User", "", "", true, new FirebaseCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                tester2Uid = result;
+            }
+            @Override
+            public void onFailure(Exception e) { }
+        });
+        Thread.sleep(1500);
+        firebaseManager.userAddStatus(tester2Uid, eventOfInterest.getEid(), "Chosen");
+
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Click on the event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on the join waitlist button
+        onView(withText("Join Waitlist")).perform(click());
+
+        // Check if button changed to "Leave Waitlist"
+        onView(withText("Leave Waitlist")).check(matches(isDisplayed()));
+
+        // Click on the back button
+        onView(withId(R.id.btn_back)).perform(click());
+
+        // Make the tester2 user decline
+        firebaseManager.userAddStatus(tester2Uid, eventOfInterest.getEid(), "Cancelled");
+
+        // Make the tester user chosen
+        firebaseManager.userAddStatus(testerUid, eventOfInterest.getEid(), "Chosen");
+
+        // User refreshes the home page
+        onView(withId(R.id.refresh_button)).perform(click());
+
+        // Click on the event
+        onView(withText("Good Party")).perform(click());
+
+        // Check if text says "You’ve Been Chosen!"
+        onView(withText("You’ve Been Chosen!")).check(matches(isDisplayed()));
+    }
+
+    /**
      * Checks if user can accept an event invitation.
      * <p>
      * US 01.05.02 As an entrant I want to be able to accept the invitation to register/sign up when chosen to participate in an event.
@@ -238,13 +368,13 @@ public class UserStoriesTests {
         login("tester@gmail.com", "password");
 
         // Click on the event
-        onView(withText("Good Party")).perform(ViewActions.click());
+        onView(withText("Good Party")).perform(click());
 
         // Click on the join button
-        onView(withText("You’ve Been Chosen!")).perform(ViewActions.click());
+        onView(withText("You’ve Been Chosen!")).perform(click());
 
         // Click on the attend button to accept
-        onView(withText("Attend")).perform(ViewActions.click());
+        onView(withText("Attend")).perform(click());
 
         // Check if button says "Attending"
         onView(withText("Attending")).check(matches(isDisplayed()));
@@ -264,13 +394,13 @@ public class UserStoriesTests {
         login("tester@gmail.com", "password");
 
         // Click on the event
-        onView(withText("Good Party")).perform(ViewActions.click());
+        onView(withText("Good Party")).perform(click());
 
         // Click on the join button
-        onView(withText("You’ve Been Chosen!")).perform(ViewActions.click());
+        onView(withText("You’ve Been Chosen!")).perform(click());
 
         // Click on the decline button to not accept
-        onView(withText("Decline")).perform(ViewActions.click());
+        onView(withText("Decline")).perform(click());
 
         // Check if button says "Cancelled"
         onView(withText("Cancelled")).check(matches(isDisplayed()));
@@ -287,15 +417,35 @@ public class UserStoriesTests {
         login("tester@gmail.com", "password");
 
         // Click on the event
-        onView(withText("Good Party")).perform(ViewActions.click());
+        onView(withText("Good Party")).perform(click());
 
         // Check number of registrants
         onView(withText("Spots Remaining: 100/100")).check(matches(isDisplayed()));
 
         // Click on the join button
-        onView(withText("Register for Lottery")).perform(ViewActions.click());
+        onView(withText("Register for Lottery")).perform(click());
 
         // Check number of registrants
         onView(withText("Spots Remaining: 99/100")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Checks if user can see event criteria.
+     * <p>
+     * US 01.05.05 As an entrant, I want to be informed about the criteria or guidelines for the lottery selection process.
+     */
+    @Test
+    public void EventCriteria() {
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Click on the event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on info button for criteria
+        onView(withId(R.id.event_detail_information_button)).perform(click());
+
+        // Check if criteria is displayed
+        onView(withText("Event Criteria")).check(matches(isDisplayed()));
     }
 }

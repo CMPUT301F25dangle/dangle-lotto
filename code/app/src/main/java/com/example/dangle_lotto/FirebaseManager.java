@@ -418,24 +418,43 @@ public class FirebaseManager {
      * @param categories   List of event categories.
      * @return Instantiated {@link Event} object.
      */
-    public Event createEvent(String oid, String name, Timestamp datetime, String location, String description, int eventSize,
-                             int maxEntrants, String photo_url, String qr_url, ArrayList<String> categories){
+    public Event createEvent(
+            String oid, String name, Timestamp datetime, String location,
+            String description, int eventSize, int maxEntrants,
+            String photo_url, String qr_url, ArrayList<String> categories
+    ) {
         String eid = events.document().getId();
-        Map<String, Object> data = new HashMap<>();
-        data.put("Organizer", oid);
-        data.put("Name", name);
-        data.put("Date", datetime);
-        data.put("Location", location);
-        data.put("Description", description);
-        data.put("Event Size", eventSize);
-        data.put("Max Entrants", maxEntrants);
-        data.put("Picture", photo_url);
-        data.put("QR", qr_url);
-        data.put("Categories", categories);
+        Map<String, Object> data = Map.of(
+                "Organizer", oid,
+                "Name", name,
+                "Date", datetime,
+                "Location", location,
+                "Description", description,
+                "Event Size", eventSize,
+                "Max Entrants", maxEntrants,
+                "Picture", photo_url,
+                "QR", qr_url,
+                "Categories", categories
+        );
 
-        users.document(oid).collection("Organize").document(eid).set(Map.of("Timestamp", datetime));
-        events.document(eid).set(data);
-        return new Event(eid, oid, name, datetime, location, description, photo_url, qr_url, eventSize, maxEntrants, categories, this);
+        // idling resource for testing
+        idlingResource.increment();
+
+        Task<Void> t1 = users.document(oid)
+                .collection("Organize")
+                .document(eid)
+                .set(Map.of("Timestamp", datetime));
+
+        Task<Void> t2 = events.document(eid).set(data);
+
+        // Wait for both async tasks to finish
+        Tasks.whenAllComplete(t1, t2).addOnCompleteListener(task -> {
+            // idling resource for testing
+            idlingResource.decrement();
+        });
+
+        return new Event(eid, oid, name, datetime, location, description,
+                photo_url, qr_url, eventSize, maxEntrants, categories, this);
     }
 
     /**

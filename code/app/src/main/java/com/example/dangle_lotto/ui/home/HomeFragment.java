@@ -51,7 +51,6 @@ public class HomeFragment extends Fragment {
     private static final int PAGE_SIZE = 4; // or however many events per page
     private DocumentSnapshot lastVisible = null;
 
-
     @SuppressLint("NotifyDataSetChanged")
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -107,7 +106,7 @@ public class HomeFragment extends Fragment {
         // also ensures that data is only loaded if user is accessible
         userViewModel.getUser().observe(getViewLifecycleOwner(), user -> {
             if (user != null && events.isEmpty()) {
-                loadFirstPage();  // SAFE now
+                loadFirstPage();
             }
         });
 
@@ -232,10 +231,7 @@ public class HomeFragment extends Fragment {
             public void onFailure(Exception e) {
                 Log.d("Firebase", "Failed to load next page", e);
                 isLoading = false;
-
             }
         });
     }
-
-
 }

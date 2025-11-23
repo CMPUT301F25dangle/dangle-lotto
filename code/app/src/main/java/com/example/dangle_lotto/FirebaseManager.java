@@ -418,8 +418,11 @@ public class FirebaseManager {
      * @param categories   List of event categories.
      * @return Instantiated {@link Event} object.
      */
-    public Event createEvent(String oid, String name, Timestamp datetime, String location, String description, int eventSize,
-                             int maxEntrants, String photo_url, ArrayList<String> categories){
+    public Event createEvent(
+            String oid, String name, Timestamp datetime, String location,
+            String description, int eventSize, int maxEntrants,
+            String photo_url, ArrayList<String> categories
+    ) {
         String eid = events.document().getId();
         Map<String, Object> data = Map.of(
                 "Organizer", oid,
@@ -432,10 +435,27 @@ public class FirebaseManager {
                 "Picture", photo_url,
                 "Categories", categories
         );
-        users.document(oid).collection("Organize").document(eid).set(Map.of("Timestamp", datetime));
-        events.document(eid).set(data);
-        return new Event(eid, oid, name, datetime, location, description, photo_url, eventSize, maxEntrants, categories, this);
+
+        // idling resource for testing
+        idlingResource.increment();
+
+        Task<Void> t1 = users.document(oid)
+                .collection("Organize")
+                .document(eid)
+                .set(Map.of("Timestamp", datetime));
+
+        Task<Void> t2 = events.document(eid).set(data);
+
+        // Wait for both async tasks to finish
+        Tasks.whenAllComplete(t1, t2).addOnCompleteListener(task -> {
+            // idling resource for testing
+            idlingResource.decrement();
+        });
+
+        return new Event(eid, oid, name, datetime, location, description,
+                photo_url, eventSize, maxEntrants, categories, this);
     }
+
 
     /**
      * Updates event data in Firestore.
@@ -709,8 +729,6 @@ public class FirebaseManager {
 
         return combined;
     }
-
-
 
     /**
      * Retrieve a list of events from the database.

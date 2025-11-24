@@ -139,7 +139,7 @@ public class EventDetailFragment extends Fragment {
         Integer registrantsLimit = selectedEvent.getMaxEntrants();
         int registrantsCount = selectedEvent.getSignUps().size() + selectedEvent.getCancelled().size() + selectedEvent.getChosen().size() + selectedEvent.getRegistered().size();
 
-        if (registrantsLimit != null) {
+        if (registrantsLimit != -1) {
             int spotsRemaining = Math.max(0, registrantsLimit - registrantsCount);
             binding.eventSpots.setText("Spots Remaining: " + spotsRemaining + "/" + registrantsLimit);
         } else {

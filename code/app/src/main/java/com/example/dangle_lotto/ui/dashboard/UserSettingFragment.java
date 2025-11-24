@@ -23,7 +23,8 @@ import com.example.dangle_lotto.ui.login.SimpleTextWatcher;
 
 /**
  * UserSettingFragment - Fragment shows user settings.
- *
+ * NEED TO ADD CALLBACK TO UPDATE USER CUZ OTHERWISE DONT KNOW IF THERE ARE PROBLEMS IN IT
+ * NEED TO CHANGE THE EMAIL IN FIREBASE AUTH
  * @author Aditya Soni
  * @version 1.0
  * @since 2025-11-06
@@ -121,20 +122,13 @@ public class UserSettingFragment extends Fragment {
                 binding.userSettingsUpdateButton.setText("Confirm Update");
                 confirmUpdate = true;
             } else {
-                GeneralUser newUser = new GeneralUser(
-                        user.getUid(),
-                        username,
-                        email,
-                        phone,
-                        user.getPhotoID(),
-                        firebaseManager,
-                        user.canOrganize()
-                );
+                user.setName(username);
+                user.setEmail(email);
+                user.setPhone(phone);
 
                 // updating user info
-                user = newUser;
-                firebaseManager.updateUser(newUser);
-                userViewModel.setUser(newUser);
+                firebaseManager.updateUser(user);
+                userViewModel.setUser(user);
 
                 // unselecting edit text fields
                 usernameEditText.clearFocus();

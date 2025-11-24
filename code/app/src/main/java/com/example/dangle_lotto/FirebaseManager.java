@@ -317,7 +317,6 @@ public class FirebaseManager {
         return tcs.getTask();
     }
 
-
     /**
      * Retrieves a {@link GeneralUser} by UID from Firestore.
      *
@@ -403,7 +402,6 @@ public class FirebaseManager {
         });
     }
 
-
     /**
      * Creates and uploads a new event document to Firestore.
      *
@@ -424,18 +422,18 @@ public class FirebaseManager {
             String photo_url, String qr_url, ArrayList<String> categories
     ) {
         String eid = events.document().getId();
-        Map<String, Object> data = Map.of(
-                "Organizer", oid,
-                "Name", name,
-                "Date", datetime,
-                "Location", location,
-                "Description", description,
-                "Event Size", eventSize,
-                "Max Entrants", maxEntrants,
-                "Picture", photo_url,
-                "QR", qr_url,
-                "Categories", categories
-        );
+        Map<String, Object> data = new HashMap<>();
+        data.put("Organizer", oid);
+        data.put("Name", name);
+        data.put("Date", datetime);
+        data.put("Location", location);
+        data.put("Description", description);
+        data.put("Event Size", eventSize);
+        data.put("Max Entrants", maxEntrants);
+        data.put("Picture", photo_url);
+        data.put("QR", qr_url);
+        data.put("Categories", categories);
+
 
         // idling resource for testing
         idlingResource.increment();
@@ -770,32 +768,71 @@ public class FirebaseManager {
         });
     }
 
-
+    /**
+     * Uploads a banner picture to Firebase Storage.
+     *
+     * @param fileUri Uri of the file to upload
+     * @param callback callback function to call when event is retrieved
+     */
     public void uploadBannerPic(Uri fileUri, FirebaseCallback<String> callback){
+        // idling resource for testing
+        idlingResource.increment();
+
         String pid = UUID.randomUUID().toString(); // unique id for picture
         StorageReference imgRef = storageRef.child("banners/" + pid);
 
         imgRef.putFile(fileUri)
-                .addOnSuccessListener(taskSnapshot ->
-                        imgRef.getDownloadUrl()
-                                .addOnSuccessListener(uri -> callback.onSuccess(uri.toString()))
-                )
-                .addOnFailureListener(callback::onFailure);
+                .addOnSuccessListener(taskSnapshot -> {
+                    imgRef.getDownloadUrl()
+                            .addOnSuccessListener(uri -> callback.onSuccess(uri.toString()));
+
+                    // idling resource for testing
+                    idlingResource.decrement();
+                })
+                .addOnFailureListener((error) -> {
+                    callback.onFailure(error);
+
+                    // idling resource for testing
+                    idlingResource.decrement();
+                });
     }
 
+    /**
+     * Uploads a profile picture to Firebase Storage.
+     *
+     * @param fileUri Uri of the file to upload
+     * @param callback callback function to call when event is retrieved
+     */
     public void uploadProfilePic(Uri fileUri, FirebaseCallback<String> callback){
+        // idling resource for testing
+        idlingResource.increment();
+
         String pid = UUID.randomUUID().toString(); // unique id for picture
         StorageReference imgRef = storageRef.child("profiles/" + pid);
 
         imgRef.putFile(fileUri)
-                .addOnSuccessListener(taskSnapshot ->
-                        imgRef.getDownloadUrl()
-                                .addOnSuccessListener(uri -> callback.onSuccess(uri.toString()))
-                )
-                .addOnFailureListener(callback::onFailure);
+                .addOnSuccessListener(taskSnapshot -> {
+                    imgRef.getDownloadUrl()
+                            .addOnSuccessListener(uri -> callback.onSuccess(uri.toString()));
+                })
+                .addOnFailureListener(error -> {
+                    callback.onFailure(error);
+
+                    // idling resource for testing
+                    idlingResource.decrement();
+                });
     }
 
+    /**
+     * Uploads a QR code to Firebase Storage.
+     *
+     * @param qr_bitmap bitmap of the QR code
+     * @param callback callback function to call when event is retrieved
+     */
     public void uploadQR(Bitmap qr_bitmap, FirebaseCallback<String> callback){
+        // idling resource for testing
+        idlingResource.increment();
+
         String pid = UUID.randomUUID().toString(); // unique id for picture
         StorageReference imgRef = storageRef.child("qr/" + pid);
 
@@ -804,14 +841,38 @@ public class FirebaseManager {
         byte[] data = baos.toByteArray();
 
         imgRef.putBytes(data)
-                .addOnSuccessListener(taskSnapshot ->
-                        imgRef.getDownloadUrl()
-                                .addOnSuccessListener(uri -> callback.onSuccess(uri.toString()))
-                )
-                .addOnFailureListener(callback::onFailure);
+                .addOnSuccessListener(taskSnapshot -> {
+                    imgRef.getDownloadUrl()
+                            .addOnSuccessListener(uri -> {
+                                callback.onSuccess(uri.toString());
+
+                                // idling resource for testing
+                                idlingResource.decrement();
+                            })
+                            .addOnFailureListener(error -> {
+                                callback.onFailure(error);
+
+                                // idling resource for testing
+                                idlingResource.decrement();
+                            });
+                })
+                .addOnFailureListener(error -> {
+                    callback.onFailure(error);
+
+                    // idling resource for testing
+                    idlingResource.decrement();
+                });
     }
 
-    // DOWNLOAD URL WILL CHANGE BECAUSE FIREBASE REGENS THE TOKEN
+    /**
+     * Uploads a replacement picture to Firebase Storage.
+     * <p>
+     * DOWNLOAD URL WILL CHANGE BECAUSE FIREBASE REGENS THE TOKEN
+     *
+     * @param fileUri Uri of the file to upload
+     * @param imageUrl String URL of the image to replace
+     * @param callback callback function to call when event is retrieved
+     */
     public void editPic(Uri fileUri, String imageUrl, FirebaseCallback<String> callback){
         StorageReference imgRef = storage.getReferenceFromUrl(imageUrl);
         imgRef.putFile(fileUri)
@@ -822,7 +883,18 @@ public class FirebaseManager {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    /**
+     * Deletes a picture from Firebase Storage.
+     * <p>
+     * STILL NEED TO DECREMENT IDLING RESOURCE FOR TESTING
+     *
+     * @param imageUrl String URL of the image to delete
+     * @param callback callback function to call when event is retrieved
+     */
     public void deletePic(String imageUrl, FirebaseCallback<Void> callback){
+        // idling resource for testing
+        idlingResource.increment();
+
         StorageReference imgRef = storage.getReferenceFromUrl(imageUrl);
         imgRef.delete()
                 .addOnSuccessListener(callback::onSuccess)

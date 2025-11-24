@@ -61,8 +61,6 @@ public class OrganizerStoriesTests {
     private static String testerUid;
     private String tester2Uid;
 
-    private Event eventOfInterest;
-
     /**
      * Sets up the Firebase emulator for testing.
      */
@@ -118,7 +116,6 @@ public class OrganizerStoriesTests {
         Thread.sleep(1500);
 
         // Create an event to test on
-        eventOfInterest = firebaseManager.createEvent(ownerUid, "Good Party", Timestamp.now(), "Da House", "A party for good people", 10, 100, "", "", new ArrayList<String>());
     }
 
     @After
@@ -131,8 +128,6 @@ public class OrganizerStoriesTests {
 
     /**
      * Deletes all users and events from the database.
-     *
-     * @return A Firebase {@link Task} representing the operation.
      */
     public static void clearFirestore() throws InterruptedException {
         try {
@@ -157,17 +152,6 @@ public class OrganizerStoriesTests {
     }
 
     /**
-     * Checks if organizer can make a new event, alongside a qr code that links to the event.
-     * <p>
-     * US 02.01.01 As an organizer I want to create a new event and generate a unique promotional
-     * QR code that links to the event description and event poster in the app.
-     */
-    @Test
-    public void MakeNewEventAndQRCode() {
-
-    }
-
-    /**
      * Logs the user in.
      *
      * @param email String representing the user's email
@@ -180,5 +164,71 @@ public class OrganizerStoriesTests {
         onView(withText("LOGIN")).perform(click());
     }
 
+    /**
+     * Creates a basic event
+     */
+    public Event createEvent() {
+        return firebaseManager.createEvent(ownerUid, "Good Party", Timestamp.now(), "Da House", "A party for good people", 10, 100, "", "", new ArrayList<String>());
+    }
+
+    /**
+     * Checks if organizer can make a new event, alongside a qr code that links to the event.
+     * <p>
+     * US 02.01.01 As an organizer I want to create a new event and generate a unique promotional
+     * QR code that links to the event description and event poster in the app.
+     */
+    @Test
+    public void MakeNewEventAndQRCode() throws InterruptedException {
+        // Login the user
+        login("owner@gmail.com", "password");
+
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on create event button
+        onView(withId(R.id.dashboard_fragment_new_event_button)).perform(click());
+
+        // Fill out event details
+        onView(withHint("Dangle Lotto Gathering")).perform(typeText("Good Party"), closeSoftKeyboard());
+        onView(withHint("We will be gathering…")).perform(typeText("A party for good people"), closeSoftKeyboard());
+
+        // Click on done button
+        onView(withText("Done")).perform(click());
+
+        // Let QR code dialogue to appear
+        Thread.sleep(3000);
+
+        // Check if qr code is displayed
+        onView(withId(R.id.create_event_banner_QR_display)).check(matches(isDisplayed()));
+
+        // Click on done button
+        onView(withText("Done")).perform(click());
+
+        // Check if event is displayed on home page
+        onView(withText("Good Party")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Check if organizer can set a registration period for an event.
+     * <p>
+     * US 02.01.04 As an organizer, I want to set a registration period.
+     */
+    @Test
+    public void SetRegistrationPeriod() throws InterruptedException {
+        // Login the user
+        login("owner@gmail.com", "password");
+
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on create event button
+        onView(withId(R.id.dashboard_fragment_new_event_button)).perform(click());
+
+        // Fill out event details
+        onView(withHint("Dangle Lotto Gathering")).perform(typeText("Good Party"), closeSoftKeyboard());
+
+        // Click on done button
+        onView(withText("Done")).perform(click());
+    }
 
 }

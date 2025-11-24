@@ -118,6 +118,7 @@ public class HomeFragment extends Fragment {
         // initialize button for opening filter dialogue
         binding.filterButton.setOnClickListener(v -> openFilterDialogue());
 
+        // initialize button for refreshing events
         binding.refreshButton.setOnClickListener(v -> {
            userViewModel.setHomeEvents(null);
            events.clear();

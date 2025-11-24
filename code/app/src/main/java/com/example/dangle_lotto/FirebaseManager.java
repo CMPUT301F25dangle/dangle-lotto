@@ -734,8 +734,6 @@ public class FirebaseManager {
         return combined;
     }
 
-
-
     /**
      * Retrieve a list of events from the database.
      *

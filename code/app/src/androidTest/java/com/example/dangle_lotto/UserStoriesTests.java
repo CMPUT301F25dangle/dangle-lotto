@@ -118,7 +118,7 @@ public class UserStoriesTests {
         Thread.sleep(1500);
 
         // Create an event to test on
-        eventOfInterest = firebaseManager.createEvent(ownerUid, "Good Party", Timestamp.now(), "Da House", "A party for good people", 10, 100, "", new ArrayList<String>());
+        eventOfInterest = firebaseManager.createEvent(ownerUid, "Good Party", Timestamp.now(), "Da House", "A party for good people", 10, 100, "", "", new ArrayList<String>());
     }
 
     @After

@@ -7,7 +7,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -45,7 +44,6 @@ import java.util.Locale;
 public class EventDetailFragment extends Fragment {
 
     private FragmentEventDetailBinding binding;
-    private FirebaseManager firebaseManager;
     private UserViewModel userViewModel;
     private Event selectedEvent;
 
@@ -64,7 +62,7 @@ public class EventDetailFragment extends Fragment {
         binding = FragmentEventDetailBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        firebaseManager = FirebaseManager.getInstance();
+        FirebaseManager firebaseManager = FirebaseManager.getInstance();
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
         selectedEvent = userViewModel.getSelectedHomeEvent().getValue();
 
@@ -74,7 +72,7 @@ public class EventDetailFragment extends Fragment {
         }
 
         // get organizer and set their name
-        firebaseManager.getUser(selectedEvent.getOrganizerID(), new FirebaseCallback<GeneralUser>() {
+        firebaseManager.getUser(selectedEvent.getOrganizerID(), new FirebaseCallback<>() {
             @Override
             public void onSuccess(GeneralUser result) {
                 binding.organizerName.setText("Organizer: " + result.getName());
@@ -98,6 +96,14 @@ public class EventDetailFragment extends Fragment {
         binding.btnBack.setOnClickListener(
                 v -> Navigation.findNavController(v).popBackStack()
         );
+
+        binding.eventDetailInformationButton.setOnClickListener(v -> {
+            new AlertDialog.Builder(v.getContext())
+                    .setTitle("Event Criteria")
+                    .setMessage("Everybody is able to register for this event. To register, simply click the 'Register for Lottery' button. The lottery will randomly select registrants, who will be given the option to sign up for the event. If some chosen users decline, then more registrants will be randomly chosen.\nThe maximum size of event: " + selectedEvent.getMaxEntrants())
+                    .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                    .show();
+        });
 
         return root;
     }

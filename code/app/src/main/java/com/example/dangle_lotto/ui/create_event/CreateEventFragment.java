@@ -300,7 +300,7 @@ public class CreateEventFragment extends Fragment {
                     // update list (forces reload)
                     userViewModel.setOrganizedEvents(null);
 
-                    // 5️⃣ Show dialog ONLY NOW
+                    // Show dialog ONLY NOW
                     openQRDialogue(qrBitmap);
 
                 }
@@ -346,9 +346,7 @@ public class CreateEventFragment extends Fragment {
 
     /**
      * Opens the QR code dialogue, setting the bitmap to be the generated one
-     *
      */
-
     private void openQRDialogue(Bitmap qrBitmap){
         QRDialogueFragment dialog = new QRDialogueFragment();
         dialog.setQr(qrBitmap);

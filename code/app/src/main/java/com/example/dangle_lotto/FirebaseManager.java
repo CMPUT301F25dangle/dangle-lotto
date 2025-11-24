@@ -317,7 +317,6 @@ public class FirebaseManager {
         return tcs.getTask();
     }
 
-
     /**
      * Retrieves a {@link GeneralUser} by UID from Firestore.
      *
@@ -403,7 +402,6 @@ public class FirebaseManager {
         });
     }
 
-
     /**
      * Creates and uploads a new event document to Firestore.
      *
@@ -418,8 +416,11 @@ public class FirebaseManager {
      * @param categories   List of event categories.
      * @return Instantiated {@link Event} object.
      */
-    public Event createEvent(String oid, String name, Timestamp datetime, String location, String description, int eventSize,
-                             int maxEntrants, String photo_url, String qr_url, ArrayList<String> categories){
+    public Event createEvent(
+            String oid, String name, Timestamp datetime, String location,
+            String description, int eventSize, int maxEntrants,
+            String photo_url, String qr_url, ArrayList<String> categories
+    ) {
         String eid = events.document().getId();
         Map<String, Object> data = new HashMap<>();
         data.put("Organizer", oid);
@@ -433,9 +434,25 @@ public class FirebaseManager {
         data.put("QR", qr_url);
         data.put("Categories", categories);
 
-        users.document(oid).collection("Organize").document(eid).set(Map.of("Timestamp", datetime));
-        events.document(eid).set(data);
-        return new Event(eid, oid, name, datetime, location, description, photo_url, qr_url, eventSize, maxEntrants, categories, this);
+
+        // idling resource for testing
+        idlingResource.increment();
+
+        Task<Void> t1 = users.document(oid)
+                .collection("Organize")
+                .document(eid)
+                .set(Map.of("Timestamp", datetime));
+
+        Task<Void> t2 = events.document(eid).set(data);
+
+        // Wait for both async tasks to finish
+        Tasks.whenAllComplete(t1, t2).addOnCompleteListener(task -> {
+            // idling resource for testing
+            idlingResource.decrement();
+        });
+
+        return new Event(eid, oid, name, datetime, location, description,
+                photo_url, qr_url, eventSize, maxEntrants, categories, this);
     }
 
     /**
@@ -574,7 +591,7 @@ public class FirebaseManager {
 
     /**
      * Retrieves a subcollection of an event from the database. Calls the provided callback function when event has been received.
-     *
+     * <p>
      * Usage: getUserSubcollection(uid, "collection name", new FirebaseCallback&lt;ArrayList&lt;String&gt;&gt;() {
      * <pre>{@code
      *      @Override
@@ -671,15 +688,27 @@ public class FirebaseManager {
      * @param eid  Event id
      * @param subcollection  string of subcollection to retrieve
      */
-    public Task<Void> userAddStatus(String uid, String eid, String subcollection){
-        // add register time to user's event document and event's signup document
+    public Task<Void> userAddStatus(String uid, String eid, String subcollection) {
+        // idling resource for testing
+        idlingResource.increment();
+
+        // data for both writes
         Map<String, Object> data = Map.of(
                 "Timestamp", Timestamp.now()
-                );
+        );
+
         Task<Void> t1 = users.document(uid).collection(subcollection).document(eid).set(data);
         Task<Void> t2 = events.document(eid).collection(subcollection).document(uid).set(data);
-        return Tasks.whenAll(t1, t2);
+        Task<Void> combined = Tasks.whenAll(t1, t2);
+
+        // idling resource for testing
+        combined.addOnCompleteListener(task -> {
+            idlingResource.decrement();
+        });
+
+        return combined;
     }
+
     /**
      * Removes a user from the requested list for an event in the database.
      *
@@ -688,11 +717,20 @@ public class FirebaseManager {
      * @param subcollection  string of subcollection to retrieve
      */
     public Task<Void> userRemoveStatus(String uid, String eid, String subcollection) {
+        // idling resource for testing
+        idlingResource.increment();
+
         Task<Void> t1 = users.document(uid).collection(subcollection).document(eid).delete();
         Task<Void> t2 = events.document(eid).collection(subcollection).document(uid).delete();
-        return Tasks.whenAll(t1, t2);
-    }
+        Task<Void> combined = Tasks.whenAll(t1, t2);
 
+        // idling resource for testing
+        combined.addOnCompleteListener(task -> {
+            idlingResource.decrement();
+        });
+
+        return combined;
+    }
 
     /**
      * Retrieve a list of events from the database.
@@ -730,32 +768,71 @@ public class FirebaseManager {
         });
     }
 
-
+    /**
+     * Uploads a banner picture to Firebase Storage.
+     *
+     * @param fileUri Uri of the file to upload
+     * @param callback callback function to call when event is retrieved
+     */
     public void uploadBannerPic(Uri fileUri, FirebaseCallback<String> callback){
+        // idling resource for testing
+        idlingResource.increment();
+
         String pid = UUID.randomUUID().toString(); // unique id for picture
         StorageReference imgRef = storageRef.child("banners/" + pid);
 
         imgRef.putFile(fileUri)
-                .addOnSuccessListener(taskSnapshot ->
-                        imgRef.getDownloadUrl()
-                                .addOnSuccessListener(uri -> callback.onSuccess(uri.toString()))
-                )
-                .addOnFailureListener(callback::onFailure);
+                .addOnSuccessListener(taskSnapshot -> {
+                    imgRef.getDownloadUrl()
+                            .addOnSuccessListener(uri -> callback.onSuccess(uri.toString()));
+
+                    // idling resource for testing
+                    idlingResource.decrement();
+                })
+                .addOnFailureListener((error) -> {
+                    callback.onFailure(error);
+
+                    // idling resource for testing
+                    idlingResource.decrement();
+                });
     }
 
+    /**
+     * Uploads a profile picture to Firebase Storage.
+     *
+     * @param fileUri Uri of the file to upload
+     * @param callback callback function to call when event is retrieved
+     */
     public void uploadProfilePic(Uri fileUri, FirebaseCallback<String> callback){
+        // idling resource for testing
+        idlingResource.increment();
+
         String pid = UUID.randomUUID().toString(); // unique id for picture
         StorageReference imgRef = storageRef.child("profiles/" + pid);
 
         imgRef.putFile(fileUri)
-                .addOnSuccessListener(taskSnapshot ->
-                        imgRef.getDownloadUrl()
-                                .addOnSuccessListener(uri -> callback.onSuccess(uri.toString()))
-                )
-                .addOnFailureListener(callback::onFailure);
+                .addOnSuccessListener(taskSnapshot -> {
+                    imgRef.getDownloadUrl()
+                            .addOnSuccessListener(uri -> callback.onSuccess(uri.toString()));
+                })
+                .addOnFailureListener(error -> {
+                    callback.onFailure(error);
+
+                    // idling resource for testing
+                    idlingResource.decrement();
+                });
     }
 
+    /**
+     * Uploads a QR code to Firebase Storage.
+     *
+     * @param qr_bitmap bitmap of the QR code
+     * @param callback callback function to call when event is retrieved
+     */
     public void uploadQR(Bitmap qr_bitmap, FirebaseCallback<String> callback){
+        // idling resource for testing
+        idlingResource.increment();
+
         String pid = UUID.randomUUID().toString(); // unique id for picture
         StorageReference imgRef = storageRef.child("qr/" + pid);
 
@@ -764,14 +841,38 @@ public class FirebaseManager {
         byte[] data = baos.toByteArray();
 
         imgRef.putBytes(data)
-                .addOnSuccessListener(taskSnapshot ->
-                        imgRef.getDownloadUrl()
-                                .addOnSuccessListener(uri -> callback.onSuccess(uri.toString()))
-                )
-                .addOnFailureListener(callback::onFailure);
+                .addOnSuccessListener(taskSnapshot -> {
+                    imgRef.getDownloadUrl()
+                            .addOnSuccessListener(uri -> {
+                                callback.onSuccess(uri.toString());
+
+                                // idling resource for testing
+                                idlingResource.decrement();
+                            })
+                            .addOnFailureListener(error -> {
+                                callback.onFailure(error);
+
+                                // idling resource for testing
+                                idlingResource.decrement();
+                            });
+                })
+                .addOnFailureListener(error -> {
+                    callback.onFailure(error);
+
+                    // idling resource for testing
+                    idlingResource.decrement();
+                });
     }
 
-    // DOWNLOAD URL WILL CHANGE BECAUSE FIREBASE REGENS THE TOKEN
+    /**
+     * Uploads a replacement picture to Firebase Storage.
+     * <p>
+     * DOWNLOAD URL WILL CHANGE BECAUSE FIREBASE REGENS THE TOKEN
+     *
+     * @param fileUri Uri of the file to upload
+     * @param imageUrl String URL of the image to replace
+     * @param callback callback function to call when event is retrieved
+     */
     public void editPic(Uri fileUri, String imageUrl, FirebaseCallback<String> callback){
         StorageReference imgRef = storage.getReferenceFromUrl(imageUrl);
         imgRef.putFile(fileUri)
@@ -782,7 +883,18 @@ public class FirebaseManager {
                 .addOnFailureListener(callback::onFailure);
     }
 
+    /**
+     * Deletes a picture from Firebase Storage.
+     * <p>
+     * STILL NEED TO DECREMENT IDLING RESOURCE FOR TESTING
+     *
+     * @param imageUrl String URL of the image to delete
+     * @param callback callback function to call when event is retrieved
+     */
     public void deletePic(String imageUrl, FirebaseCallback<Void> callback){
+        // idling resource for testing
+        idlingResource.increment();
+
         StorageReference imgRef = storage.getReferenceFromUrl(imageUrl);
         imgRef.delete()
                 .addOnSuccessListener(callback::onSuccess)

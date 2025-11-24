@@ -25,6 +25,9 @@ import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentCreateEventBinding;
+import com.google.android.material.datepicker.CalendarConstraints;
+import com.google.android.material.datepicker.DateValidatorPointBackward;
+import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
@@ -36,6 +39,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.function.Consumer;
 
 import android.graphics.Bitmap;
 import android.widget.Toast;
@@ -61,7 +65,9 @@ public class CreateEventFragment extends Fragment {
     private UserViewModel userViewModel;
     private int maxEntrants;
 
-    private long selectedDateTimeMillis;
+    private Long registrationStartDate = null;
+    private Long registrationEndDate = null;
+    private Long eventDate = null;
     private ActivityResultLauncher<PickVisualMediaRequest> pickMedia;
 
     private Uri selectedUri;
@@ -88,7 +94,7 @@ public class CreateEventFragment extends Fragment {
         binding.btnCancel.bringToFront();
         binding.btnDone.bringToFront();
 
-        selectedDateTimeMillis = System.currentTimeMillis() + 1000*60*60; // an hour ahead is default time
+//        registrationStartDate = System.currentTimeMillis() + 1000*60*60; // an hour ahead is default time
 
         // initialize viewmodel
         // initalize image picker
@@ -141,8 +147,32 @@ public class CreateEventFragment extends Fragment {
         // Set default max entrants
         binding.createEventInputMaxEntrants.setText("50");
 
-        // open date and time picker
-        binding.createEventInputDate.setOnClickListener(v -> showDateTimePicker());
+        // date picker for registration start date
+        binding.createEventRegistrationStartInput.setOnClickListener(v -> {
+            showDateTimePicker(utcMillis -> {
+                registrationStartDate = utcMillis;
+                SimpleDateFormat fmt = new SimpleDateFormat("MMMM d, yyyy h:mm a", Locale.getDefault());
+                binding.createEventRegistrationStartInput.setText(fmt.format(new Date(utcMillis)));
+            });
+        });
+
+        // date picker for registration end date
+        binding.createEventRegistrationEndInput.setOnClickListener(v -> {
+            showDateTimePicker(utcMillis -> {
+                registrationEndDate = utcMillis;
+                SimpleDateFormat fmt = new SimpleDateFormat("MMMM d, yyyy h:mm a", Locale.getDefault());
+                binding.createEventRegistrationEndInput.setText(fmt.format(new Date(utcMillis)));
+            });
+        });
+
+        // date picker for event date
+        binding.createEventDateInput.setOnClickListener(v -> {
+            showDateTimePicker(utcMillis -> {
+                eventDate = utcMillis;
+                SimpleDateFormat fmt = new SimpleDateFormat("MMMM d, yyyy h:mm a", Locale.getDefault());
+                binding.createEventDateInput.setText(fmt.format(new Date(utcMillis)));
+            });
+        });
 
         // open category multiple choice dialogue
         binding.createEventCategoriesInput.setOnClickListener(v -> {
@@ -170,16 +200,23 @@ public class CreateEventFragment extends Fragment {
         return root;
     }
 
-    private void showDateTimePicker() {
+    private void showDateTimePicker(
+            Consumer<Long> onResultUtc  // callback giving final UTC timestamp
+    ) {
+        CalendarConstraints.Builder constraintsBuilder =
+                new CalendarConstraints.Builder();
+
+        constraintsBuilder.setStart(MaterialDatePicker.todayInUtcMilliseconds());
+        constraintsBuilder.setValidator(DateValidatorPointForward.now());
 
         MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText("Select deadline date")
                 .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
+                .setCalendarConstraints(constraintsBuilder.build())
                 .build();
 
         datePicker.addOnPositiveButtonClickListener(selection -> {
 
-            // Convert picked date from UTC → local time zone
+            // Convert picked date from UTC → local
             Calendar pickedUtc = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
             pickedUtc.setTimeInMillis(selection);
 
@@ -188,9 +225,9 @@ public class CreateEventFragment extends Fragment {
             localCal.set(Calendar.MONTH, pickedUtc.get(Calendar.MONTH));
             localCal.set(Calendar.DAY_OF_MONTH, pickedUtc.get(Calendar.DAY_OF_MONTH));
 
-            // ★ Get current local hour/minute for default time picker
+            // Default time: current local time
             Calendar now = Calendar.getInstance();
-            int defaultHour = now.get(Calendar.HOUR_OF_DAY);
+            int defaultHour   = now.get(Calendar.HOUR_OF_DAY);
             int defaultMinute = now.get(Calendar.MINUTE);
 
             // TIME PICKER
@@ -198,37 +235,65 @@ public class CreateEventFragment extends Fragment {
                     requireContext(),
                     (view, hour, minute) -> {
 
-                        // Combine chosen date + chosen time (local timezone)
+                        // combine date + picked time
                         localCal.set(Calendar.HOUR_OF_DAY, hour);
                         localCal.set(Calendar.MINUTE, minute);
                         localCal.set(Calendar.SECOND, 0);
                         localCal.set(Calendar.MILLISECOND, 0);
 
-                        if (localCal.getTimeInMillis() < System.currentTimeMillis()){
-                            Toast.makeText(getActivity(), "Invalid time. Time must be in the future",
-                                    Toast.LENGTH_SHORT).show();
-                            return;
-                        }else {
-                            // Convert local → UTC
-                            Calendar utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-                            utcCal.setTimeInMillis(localCal.getTimeInMillis());
-                            selectedDateTimeMillis = utcCal.getTimeInMillis();
+                        long pickedLocalMillis = localCal.getTimeInMillis();
 
-                            // Display back to user in local time
-                            SimpleDateFormat fmt = new SimpleDateFormat("MMMM d, yyyy h:mm a", Locale.getDefault());
-                            binding.createEventInputDate.setText(fmt.format(localCal.getTime()));
+                        // Optional time validation
+                        if (minDateUtc != null && pickedLocalMillis < minDateUtc) {
+                            Toast.makeText(getActivity(), "Selected time is too early", Toast.LENGTH_SHORT).show();
+                            return;
                         }
+                        if (maxDateUtc != null && pickedLocalMillis > maxDateUtc) {
+                            Toast.makeText(getActivity(), "Selected time is too late", Toast.LENGTH_SHORT).show();
+                            return;
+                        }
+
+                        // Convert local → UTC
+                        Calendar utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+                        utcCal.setTimeInMillis(pickedLocalMillis);
+
+                        long utcResult = utcCal.getTimeInMillis();
+
+                        // Call user callback
+                        onResultUtc.accept(utcResult);
                     },
-                    defaultHour,   // ★ starting hour
-                    defaultMinute, // ★ starting minute
+                    defaultHour,
+                    defaultMinute,
                     false
             );
 
             timePicker.show();
-
         });
 
         datePicker.show(getParentFragmentManager(), "DATE_PICKER");
+    }
+
+    /**
+     * Validates registrationStartDate, registrationEndDate, and eventDate ordering.
+     * Returns true if valid; otherwise false and shows appropriate messages.
+     */
+    private boolean validateEventDates() {
+        if (registrationStartDate >= registrationEndDate) {
+            Toast.makeText(getContext(), "Registration end must be after registration start", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (registrationEndDate >= eventDate) {
+            Toast.makeText(getContext(), "Event date must be after registration end", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        if (registrationStartDate >= eventDate) {
+            Toast.makeText(getContext(), "Event date must be after registration start", Toast.LENGTH_SHORT).show();
+            return false;
+        }
+
+        return true;
     }
 
     /**
@@ -260,9 +325,15 @@ public class CreateEventFragment extends Fragment {
 
             String description = binding.createEventInputDescription.getText().toString().trim();
 
-            Timestamp dateTimeStamp = new Timestamp(new Date(selectedDateTimeMillis));
+            // Creating timestamps for the event
+            Timestamp registrationStartDateStamp = new Timestamp(new Date(registrationStartDate));
+            Timestamp registrationEndDateStamp = new Timestamp(new Date(registrationEndDate));
+            Timestamp eventDateTimeStamp = new Timestamp(new Date(eventDate));
+
+            // Checking if geo location is enabled
             String location = String.valueOf(binding.cbEnableGeolocation.isChecked());
 
+            // Checking if max entrants is enabled
             if (binding.cbMaxEntrants.isChecked()) {
                 maxEntrants = Integer.parseInt(binding.createEventInputMaxEntrants.getText().toString());
             }
@@ -271,7 +342,7 @@ public class CreateEventFragment extends Fragment {
             Event event = firebaseManager.createEvent(
                     userViewModel.getUser().getValue().getUid(),
                     name,
-                    dateTimeStamp,
+                    eventDateTimeStamp,
                     location,
                     description,
                     Integer.parseInt(binding.createEventSizeInput.getText().toString()),

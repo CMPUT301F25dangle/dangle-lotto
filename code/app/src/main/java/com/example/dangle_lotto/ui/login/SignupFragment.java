@@ -67,7 +67,7 @@ public class SignupFragment extends Fragment {
 
     private void registerUser() {
         String name = etSignupName.getText().toString().trim();
-        String username = etSignupName.getText().toString().trim();
+        String username = etSignupUsername.getText().toString().trim();
         String email = etSignupEmail.getText().toString().trim();
         String phone = etSignupPhone.getText().toString().trim();
         String password = etSignupPassword.getText().toString().trim();

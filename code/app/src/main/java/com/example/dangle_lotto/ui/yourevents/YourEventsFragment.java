@@ -70,12 +70,7 @@ public class YourEventsFragment extends Fragment {
         layoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(layoutManager);
 
-        // initializing events list
-        if (userViewModel.getYourEvents().getValue() != null) {
-            events = userViewModel.getYourEvents().getValue();
-        } else {
-            events = new ArrayList<>();
-        }
+        events = new ArrayList<>();
 
         // initializing interacted ids
         interactedIds = new ArrayList<>();
@@ -84,8 +79,6 @@ public class YourEventsFragment extends Fragment {
         adapter = new EventCardAdapter(events, position -> {
             // update the view model
             userViewModel.setSelectedEvent(events.get(position));
-            userViewModel.setYourEvents(events);
-
             // open the event fragment
             NavController navController = NavHostFragment.findNavController(this);
             navController.navigate(R.id.action_navigation_your_events_to_event_detail_fragment);
@@ -129,7 +122,6 @@ public class YourEventsFragment extends Fragment {
 
         // initialization of the fragment
         onTabButtonClicked(registerButton);
-        loadFirstPage();
 
 
         return root;
@@ -160,7 +152,7 @@ public class YourEventsFragment extends Fragment {
         if (clickedButton == binding.yourEventsRegistered) {
             query = firebaseManager.getUsersReference()
                     .document(uid)
-                    .collection("Registered")
+                    .collection("Register")
                     .orderBy("Timestamp", Query.Direction.DESCENDING);
         } else if (clickedButton == binding.yourEventsChosen) {
             query = firebaseManager.getUsersReference()

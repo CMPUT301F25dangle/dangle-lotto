@@ -29,7 +29,7 @@ import com.example.dangle_lotto.R;
 
 public class SignupFragment extends Fragment {
 
-    private EditText etSignupName, etSignupEmail, etSignupPhone, etSignupPassword;
+    private EditText etSignupName, etSignupEmail, etSignupPhone, etSignupPassword, etSignupUsername;
     private Button btnSignUp;
     private FirebaseManager firebaseManager;
 
@@ -43,7 +43,8 @@ public class SignupFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_signup, container, false);
 
-        etSignupName = view.findViewById(R.id.settings_fragment_username);
+        etSignupName = view.findViewById(R.id.settings_fragment_name);
+        etSignupUsername = view.findViewById(R.id.settings_fragment_username);
         etSignupEmail = view.findViewById(R.id.settings_fragment_email);
         etSignupPhone = view.findViewById(R.id.settings_fragment_phone_number);
         etSignupPassword = view.findViewById(R.id.etSignupPassword);
@@ -66,12 +67,18 @@ public class SignupFragment extends Fragment {
 
     private void registerUser() {
         String name = etSignupName.getText().toString().trim();
+        String username = etSignupUsername.getText().toString().trim();
         String email = etSignupEmail.getText().toString().trim();
         String phone = etSignupPhone.getText().toString().trim();
         String password = etSignupPassword.getText().toString().trim();
 
         if (TextUtils.isEmpty(name)) {
             etSignupName.setError("Name required");
+            return;
+        }
+
+        if (TextUtils.isEmpty(name)) {
+            etSignupUsername.setError("Username required");
             return;
         }
 
@@ -85,9 +92,14 @@ public class SignupFragment extends Fragment {
             return;
         }
 
+        if (password.length() < 6) {
+            etSignupPassword.setError("Password must be at least 6 characters");
+            return;
+        }
+
         btnSignUp.setEnabled(false);
 
-        firebaseManager.signUp(email, password, name, phone, "", false, new FirebaseCallback<String>() {
+        firebaseManager.signUp(email, password, name, username, phone, "", false, new FirebaseCallback<String>() {
                     @Override
                     public void onComplete() {
                         btnSignUp.setEnabled(true);

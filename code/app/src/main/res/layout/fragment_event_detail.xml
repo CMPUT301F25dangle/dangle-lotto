@@ -80,18 +80,16 @@
                 android:contentDescription="@null"
                 android:src="@drawable/event_poster" />
 
-            <!-- Spots remaining -->
             <TextView
                 android:id="@+id/event_spots"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Entrants: 10 / 20"
+                android:text="Registrants: 10 / 20"
                 android:textStyle="bold"
                 android:textSize="16sp"
                 android:layout_marginBottom="12dp"
                 android:paddingTop="12dp"/>
 
-            <!-- Deadline -->
             <TextView
                 android:id="@+id/event_date"
                 android:layout_width="match_parent"

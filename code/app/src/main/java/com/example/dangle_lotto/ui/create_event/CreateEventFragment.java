@@ -433,7 +433,6 @@ public class CreateEventFragment extends Fragment {
         return null;
     }
 
-
     /**
      * Opens the QR code dialogue, setting the bitmap to be the generated one
      *

@@ -197,13 +197,12 @@ public class FirebaseManager {
      * @return Instantiated {@link GeneralUser} object.
      */
     public GeneralUser createNewUser(String uid, String name, String email, String phone, String pid, boolean canOrganize){
-        Map<String, Object> data = Map.of(
-                "Name", name,
-                "Email", email,
-                "Phone", phone,
-                "Picture", pid,
-                "CanOrganize", canOrganize
-        );
+        Map<String, Object> data = new HashMap<>();
+        data.put("Name", name);
+        data.put("Email", email);
+        data.put("Phone", phone);
+        data.put("Picture", pid);
+        data.put("CanOrganize", canOrganize);
 
         users.document(uid).set(data);
         return new GeneralUser(uid, name, email, phone, pid,this, canOrganize);
@@ -330,6 +329,7 @@ public class FirebaseManager {
         users.document(uid).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 DocumentSnapshot doc = task.getResult();
+                Log.d("FirebaseManager", "User retrieved: " + doc.getId());
                 if (doc.exists()) {
                     Map<String, Object> data = doc.getData();
                     assert data != null;
@@ -339,6 +339,7 @@ public class FirebaseManager {
                     String phone = (String) data.get("Phone");
                     String pid = (String) data.get("Picture");
                     GeneralUser user = new GeneralUser(uid, name, email, phone, pid, this, Boolean.TRUE.equals(canOrganize));
+                    Log.d("FirebaseManager", "User loaded: " + user.getName());
                     callback.onSuccess(user);
                 } else {
                     callback.onFailure(new Exception("User not found"));

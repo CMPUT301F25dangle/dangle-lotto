@@ -243,13 +243,9 @@ public class CreateEventFragment extends Fragment {
 
                         long pickedLocalMillis = localCal.getTimeInMillis();
 
-                        // Optional time validation
-                        if (minDateUtc != null && pickedLocalMillis < minDateUtc) {
-                            Toast.makeText(getActivity(), "Selected time is too early", Toast.LENGTH_SHORT).show();
-                            return;
-                        }
-                        if (maxDateUtc != null && pickedLocalMillis > maxDateUtc) {
-                            Toast.makeText(getActivity(), "Selected time is too late", Toast.LENGTH_SHORT).show();
+                        if (localCal.getTimeInMillis() < System.currentTimeMillis()) {
+                            Toast.makeText(getActivity(), "Invalid time. Time must be in the future",
+                                    Toast.LENGTH_SHORT).show();
                             return;
                         }
 

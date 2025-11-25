@@ -2,13 +2,11 @@ package com.example.dangle_lotto.ui.dashboard;
 
 
 import android.os.Bundle;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ListView;
 
 import androidx.fragment.app.Fragment;
@@ -19,7 +17,6 @@ import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.GeneralUser;
 import com.example.dangle_lotto.UserViewModel;
-import com.example.dangle_lotto.User;
 import com.example.dangle_lotto.databinding.FragmentOrganizerEventDetailsEntrantsBinding;
 
 import java.util.ArrayList;
@@ -268,7 +265,7 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
             firebase.getUser(uid, new FirebaseCallback<GeneralUser>() {
                 @Override
                 public void onSuccess(GeneralUser user) {
-                    entrantNames.add(user.getName() + " (" + user.getEmail() + ")");
+                    entrantNames.add(user.getUsername() + " (" + user.getEmail() + ")");
                     finishOne();
                 }
                 @Override

@@ -356,6 +356,8 @@ public class CreateEventFragment extends Fragment {
             Event event = firebaseManager.createEvent(
                     userViewModel.getUser().getValue().getUid(),
                     name,
+                    registrationStartDateStamp,
+                    registrationEndDateStamp,
                     eventDateTimeStamp,
                     location,
                     description,

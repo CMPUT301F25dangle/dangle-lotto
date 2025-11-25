@@ -54,7 +54,7 @@ public class UserViewModel extends ViewModel {
         firebaseManager.getUser(uid, new FirebaseCallback<GeneralUser>() {
             @Override
             public void onSuccess(GeneralUser result) {
-                Log.d("UserViewModel", "User loaded: " + result.getName());
+                Log.d("UserViewModel", "User loaded: " + result.getUsername());
                 user.setValue(result);
             }
 

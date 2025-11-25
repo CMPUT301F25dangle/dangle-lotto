@@ -14,18 +14,12 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
-import android.util.Log;
-
 import androidx.test.espresso.IdlingRegistry;
 import androidx.test.espresso.IdlingResource;
-import androidx.test.espresso.action.ViewActions;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 
-import com.example.dangle_lotto.FirebaseCallback;
-import com.example.dangle_lotto.FirebaseManager;
-import com.example.dangle_lotto.LoginActivity;
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.Timestamp;
@@ -36,7 +30,6 @@ import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.functions.FirebaseFunctions;
 
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -44,9 +37,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
@@ -272,10 +262,10 @@ public class UserStoriesTests {
         onView(withId(R.id.dashboard_fragment_setting_button)).perform(click());
 
         // User updates email
-        onView(withId(R.id.settings_fragment_email)).perform(typeText("s"), closeSoftKeyboard());
+        onView(withId(R.id.singup_email_input)).perform(typeText("s"), closeSoftKeyboard());
 
         // User updates phone number
-        onView(withId(R.id.settings_fragment_phone_number)).perform(typeText("000"), closeSoftKeyboard());
+        onView(withId(R.id.signup_phone_input)).perform(typeText("000"), closeSoftKeyboard());
 
         // User clicks on update button
         onView(withText("Update Profile")).perform(click());

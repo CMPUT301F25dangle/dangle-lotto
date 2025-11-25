@@ -43,12 +43,12 @@ public class SignupFragment extends Fragment {
 
         View view = inflater.inflate(R.layout.fragment_signup, container, false);
 
-        etSignupName = view.findViewById(R.id.settings_fragment_name);
-        etSignupUsername = view.findViewById(R.id.settings_fragment_username);
-        etSignupEmail = view.findViewById(R.id.settings_fragment_email);
-        etSignupPhone = view.findViewById(R.id.settings_fragment_phone_number);
-        etSignupPassword = view.findViewById(R.id.etSignupPassword);
-        btnSignUp = view.findViewById(R.id.btnSignUp);
+        etSignupName = view.findViewById(R.id.signup_name_input);
+        etSignupUsername = view.findViewById(R.id.signup_username_input);
+        etSignupEmail = view.findViewById(R.id.signup_email_input);
+        etSignupPhone = view.findViewById(R.id.signup_phone_input);
+        etSignupPassword = view.findViewById(R.id.signup_password_input);
+        btnSignUp = view.findViewById(R.id.signup_button);
 
         firebaseManager = FirebaseManager.getInstance();
 

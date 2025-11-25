@@ -7,7 +7,6 @@
     tools:context=".ui.detail.EventDetailFragment"
     >
 
-    <!-- Top-left back button in the view -->
     <ImageButton
         android:id="@+id/btn_back"
         android:layout_width="48dp"
@@ -42,7 +41,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:tint="?attr/colorOnBackground" />
 
-    <!-- Scrollable content area -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll"
         android:layout_width="0dp"
@@ -53,7 +51,7 @@
         app:layout_constraintTop_toBottomOf="@id/btn_back"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/btnSignUp">
+        app:layout_constraintBottom_toTopOf="@id/event_detail_dynamic_button">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -170,9 +168,8 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Bottom Sign Up button -->
     <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnSignUp"
+        android:id="@+id/event_detail_dynamic_button"
         style="@style/Widget.MaterialComponents.Button"
         android:layout_width="0dp"
         android:layout_height="48dp"

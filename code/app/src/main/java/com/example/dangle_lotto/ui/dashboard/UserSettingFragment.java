@@ -83,7 +83,7 @@ public class UserSettingFragment extends Fragment {
         phoneEditText = binding.settingsFragmentPhoneNumber;
 
         // setting edit text views with user info
-        usernameEditText.setText(user.getName());
+        usernameEditText.setText(user.getUsername());
         emailEditText.setText(user.getEmail());
         phoneEditText.setText(user.getPhone());
 
@@ -122,7 +122,7 @@ public class UserSettingFragment extends Fragment {
                 binding.userSettingsUpdateButton.setText("Confirm Update");
                 confirmUpdate = true;
             } else {
-                user.setName(username);
+                user.setUsername(username);
                 user.setEmail(email);
                 user.setPhone(phone);
 
@@ -154,7 +154,7 @@ public class UserSettingFragment extends Fragment {
 
         String originalPhone = user.getPhone() == null ? "" : user.getPhone();
 
-        boolean same = username.equals(user.getName()) && email.equals(user.getEmail()) && phone.equals(originalPhone);
+        boolean same = username.equals(user.getUsername()) && email.equals(user.getEmail()) && phone.equals(originalPhone);
 
         binding.userSettingsUpdateButton.setEnabled(!same);
     }

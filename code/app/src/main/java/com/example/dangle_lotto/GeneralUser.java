@@ -40,9 +40,9 @@ public class GeneralUser extends User {
      * @param firebaseManager Reference to the {@link FirebaseManager} for database operations.
      * @param canOrganize     Whether the user has organizer privileges.
      */
-    public GeneralUser(String uid, String name, String email, String phone,
+    public GeneralUser(String uid, String username, String name, String email, String phone,
                        String pid, FirebaseManager firebaseManager, boolean canOrganize) {
-        super(uid, name, email, phone, pid, firebaseManager);
+        super(uid, username, name, email, phone, pid, firebaseManager);
         this.canOrganize = canOrganize;
     }
 

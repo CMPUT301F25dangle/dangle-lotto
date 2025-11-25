@@ -2,6 +2,7 @@ package com.example.dangle_lotto;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.util.Log;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
@@ -140,7 +141,7 @@ public class FirebaseManager {
      * @param canOrganize  Boolean value indicating whether the user can organize events
      * @param callback  Callback function to call when user is created
      */
-    public void signUp(String email, String password, String name, String username, String phone, String photo_id, boolean canOrganize, FirebaseCallback<String> callback) {
+    public void signUp(String email, String password, String username, String name, String phone, String photo_id, boolean canOrganize, FirebaseCallback<String> callback) {
         // idling resource for testing
         idlingResource.increment();
 
@@ -150,7 +151,7 @@ public class FirebaseManager {
                         FirebaseUser user = mAuth.getCurrentUser();
                         if (user != null){
                             String uid = user.getUid();
-                            this.createNewUser(uid, name, username, email, phone, photo_id, canOrganize);
+                            this.createNewUser(uid, username, name, email, phone, photo_id, canOrganize);
                             callback.onSuccess(uid);
                         }else{
                             callback.onFailure(new Exception("User not found"));
@@ -191,18 +192,18 @@ public class FirebaseManager {
      * @param canOrganize Whether the user can organize events.
      * @return Instantiated {@link GeneralUser} object.
      */
-    public GeneralUser createNewUser(String uid, String name, String username, String email, String phone, String pid, boolean canOrganize){
-        Map<String, Object> data = Map.of(
-                "Name", name,
-                "Username", username,
-                "Email", email,
-                "Phone", phone,
-                "Picture", pid,
-                "CanOrganize", canOrganize
-        );
+    public GeneralUser createNewUser(String uid, String username, String name, String email, String phone, String pid, boolean canOrganize){
+        Map<String, Object> data = new HashMap<>();
+        data.put("UID", uid);
+        data.put("Username", username);
+        data.put("Name", name);
+        data.put("Email", email);
+        data.put("Phone", phone);
+        data.put("Picture", pid);
+        data.put("CanOrganize", canOrganize);
 
         users.document(uid).set(data);
-        return new GeneralUser(uid, name, email, phone, pid,this, canOrganize);
+        return new GeneralUser(uid, username, name, email, phone, pid,this, canOrganize);
     }
 
     /**
@@ -212,6 +213,7 @@ public class FirebaseManager {
      */
     public void updateUser(User user) {
         users.document(user.getUid()).update(
+                "Username", user.getUsername(),
                 "Name", user.getName(),
                 "Email", user.getEmail(),
                 "Phone", user.getPhone(),
@@ -326,15 +328,18 @@ public class FirebaseManager {
         users.document(uid).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 DocumentSnapshot doc = task.getResult();
+                Log.d("FirebaseManager", "User retrieved: " + doc.getId());
                 if (doc.exists()) {
                     Map<String, Object> data = doc.getData();
                     assert data != null;
+                    String username = (String) data.get("Username");
                     String name = (String) data.get("Name");
                     String email = (String) data.get("Email");
                     Boolean canOrganize = (Boolean) data.get("CanOrganize");
                     String phone = (String) data.get("Phone");
                     String pid = (String) data.get("Picture");
-                    GeneralUser user = new GeneralUser(uid, name, email, phone, pid, this, Boolean.TRUE.equals(canOrganize));
+                    GeneralUser user = new GeneralUser(uid, username, name, email, phone, pid, this, Boolean.TRUE.equals(canOrganize));
+                    Log.d("FirebaseManager", "User loaded: " + user.getUsername());
                     callback.onSuccess(user);
                 } else {
                     callback.onFailure(new Exception("User not found"));
@@ -369,11 +374,12 @@ public class FirebaseManager {
                 if (doc.exists()) {
                     Map<String, Object> data = doc.getData();
                     assert data != null;
+                    String username = (String) data.get("Username");
                     String name = (String) data.get("Name");
                     String email = (String) data.get("Email");
                     String phone = (String) data.get("Phone");
                     String pid = (String) data.get("Picture");
-                    AdminUser user = new AdminUser(uid, name, email, phone, pid, this);
+                    AdminUser user = new AdminUser(uid, username, name, email, phone, pid, this);
                     callback.onSuccess(user);
                 } else {
                     callback.onFailure(new Exception("User not found"));
@@ -403,7 +409,9 @@ public class FirebaseManager {
      *
      * @param oid          Organizer ID.
      * @param name         Event name.
-     * @param datetime     Event timestamp.
+     * @param start_date   Event start date.
+     * @param end_date     Event end date.
+     * @param event_date   Event timestamp.
      * @param location     Event location.
      * @param description  Event description.
      * @param eventSize    Event size limit.
@@ -413,7 +421,8 @@ public class FirebaseManager {
      * @return Instantiated {@link Event} object.
      */
     public Event createEvent(
-            String oid, String name, Timestamp datetime, String location,
+            String oid, String name, Timestamp start_date, Timestamp end_date,
+            Timestamp event_date, String location,
             String description, int eventSize, int maxEntrants,
             String photo_url, String qr_url, ArrayList<String> categories
     ) {
@@ -421,7 +430,9 @@ public class FirebaseManager {
         Map<String, Object> data = new HashMap<>();
         data.put("Organizer", oid);
         data.put("Name", name);
-        data.put("Date", datetime);
+        data.put("Start Date", start_date);
+        data.put("End Date", end_date);
+        data.put("Event Date", event_date);
         data.put("Location", location);
         data.put("Description", description);
         data.put("Event Size", eventSize);
@@ -434,10 +445,12 @@ public class FirebaseManager {
         // idling resource for testing
         idlingResource.increment();
 
+        Timestamp current = Timestamp.now();
+
         Task<Void> t1 = users.document(oid)
                 .collection("Organize")
                 .document(eid)
-                .set(Map.of("Timestamp", datetime));
+                .set(Map.of("Timestamp", current));
 
         Task<Void> t2 = events.document(eid).set(data);
 
@@ -447,7 +460,7 @@ public class FirebaseManager {
             idlingResource.decrement();
         });
 
-        return new Event(eid, oid, name, datetime, location, description,
+        return new Event(eid, oid, name, start_date, end_date, event_date, location, description,
                 photo_url, qr_url, eventSize, maxEntrants, categories, this);
     }
 
@@ -459,7 +472,10 @@ public class FirebaseManager {
     public void updateEvent(Event event) {
         events.document(event.getEid()).update(
                 "Name", event.getName(),
-                "Date", event.getDate(),
+                "Start Date", event.getStartDate(),
+                "End Date", event.getEndDate(),
+                "Event Date", event.getEventDate(),
+                "Organizer", event.getOrganizerID(),
                 "Location", event.getLocation(),
                 "Description", event.getDescription(),
                 "Event Size", event.getEventSize(),
@@ -533,24 +549,49 @@ public class FirebaseManager {
      */
     public Event documentToEvent(DocumentSnapshot doc) {
 
+        // Safe integer extraction
+        Integer eventSize = null;
+        Long eventSizeLong = doc.getLong("Event Size");
+        if (eventSizeLong != null) {
+            eventSize = eventSizeLong.intValue();
+        }
+
+        Integer maxEntrants = null;
         Long maxEntrantsLong = doc.getLong("Max Entrants");
-        Integer maxEntrants = (maxEntrantsLong != null) ? maxEntrantsLong.intValue() : null;
+        if (maxEntrantsLong != null) {
+            maxEntrants = maxEntrantsLong.intValue();
+        }
+
+        // Safe categories list
+        ArrayList<String> categories = new ArrayList<>();
+        Object catObj = doc.get("Categories");
+        if (catObj instanceof ArrayList) {
+            categories = (ArrayList<String>) catObj;
+        }
 
         return new Event(
                 doc.getId(),
                 doc.getString("Organizer"),
                 doc.getString("Name"),
-                doc.getTimestamp("Date"),
+                doc.getTimestamp("Start Date"),
+                doc.getTimestamp("End Date"),
+                doc.getTimestamp("Event Date"),
                 doc.getString("Location"),
                 doc.getString("Description"),
+
+                // Default empty strings instead of null
                 doc.getString("Picture") != null ? doc.getString("Picture") : "",
                 doc.getString("QR") != null ? doc.getString("QR") : "",
-                Objects.requireNonNull(doc.getLong("Event Size")).intValue(),
+
+                // Use default value if missing
+                eventSize != null ? eventSize : 0,   // or null, your choice
                 maxEntrants,
-                doc.get("Categories") != null ? (ArrayList<String>) doc.get("Categories") : new ArrayList<>(),
+
+                categories,
                 this
         );
     }
+
 
     /**
      * Retrieves an event from the database and instantiates an object for it.

@@ -1,5 +1,6 @@
 package com.example.dangle_lotto.ui.detail;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Log;
@@ -54,6 +55,7 @@ public class EventDetailFragment extends Fragment {
     private boolean isCancelled = false;
     private boolean postDraw = false;
 
+    @SuppressLint("SetTextI18n")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -64,7 +66,7 @@ public class EventDetailFragment extends Fragment {
 
         FirebaseManager firebaseManager = FirebaseManager.getInstance();
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
-        selectedEvent = userViewModel.getSelectedHomeEvent().getValue();
+        selectedEvent = userViewModel.getSelectedEvent().getValue();
 
         if (selectedEvent == null) {
             Log.e("EventDetailFragment", "No selected event found.");
@@ -75,7 +77,7 @@ public class EventDetailFragment extends Fragment {
         firebaseManager.getUser(selectedEvent.getOrganizerID(), new FirebaseCallback<>() {
             @Override
             public void onSuccess(GeneralUser result) {
-                binding.organizerName.setText("Organizer: " + result.getName());
+                binding.organizerName.setText("Organizer: " + result.getUsername());
             }
 
             @Override
@@ -87,7 +89,8 @@ public class EventDetailFragment extends Fragment {
         // Display event information
         binding.eventTitle.setText(selectedEvent.getName());
         binding.eventDescription.setText(selectedEvent.getDescription());
-        binding.eventDate.setText("Deadline: " + formatTimestamp(selectedEvent.getDate()));
+        binding.eventDate.setText("Registration Period: " + formatTimestamp(selectedEvent.getStartDate())
+                + " to " + formatTimestamp(selectedEvent.getEndDate()));
         if (!(selectedEvent.getPhotoID().isEmpty() || selectedEvent.getPhotoID() == null))
             Glide.with(requireContext()).load(selectedEvent.getPhotoID()).into(binding.imgPoster);
 

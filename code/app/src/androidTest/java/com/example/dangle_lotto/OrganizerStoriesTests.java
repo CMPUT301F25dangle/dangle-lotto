@@ -90,7 +90,7 @@ public class OrganizerStoriesTests {
         IdlingRegistry.getInstance().register(firebaseIdlingResource);
 
         // Creates owner user
-        firebaseManager.signUp("owner@gmail.com", "password", "Owner User", "ownerusername","1234123123", "", true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("owner@gmail.com", "password", "owner", "Owner User", "1234123123", "", true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 ownerUid = result;
@@ -103,7 +103,7 @@ public class OrganizerStoriesTests {
         Thread.sleep(1500);
 
         // Create tester AFTER owner is created
-        firebaseManager.signUp("tester@gmail.com", "password", "Tester User", "testerusername", "", "",true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("tester@gmail.com", "password", "tester","Tester User", "", "", true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 testerUid = result;
@@ -168,7 +168,7 @@ public class OrganizerStoriesTests {
      * Creates a basic event
      */
     public Event createEvent() {
-        return firebaseManager.createEvent(ownerUid, "Good Party", Timestamp.now(), "Da House", "A party for good people", 10, 100, "", "", new ArrayList<String>());
+        return firebaseManager.createEvent(ownerUid, "Good Party", Timestamp.now(), Timestamp.now(), Timestamp.now(), "Da House", "A party for good people", 10, 100, "", "", new ArrayList<String>());
     }
 
     /**

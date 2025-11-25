@@ -78,7 +78,7 @@ public class UserSettingFragment extends Fragment {
         });
 
         // attaching edit text views
-        usernameEditText = binding.settingsFragmentUsername;
+        usernameEditText = binding.settingsFragmentName;
         emailEditText = binding.settingsFragmentEmail;
         phoneEditText = binding.settingsFragmentPhoneNumber;
 

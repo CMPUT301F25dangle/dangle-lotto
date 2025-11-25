@@ -1,10 +1,7 @@
 package com.example.dangle_lotto;
 
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.util.Log;
-import android.widget.Toast;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
@@ -16,16 +13,12 @@ import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
-import com.google.firebase.firestore.QuerySnapshot;
 import com.google.firebase.functions.FirebaseFunctions;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -141,12 +134,13 @@ public class FirebaseManager {
      * @param email  Email of the user
      * @param password  Password of the user
      * @param name  Name of the user
+     * @param username Username of the user
      * @param phone  Phone number of the user - set null if not provided
      * @param photo_id  Photo id for user profile picture - set null if not provided
      * @param canOrganize  Boolean value indicating whether the user can organize events
      * @param callback  Callback function to call when user is created
      */
-    public void signUp(String email, String password, String name, String phone, String photo_id, boolean canOrganize, FirebaseCallback<String> callback) {
+    public void signUp(String email, String password, String name, String username, String phone, String photo_id, boolean canOrganize, FirebaseCallback<String> callback) {
         // idling resource for testing
         idlingResource.increment();
 
@@ -156,7 +150,7 @@ public class FirebaseManager {
                         FirebaseUser user = mAuth.getCurrentUser();
                         if (user != null){
                             String uid = user.getUid();
-                            this.createNewUser(uid, name, email, phone, photo_id, canOrganize);
+                            this.createNewUser(uid, name, username, email, phone, photo_id, canOrganize);
                             callback.onSuccess(uid);
                         }else{
                             callback.onFailure(new Exception("User not found"));
@@ -188,17 +182,19 @@ public class FirebaseManager {
     /**
      * Creates and stores a new user document in Firestore.
      *
-     * @param uid          Firebase Auth user ID.
-     * @param name         User name.
-     * @param email        User email.
-     * @param phone        User phone number (nullable).
-     * @param pid          Profile photo ID (nullable).
-     * @param canOrganize  Whether the user can organize events.
+     * @param uid         Firebase Auth user ID.
+     * @param name        User name.
+     * @param username    Username of the user
+     * @param email       User email.
+     * @param phone       User phone number (nullable).
+     * @param pid         Profile photo ID (nullable).
+     * @param canOrganize Whether the user can organize events.
      * @return Instantiated {@link GeneralUser} object.
      */
-    public GeneralUser createNewUser(String uid, String name, String email, String phone, String pid, boolean canOrganize){
+    public GeneralUser createNewUser(String uid, String name, String username, String email, String phone, String pid, boolean canOrganize){
         Map<String, Object> data = Map.of(
                 "Name", name,
+                "Username", username,
                 "Email", email,
                 "Phone", phone,
                 "Picture", pid,

@@ -202,7 +202,7 @@ public class FirebaseManager {
         );
 
         users.document(uid).set(data);
-        return new GeneralUser(uid, name, email, phone, pid,this, canOrganize);
+        return new GeneralUser(uid, name, username, email, phone, pid,this, canOrganize);
     }
 
     /**
@@ -214,6 +214,7 @@ public class FirebaseManager {
         users.document(user.getUid()).update(
                 "Name", user.getName(),
                 "Email", user.getEmail(),
+                "Username", user.getUsername(),
                 "Phone", user.getPhone(),
                 "Picture", user.getPhotoID()
         );
@@ -330,11 +331,12 @@ public class FirebaseManager {
                     Map<String, Object> data = doc.getData();
                     assert data != null;
                     String name = (String) data.get("Name");
+                    String username = (String) data.get("Username");
                     String email = (String) data.get("Email");
                     Boolean canOrganize = (Boolean) data.get("CanOrganize");
                     String phone = (String) data.get("Phone");
                     String pid = (String) data.get("Picture");
-                    GeneralUser user = new GeneralUser(uid, name, email, phone, pid, this, Boolean.TRUE.equals(canOrganize));
+                    GeneralUser user = new GeneralUser(uid, name, username, email, phone, pid, this, Boolean.TRUE.equals(canOrganize));
                     callback.onSuccess(user);
                 } else {
                     callback.onFailure(new Exception("User not found"));
@@ -370,10 +372,11 @@ public class FirebaseManager {
                     Map<String, Object> data = doc.getData();
                     assert data != null;
                     String name = (String) data.get("Name");
+                    String username = (String) data.get("Username");
                     String email = (String) data.get("Email");
                     String phone = (String) data.get("Phone");
                     String pid = (String) data.get("Picture");
-                    AdminUser user = new AdminUser(uid, name, email, phone, pid, this);
+                    AdminUser user = new AdminUser(uid, name, username, email, phone, pid, this);
                     callback.onSuccess(user);
                 } else {
                     callback.onFailure(new Exception("User not found"));

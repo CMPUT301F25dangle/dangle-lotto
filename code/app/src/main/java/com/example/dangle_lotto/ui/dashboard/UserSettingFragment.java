@@ -29,6 +29,7 @@ import com.example.dangle_lotto.ui.login.SimpleTextWatcher;
  * @version 1.0
  * @since 2025-11-06
  */
+
 public class UserSettingFragment extends Fragment {
     private FragmentUserSettingBinding binding;
     private UserViewModel userViewModel;
@@ -36,7 +37,9 @@ public class UserSettingFragment extends Fragment {
     private GeneralUser user;
     private boolean confirmDelete = false;
     private boolean confirmUpdate = false;
+    private EditText nameEditText;
     private EditText usernameEditText;
+
     private EditText emailEditText;
     private EditText phoneEditText;
 
@@ -78,12 +81,14 @@ public class UserSettingFragment extends Fragment {
         });
 
         // attaching edit text views
-        usernameEditText = binding.settingsFragmentName;
+        nameEditText = binding.settingsFragmentName;
+        usernameEditText = binding.settingsFragmentUsername;
         emailEditText = binding.settingsFragmentEmail;
         phoneEditText = binding.settingsFragmentPhoneNumber;
 
         // setting edit text views with user info
-        usernameEditText.setText(user.getName());
+        nameEditText.setText(user.getName());
+        usernameEditText.setText((user.getUsername()));
         emailEditText.setText(user.getEmail());
         phoneEditText.setText(user.getPhone());
 
@@ -97,18 +102,25 @@ public class UserSettingFragment extends Fragment {
                 updateButtonState();
             }
         };
+        nameEditText.addTextChangedListener(watcher);
         usernameEditText.addTextChangedListener(watcher);
         emailEditText.addTextChangedListener(watcher);
         phoneEditText.addTextChangedListener(watcher);
 
         // clicking button to update user info
         binding.userSettingsUpdateButton.setOnClickListener(v -> {
+            String name = nameEditText.getText().toString().trim();
             String username = usernameEditText.getText().toString().trim();
             String email = emailEditText.getText().toString().trim();
             String phone = phoneEditText.getText().toString().trim();
 
+            if (TextUtils.isEmpty(name)) {
+                nameEditText.setError("Name required");
+                return;
+            }
+
             if (TextUtils.isEmpty(username)) {
-                usernameEditText.setError("Name required");
+                usernameEditText.setError("Username required");
                 return;
             }
 
@@ -122,7 +134,8 @@ public class UserSettingFragment extends Fragment {
                 binding.userSettingsUpdateButton.setText("Confirm Update");
                 confirmUpdate = true;
             } else {
-                user.setName(username);
+                user.setName(name);
+                user.setUsername(username);
                 user.setEmail(email);
                 user.setPhone(phone);
 
@@ -131,6 +144,7 @@ public class UserSettingFragment extends Fragment {
                 userViewModel.setUser(user);
 
                 // unselecting edit text fields
+                nameEditText.clearFocus();
                 usernameEditText.clearFocus();
                 emailEditText.clearFocus();
                 phoneEditText.clearFocus();
@@ -148,7 +162,7 @@ public class UserSettingFragment extends Fragment {
      * Updates the button state based on the current user information.
      */
     private void updateButtonState() {
-        String username = usernameEditText.getText().toString().trim();
+        String username = nameEditText.getText().toString().trim();
         String email = emailEditText.getText().toString().trim();
         String phone = phoneEditText.getText().toString().trim();
 

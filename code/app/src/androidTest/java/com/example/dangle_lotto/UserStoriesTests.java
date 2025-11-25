@@ -92,7 +92,7 @@ public class UserStoriesTests {
         IdlingRegistry.getInstance().register(firebaseIdlingResource);
 
         // Creates owner user
-        firebaseManager.signUp("owner@gmail.com", "password", "Owner User", "1234123123", "", true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("owner@gmail.com", "password", "Owner User", "ownerusername","1234123123", "", true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 ownerUid = result;
@@ -105,7 +105,7 @@ public class UserStoriesTests {
         Thread.sleep(1500);
 
         // Create tester AFTER owner is created
-        firebaseManager.signUp("tester@gmail.com", "password", "Tester User", "", "", true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("tester@gmail.com", "password", "Tester User", "testerusername", "534532", "",true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 testerUid = result;
@@ -312,7 +312,7 @@ public class UserStoriesTests {
     @Test
     public void UserCanGetAnotherChanceToSignUp() throws InterruptedException {
         // Create a user to add to the event chosen list
-        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User", "", "", true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User", "testerusername2","", "", true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 tester2Uid = result;

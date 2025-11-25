@@ -34,15 +34,16 @@ public class GeneralUser extends User {
      *
      * @param uid             Unique Firebase user ID.
      * @param name            User’s display name.
+     * @param username            User's username.
      * @param email           User’s email address.
      * @param phone           User’s phone number (nullable).
      * @param pid             Profile photo identifier (nullable).
      * @param firebaseManager Reference to the {@link FirebaseManager} for database operations.
      * @param canOrganize     Whether the user has organizer privileges.
      */
-    public GeneralUser(String uid, String name, String email, String phone,
+    public GeneralUser(String uid, String name, String username, String email, String phone,
                        String pid, FirebaseManager firebaseManager, boolean canOrganize) {
-        super(uid, name, email, phone, pid, firebaseManager);
+        super(uid, name, username, email, phone, pid, firebaseManager);
         this.canOrganize = canOrganize;
     }
 

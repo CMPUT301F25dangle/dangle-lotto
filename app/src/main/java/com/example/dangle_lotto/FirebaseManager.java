@@ -82,12 +82,13 @@ public class FirebaseManager {
      * @param email  Email of the user
      * @param password  Password of the user
      * @param name  Name of the user
+     * @param username Username of the user
      * @param phone  Phone number of the user - set null if not provided
      * @param photo_id  Photo id for user profile picture - set null if not provided
      * @param canOrganize  Boolean value indicating whether the user can organize events
      * @param callback  Callback function to call when user is created
      */
-    public void signUp(String email, String password, String name, String phone, String photo_id, boolean canOrganize, FirebaseCallback<String> callback){
+    public void signUp(String email, String password, String name, String username, String phone, String photo_id, boolean canOrganize, FirebaseCallback<String> callback){
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {

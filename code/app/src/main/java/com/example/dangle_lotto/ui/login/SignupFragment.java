@@ -87,7 +87,7 @@ public class SignupFragment extends Fragment {
 
         btnSignUp.setEnabled(false);
 
-        firebaseManager.signUp(email, password, name, phone, "", false, new FirebaseCallback<String>() {
+        firebaseManager.signUp(email, password, name, phone, "", true, new FirebaseCallback<String>() {
                     @Override
                     public void onComplete() {
                         btnSignUp.setEnabled(true);

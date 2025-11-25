@@ -13,6 +13,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:fillViewport="true"
+        android:layout_marginBottom="14dp"
         app:layout_constraintBottom_toTopOf="@+id/btn_cancel"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -57,7 +58,9 @@
                 android:hint="@string/enter_event_name"
                 android:inputType="text"
                 android:paddingVertical="10dp"
+                android:paddingHorizontal="6dp"
                 android:textSize="16sp"
+                android:background="@drawable/bg_input_field"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/create_event_name_hint" />
@@ -88,66 +91,57 @@
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/create_event_banner" />
 
-            <LinearLayout
-                android:id="@+id/create_event_enter_max_entrants_layout"
-                android:layout_width="0dp"
+            <TextView
+                android:id="@+id/create_event_max_entrants_label"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="11dp"
+                android:layout_marginStart="16dp"
                 android:layout_marginTop="12dp"
-                android:orientation="horizontal"
-                app:layout_constraintEnd_toEndOf="parent"
+                android:text="@string/maximum_registrants"
+                android:textColor="@color/black"
+                android:textSize="16sp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/create_event_banner_button">
+                app:layout_constraintTop_toBottomOf="@id/create_event_banner_button" />
 
-                <CheckBox
-                    android:id="@+id/cb_max_entrants"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:checked="false"
-                    android:text="@string/maximum_registrants"
-                    android:textSize="16sp"
-                    android:textColor="@color/black"/>
+            <EditText
+                android:id="@+id/create_event_input_max_entrants"
+                android:layout_width="80dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="4dp"
+                android:gravity="center"
+                android:inputType="number"
+                android:textSize="16sp"
+                android:hint="50"
+                android:background="@drawable/bg_input_field"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/create_event_max_entrants_label" />
 
-                <EditText
-                    android:id="@+id/create_event_input_maxEntrants"
-                    android:layout_width="60dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:enabled="false"
-                    android:gravity="center"
-                    android:inputType="number"
-                    android:textSize="16sp"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:id="@+id/create_event_size_layout"
-                android:layout_width="0dp"
+            <TextView
+                android:id="@+id/create_event_size_label"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                android:layout_marginTop="8dp"
-                android:orientation="horizontal"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="12dp"
+                android:text="Limit"
+                android:textColor="@color/black"
+                android:textSize="16sp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/create_event_enter_max_entrants_layout">
+                app:layout_constraintTop_toBottomOf="@id/create_event_input_max_entrants" />
 
-                <TextView
-                    android:id="@+id/create_event_size_label"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:textSize="16sp"
-                    android:text="Limit"
-                    android:textColor="@color/black"/>
-
-                <EditText
-                    android:id="@+id/create_event_size_input"
-                    android:layout_width="60dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:inputType="number"
-                    android:text="1"
-                    android:gravity="center"
-                    android:textSize="18sp"/>
-            </LinearLayout>
+            <EditText
+                android:id="@+id/create_event_size_input"
+                android:layout_width="80dp"
+                android:layout_height="24dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="4dp"
+                android:inputType="number"
+                android:text="10"
+                android:gravity="center"
+                android:textSize="16sp"
+                android:background="@drawable/bg_input_field"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@id/create_event_size_label" />
 
             <TextView
                 android:id="@+id/create_event_registration_start_label"
@@ -159,7 +153,7 @@
                 android:textColor="@color/black"
                 android:textSize="16sp"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/create_event_size_layout" />
+                app:layout_constraintTop_toBottomOf="@id/create_event_size_input" />
 
             <com.google.android.material.textview.MaterialTextView
                 android:id="@+id/create_event_registration_start_input"
@@ -269,10 +263,12 @@
                 android:layout_height="120dp"
                 android:layout_marginHorizontal="16dp"
                 android:layout_marginTop="4dp"
+                android:padding="6dp"
                 android:gravity="top|start"
                 android:hint="@string/describe_your_event"
                 android:inputType="textMultiLine"
                 android:textSize="16sp"
+                android:background="@drawable/bg_input_field"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/create_event_description_label" />
@@ -286,12 +282,13 @@
                 android:text="@string/require_geolocation"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toBottomOf="@id/create_event_input_description" />
+
             <TextView
                 android:id="@+id/categories_dropdown_label"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="8dp"
                 android:text="Categories"
                 android:textColor="@color/black"
                 android:textSize="16sp"
@@ -341,7 +338,7 @@
         style="@style/Widget.MaterialComponents.Button"
         android:layout_width="0dp"
         android:layout_height="48dp"
-        android:layout_margin="12dp"
+        android:layout_margin="16dp"
         android:text="Done"
         android:textAllCaps="false"
         android:textSize="18sp"

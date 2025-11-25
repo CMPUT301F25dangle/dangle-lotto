@@ -96,8 +96,7 @@ public class CreateEventFragment extends Fragment {
 
 //        registrationStartDate = System.currentTimeMillis() + 1000*60*60; // an hour ahead is default time
 
-        // initialize viewmodel
-        // initalize image picker
+        // initialize image picker
         pickMedia = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(),
             uri -> {
                 if (uri != null) {
@@ -122,35 +121,34 @@ public class CreateEventFragment extends Fragment {
             goBack();
         });
 
+        // done button will upload banner to
         binding.btnDone.setOnClickListener(v -> {
-                    if (selectedUri != null) {
-                        firebaseManager.uploadBannerPic(selectedUri, new FirebaseCallback<String>() {
-                            @Override
-                            public void onSuccess(String result) {
+            if (selectedUri != null) {
+                firebaseManager.uploadBannerPic(selectedUri, new FirebaseCallback<String>() {
+                    @Override
+                    public void onSuccess(String result) {
                                 createEvent(result);
                             }
 
-                            @Override
-                            public void onFailure(Exception e) {
+                    @Override
+                    public void onFailure(Exception e) {
                                 createEvent(null);
                             }
-                        });
-                    } else createEvent(null);
                 });
-
-        // max entrants toggle
-        binding.cbMaxEntrants.setOnClickListener(v -> {
-            boolean isEnabled = binding.createEventInputMaxEntrants.isEnabled();
-            binding.createEventInputMaxEntrants.setEnabled(!isEnabled);
+            } else createEvent(null);
         });
-
-        // Set default max entrants
-        binding.createEventInputMaxEntrants.setText("50");
 
         // date picker for registration start date
         binding.createEventRegistrationStartInput.setOnClickListener(v -> {
             showDateTimePicker(utcMillis -> {
                 registrationStartDate = utcMillis;
+
+                // check if the dates selected are valid
+                if (!validateEventDates()) {
+                    registrationStartDate = null;
+                    return;
+                }
+
                 SimpleDateFormat fmt = new SimpleDateFormat("MMMM d, yyyy h:mm a", Locale.getDefault());
                 binding.createEventRegistrationStartInput.setText(fmt.format(new Date(utcMillis)));
             });
@@ -160,6 +158,13 @@ public class CreateEventFragment extends Fragment {
         binding.createEventRegistrationEndInput.setOnClickListener(v -> {
             showDateTimePicker(utcMillis -> {
                 registrationEndDate = utcMillis;
+
+                // check if the dates selected are valid
+                if (!validateEventDates()) {
+                    registrationEndDate = null;
+                    return;
+                }
+
                 SimpleDateFormat fmt = new SimpleDateFormat("MMMM d, yyyy h:mm a", Locale.getDefault());
                 binding.createEventRegistrationEndInput.setText(fmt.format(new Date(utcMillis)));
             });
@@ -169,6 +174,13 @@ public class CreateEventFragment extends Fragment {
         binding.createEventDateInput.setOnClickListener(v -> {
             showDateTimePicker(utcMillis -> {
                 eventDate = utcMillis;
+
+                // check if the dates selected are valid
+                if (!validateEventDates()) {
+                    eventDate = null;
+                    return;
+                }
+
                 SimpleDateFormat fmt = new SimpleDateFormat("MMMM d, yyyy h:mm a", Locale.getDefault());
                 binding.createEventDateInput.setText(fmt.format(new Date(utcMillis)));
             });
@@ -274,41 +286,43 @@ public class CreateEventFragment extends Fragment {
      * Returns true if valid; otherwise false and shows appropriate messages.
      */
     private boolean validateEventDates() {
-        if (registrationStartDate >= registrationEndDate) {
-            Toast.makeText(getContext(), "Registration end must be after registration start", Toast.LENGTH_SHORT).show();
-            return false;
+        // check if registration start is before registration end
+        if (registrationStartDate != null && registrationEndDate != null) {
+            if (registrationStartDate >= registrationEndDate) {
+                Toast.makeText(getContext(),
+                        "Registration end must be after registration start",
+                        Toast.LENGTH_SHORT).show();
+                return false;
+            }
         }
 
-        if (registrationEndDate >= eventDate) {
-            Toast.makeText(getContext(), "Event date must be after registration end", Toast.LENGTH_SHORT).show();
-            return false;
+        // check if event date is after registration end
+        if (registrationEndDate != null && eventDate != null) {
+            if (registrationEndDate >= eventDate) {
+                Toast.makeText(getContext(),
+                        "Event date must be after registration end",
+                        Toast.LENGTH_SHORT).show();
+                return false;
+            }
         }
 
-        if (registrationStartDate >= eventDate) {
-            Toast.makeText(getContext(), "Event date must be after registration start", Toast.LENGTH_SHORT).show();
-            return false;
+        // check if event date is after registration start
+        if (registrationStartDate != null && eventDate != null) {
+            if (registrationStartDate >= eventDate) {
+                Toast.makeText(getContext(),
+                        "Event date must be after registration start",
+                        Toast.LENGTH_SHORT).show();
+                return false;
+            }
         }
 
         return true;
     }
 
     /**
-     * Toggles the status of max entrants input to be in accordance with the checkbox
-     */
-    private void toggleMaxEntrants() {
-        boolean isEnabled = binding.createEventInputMaxEntrants.isEnabled();
-        binding.createEventInputMaxEntrants.setEnabled(!isEnabled);
-
-        // Optional: Change appearance when disabled
-        if (!isEnabled) {
-            binding.createEventInputMaxEntrants.setAlpha(1.0f);
-        } else {
-            binding.createEventInputMaxEntrants.setAlpha(0.5f);
-        }
-    }
-
-    /**
      * Creates the event and adds it to the database
+     *
+     * @param photo_url - the url of the banner image
      */
     private void createEvent(String photo_url) {
         try {
@@ -319,6 +333,7 @@ public class CreateEventFragment extends Fragment {
                 return;
             }
 
+            // get event description
             String description = binding.createEventInputDescription.getText().toString().trim();
 
             // Creating timestamps for the event
@@ -329,9 +344,12 @@ public class CreateEventFragment extends Fragment {
             // Checking if geo location is enabled
             String location = String.valueOf(binding.cbEnableGeolocation.isChecked());
 
-            // Checking if max entrants is enabled
-            if (binding.cbMaxEntrants.isChecked()) {
-                maxEntrants = Integer.parseInt(binding.createEventInputMaxEntrants.getText().toString());
+            // Checking if max entrants is enabled (has text in it)
+            String maxEntrantsInput = binding.createEventInputMaxEntrants.getText().toString();
+            if (maxEntrantsInput.isEmpty()) {
+                maxEntrants = -1;
+            } else {
+                maxEntrants = Integer.parseInt(maxEntrantsInput);
             }
 
             // Create event
@@ -348,6 +366,7 @@ public class CreateEventFragment extends Fragment {
                     selectedCategories
             );
 
+            // get event id
             String eid = event.getEid();
 
             // Generate the QR image (LOCALLY, not as a global field)
@@ -383,7 +402,6 @@ public class CreateEventFragment extends Fragment {
         }
     }
 
-
     /**
      * Goes back to the previous fragment
      */
@@ -394,6 +412,9 @@ public class CreateEventFragment extends Fragment {
 
     /**
      * Creates a QR code
+     *
+     * @param text - the text to be encoded
+     * @return the bitmap of the QR code
      */
     // The following function was made by chaitanyamunje at
     // https://www.geeksforgeeks.org/android/how-to-generate-qr-code-in-android/
@@ -413,6 +434,8 @@ public class CreateEventFragment extends Fragment {
 
     /**
      * Opens the QR code dialogue, setting the bitmap to be the generated one
+     *
+     * @param qrBitmap - the bitmap of the QR code
      */
     private void openQRDialogue(Bitmap qrBitmap){
         QRDialogueFragment dialog = new QRDialogueFragment();

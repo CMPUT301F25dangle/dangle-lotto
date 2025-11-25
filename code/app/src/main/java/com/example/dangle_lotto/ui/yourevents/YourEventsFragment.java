@@ -182,6 +182,12 @@ public class YourEventsFragment extends Fragment {
         loadFirstPage();
     }
 
+    /**
+     * Gets the event object and adds it to the list of events. Notifies adapter of data change
+     *
+     * @param eid Unique event identifier.
+     *
+     */
     private void loadEventDetails(String eid){
         firebaseManager.getEvent(eid, new FirebaseCallback<Event>() {
 

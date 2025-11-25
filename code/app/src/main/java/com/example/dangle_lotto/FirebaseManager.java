@@ -409,7 +409,9 @@ public class FirebaseManager {
      *
      * @param oid          Organizer ID.
      * @param name         Event name.
-     * @param event_date     Event timestamp.
+     * @param start_date   Event start date.
+     * @param end_date     Event end date.
+     * @param event_date   Event timestamp.
      * @param location     Event location.
      * @param description  Event description.
      * @param eventSize    Event size limit.

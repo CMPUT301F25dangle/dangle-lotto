@@ -124,7 +124,9 @@ public class Event {
      * @param eid             Unique event identifier.
      * @param organizer_id    Organizer’s user ID.
      * @param name            Event name.
-     * @param event_date        Event deadline or draw date.
+     * @param start_date      Event deadline or draw date.
+     * @param end_date        Event deadline or draw date.
+     * @param event_date      Event deadline or draw date.
      * @param location        Location where event occurs.
      * @param description     Description of the event.
      * @param photo_id        Associated photo identifier.

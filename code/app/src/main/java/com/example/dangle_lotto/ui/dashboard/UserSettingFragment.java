@@ -162,13 +162,14 @@ public class UserSettingFragment extends Fragment {
      * Updates the button state based on the current user information.
      */
     private void updateButtonState() {
-        String username = nameEditText.getText().toString().trim();
+        String name = nameEditText.getText().toString().trim();
+        String username = usernameEditText.getText().toString().trim();
         String email = emailEditText.getText().toString().trim();
         String phone = phoneEditText.getText().toString().trim();
 
         String originalPhone = user.getPhone() == null ? "" : user.getPhone();
 
-        boolean same = username.equals(user.getName()) && email.equals(user.getEmail()) && phone.equals(originalPhone);
+        boolean same = name.equals(user.getName()) && email.equals(user.getEmail()) && phone.equals(originalPhone) && username.equals(user.getUsername());
 
         binding.userSettingsUpdateButton.setEnabled(!same);
     }

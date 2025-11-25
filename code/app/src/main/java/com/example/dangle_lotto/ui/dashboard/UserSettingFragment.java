@@ -128,6 +128,12 @@ public class UserSettingFragment extends Fragment {
                 emailEditText.setError("Email required");
                 return;
             }
+            // checks if email is valid format
+            if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                emailEditText.setError("Invalid email format");
+                return;
+            }
+
 
             // Need to hit the button twice (confirm system used)
             if (!confirmUpdate) {

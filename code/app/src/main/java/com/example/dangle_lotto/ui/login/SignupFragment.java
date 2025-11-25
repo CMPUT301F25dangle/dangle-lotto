@@ -114,6 +114,10 @@ public class SignupFragment extends Fragment {
                                 .beginTransaction()
                                 .replace(R.id.auth_fragment_container, new LoginFragment())
                                 .commit();
+
+                        Toast.makeText(getActivity(),
+                                "Signup successful, please log in",
+                                Toast.LENGTH_LONG).show();
                     }
 
                     @Override

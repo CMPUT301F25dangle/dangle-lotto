@@ -441,7 +441,6 @@ public class FirebaseManager {
         data.put("QR", qr_url);
         data.put("Categories", categories);
 
-
         // idling resource for testing
         idlingResource.increment();
 

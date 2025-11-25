@@ -90,8 +90,7 @@ public class CreateEventFragment extends Fragment {
 
         selectedDateTimeMillis = System.currentTimeMillis() + 1000*60*60; // an hour ahead is default time
 
-        // initialize viewmodel
-        // initalize image picker
+        // initialize image picker
         pickMedia = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(),
             uri -> {
                 if (uri != null) {
@@ -342,7 +341,6 @@ public class CreateEventFragment extends Fragment {
         }
         return null;
     }
-
 
     /**
      * Opens the QR code dialogue, setting the bitmap to be the generated one

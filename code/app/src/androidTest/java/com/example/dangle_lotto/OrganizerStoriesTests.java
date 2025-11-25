@@ -1,9 +1,11 @@
 package com.example.dangle_lotto;
 
+import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.typeText;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
@@ -11,7 +13,10 @@ import static androidx.test.espresso.matcher.ViewMatchers.withHint;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.hamcrest.CoreMatchers.anyOf;
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.fail;
 
 import android.util.Log;
 
@@ -114,8 +119,6 @@ public class OrganizerStoriesTests {
         });
 
         Thread.sleep(1500);
-
-        // Create an event to test on
     }
 
     @After
@@ -178,7 +181,7 @@ public class OrganizerStoriesTests {
      * QR code that links to the event description and event poster in the app.
      */
     @Test
-    public void MakeNewEventAndQRCode() throws InterruptedException {
+    public void OrganizerCanMakeNewEventAndQRCode() throws InterruptedException {
         // Login the user
         login("owner@gmail.com", "password");
 
@@ -214,7 +217,7 @@ public class OrganizerStoriesTests {
      * US 02.01.04 As an organizer, I want to set a registration period.
      */
     @Test
-    public void SetRegistrationPeriod() throws InterruptedException {
+    public void OrganizerCanSetRegistrationPeriod() throws InterruptedException {
         // Login the user
         login("owner@gmail.com", "password");
 
@@ -227,8 +230,507 @@ public class OrganizerStoriesTests {
         // Fill out event details
         onView(withHint("Dangle Lotto Gathering")).perform(typeText("Good Party"), closeSoftKeyboard());
 
+        //
+
         // Click on done button
         onView(withText("Done")).perform(click());
     }
 
+    /**
+     * Checks if organizer can view the list of entrants who joined event waiting list
+     * <p>
+     * US 02.02.01 As an organizer I want to view the list of entrants who joined my event waiting list
+     */
+    @Test
+    public void OrganizerCanViewWaitingList() {
+        // Create an event to test on
+        Event eventOfInterest = createEvent();
+
+        // Add the test user to the event register list
+        firebaseManager.userAddStatus(testerUid, eventOfInterest.getEid(), "Register");
+
+        // Login
+        login("owner@gmail.com", "password");
+
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on waiting list button
+        onView(withText("Entrants")).perform(click());
+
+        // Click on registrants button
+        onView(withText("Registrants")).perform(click());
+
+        // Check if user is displayed
+        onView(withText("Tester User (tester@gmail.com)")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Check if organizer can view the map of entrants who joined event waiting list
+     * <p>
+     * US 02.02.02 As an organizer I want to see on a map where entrants joined my event waiting list from.
+     */
+    @Test
+    public void OrganizerCanViewMap() {
+        // Fails test instantly
+        onView(withId(0)).perform(click());
+    }
+
+    /**
+     * Check if organizer can enable or disable the geolocation requirement.
+     * <p>
+     * US 02.02.03 As an organizer I want to enable or disable the geolocation requirement for my event.
+     */
+    @Test
+    public void OrganizerCanEnableDisableGeolocation() {
+        // Fails test instantly
+        onView(withId(0)).perform(click());
+    }
+
+    /**
+     * Check if organizer can limit the number of entrants who can join waiting list.
+     * <p>
+     * US 02.03.01 As an organizer I want to OPTIONALLY limit the number of entrants who can join my waiting list.
+     */
+    @Test
+    public void OrganizerCanLimitWaitingList() throws InterruptedException {
+        // Login
+        login("owner@gmail.com", "password");
+
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on create event button
+        onView(withId(R.id.dashboard_fragment_new_event_button)).perform(click());
+
+        // Fill out event details
+        onView(withHint("Dangle Lotto Gathering")).perform(typeText("Good Party"), closeSoftKeyboard());
+
+        // Fill in number of entrants
+        onView(withHint("50")).perform(typeText("100"), closeSoftKeyboard());
+
+        // Click on done button
+        onView(withText("Done")).perform(click());
+
+        Thread.sleep(3000);
+
+        // Click on done button for dialogue fragment
+        onView(withText("Done")).perform(click());
+
+        // Check if event is displayed on home page
+        onView(withText("Good Party")).perform(click());
+
+        // Click on EVENT button
+        onView(withText("EVENT")).perform(click());
+
+        // Check if number of entrants is displayed
+        onView(withText("100")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Checks if organizer can upload event poster
+     * <p>
+     * US 02.04.01 As an organizer I want to upload an event poster to the event details page to provide visual information to entrants.
+     */
+    @Test
+    public void OrganizerCanUploadEventPoster() {
+        // Login
+        login("owner@gmail.com", "password");
+
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on create event button
+        onView(withId(R.id.dashboard_fragment_new_event_button)).perform(click());
+
+        // Fill out event details
+        onView(withHint("Dangle Lotto Gathering")).perform(typeText("Good Party"), closeSoftKeyboard());
+
+        // Click upload button
+        onView(withText("Upload Poster")).perform(click());
+    }
+
+    /**
+     * Check if organizer can update event poster
+     * <p>
+     * US 02.04.02 As an organizer I want to update an event poster to provide visual information to entrants.
+     */
+    @Test
+    public void OrganizerCanUpdateEventPoster() {
+        // Fails test instantly
+        onView(withId(0)).perform(click());
+    }
+
+    /**
+     * Check if organizer can send notifications to chosen entrants
+     * <p>
+     * US 02.05.01 As an organizer I want to send a notification to chosen entrants to sign up for events.
+     */
+    @Test
+    public void OrganizerSendsNotificationsToChosenEntrants() {
+        // Fails test instantly
+        onView(withId(0)).perform(click());
+    }
+
+    /**
+     * Check if organizer can randomly choose entrants
+     * <p>
+     * US 02.05.02 As an organizer I want to set the system to sample a specified number of attendees to register for the event.
+     */
+    @Test
+    public void OrganizerCanRandomlyChooseEntrants() {
+        // Create an event to test on
+        Event eventOfInterest = createEvent();
+
+        // Add the test user to the event register list
+        firebaseManager.userAddStatus(testerUid, eventOfInterest.getEid(), "Register");
+
+        // Login
+        login("owner@gmail.com", "password");
+
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on ENTRANTS button
+        onView(withText("Entrants")).perform(click());
+
+        // Click on CHOOSE button
+        onView(withText("CHOOSE")).perform(click());
+
+        // Click on Chosen button
+        onView(withText("Chosen")).perform(click());
+
+        // Check if user is displayed
+        onView(withText("Tester User (tester@gmail.com)")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Check if organizer can draw replacement user
+     * <p>
+     * US 02.05.03 As an organizer I want to be able to draw a replacement applicant from the pooling system when a previously selected applicant cancels or rejects the invitation.
+     */
+    @Test
+    public void OrganizerCanDrawReplacementUser() throws InterruptedException {
+        // Create an event to test on
+        Event eventOfInterest = createEvent();
+
+        // Create another test user
+        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "", "", true, new FirebaseCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                tester2Uid = result;
+            }
+
+            @Override
+            public void onFailure(Exception e) { }
+        });
+        Thread.sleep(1500);
+
+        // Add the test2 user to the event register list
+        eventOfInterest.addRegistered(tester2Uid);
+
+        // Add the test user to the event register list
+        eventOfInterest.addChosen(testerUid);
+
+        // Login
+        login("owner@gmail.com", "password");
+
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on ENTRANTS button
+        onView(withText("Entrants")).perform(click());
+
+        // Click on Chosen button
+        onView(withText("Chosen")).perform(click());
+
+        // Click back button
+        onView(withId(R.id.organizer_event_details_back_button)).perform(click());
+
+        // Test user declines
+        eventOfInterest.deleteChosen(testerUid);
+
+        // Click on event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on ENTRANTS button
+        onView(withText("Entrants")).perform(click());
+
+        // Click on CHOOSE button
+        onView(withText("CHOOSE")).perform(click());
+
+        // Click on Chosen button
+        onView(withText("Chosen")).perform(click());
+
+        // Check if user is displayed
+        onView(withText("Tester User 2 (tester2@gmail.com)")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Check if organizer can see all chosen entrants
+     * <p>
+     * US 02.06.01 As an organizer I want to view a list of all chosen entrants who are invited to apply.
+     */
+    @Test
+    public void OrganizerCanViewAllChosenEntrants() throws InterruptedException {
+        // Create an event to test on
+        Event eventOfInterest = createEvent();
+
+        // Create another test user
+        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "", "", true, new FirebaseCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                tester2Uid = result;
+            }
+
+            @Override
+            public void onFailure(Exception e) { }
+        });
+        Thread.sleep(1500);
+
+        // Add the test2 user to the event register list
+        eventOfInterest.addChosen(tester2Uid);
+
+        // Add the test user to the event register list
+        eventOfInterest.addChosen(testerUid);
+
+        // Login
+        login("owner@gmail.com", "password");
+
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on ENTRANTS button
+        onView(withText("Entrants")).perform(click());
+
+        // Click on Chosen button
+        onView(withText("Chosen")).perform(click());
+
+        // Check if user is displayed
+        onView(withText("Tester User 2 (tester2@gmail.com)")).check(matches(isDisplayed()));
+        onView(withText("Tester User (tester@gmail.com)")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Check if organizer can see all cancelled entrants
+     * <p>
+     * US 02.06.02 As an organizer I want to see a list of all the cancelled entrants.
+     */
+    @Test
+    public void OrganizerCanViewAllCancelledEntrants() throws InterruptedException {
+        // Create an event to test on
+        Event eventOfInterest = createEvent();
+
+        // Create another test user
+        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "", "", true, new FirebaseCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                tester2Uid = result;
+            }
+
+            @Override
+            public void onFailure(Exception e) { }
+        });
+        Thread.sleep(1500);
+
+        // Add the test2 user to the event register list
+        eventOfInterest.addCancelled(tester2Uid);
+
+        // Add the test user to the event register list
+        eventOfInterest.addCancelled(testerUid);
+
+        // Login
+        login("owner@gmail.com", "password");
+
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on ENTRANTS button
+        onView(withText("Entrants")).perform(click());
+
+        // Click on Cancelled button
+        onView(withText("Cancelled")).perform(click());
+
+        // Check if user is displayed
+        onView(withText("Tester User 2 (tester2@gmail.com)")).check(matches(isDisplayed()));
+        onView(withText("Tester User (tester@gmail.com)")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Check if organizer can see all final entrants
+     * <p>
+     * US 02.06.03 As an organizer I want to see a final list of entrants who enrolled for the event.
+     */
+    @Test
+    public void OrganizerCanViewAllFinalEntrants() throws InterruptedException {
+        // Create an event to test on
+        Event eventOfInterest = createEvent();
+
+        // Create another test user
+        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "", "", true, new FirebaseCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                tester2Uid = result;
+            }
+
+            @Override
+            public void onFailure(Exception e) { }
+        });
+        Thread.sleep(1500);
+
+        // Add the test2 user to the event register list
+        eventOfInterest.addSignUp(tester2Uid);
+
+        // Add the test user to the event register list
+        eventOfInterest.addSignUp(testerUid);
+
+        // Login
+        login("owner@gmail.com", "password");
+
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on ENTRANTS button
+        onView(withText("Entrants")).perform(click());
+
+        // Click on Signups button
+        onView(withText("Signups")).perform(click());
+
+        // Check if user is displayed
+        onView(withText("Tester User 2 (tester2@gmail.com)")).check(matches(isDisplayed()));
+        onView(withText("Tester User (tester@gmail.com)")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Check if organizer can cancel entrants
+     * <p>
+     * US 02.06.04 As an organizer I want to cancel entrants that did not sign up for the event
+     */
+    @Test
+    public void OrganizerCanCancelEntrants() throws InterruptedException {
+        // Create an event to test on
+        Event eventOfInterest = createEvent();
+
+        // Choose the user
+        eventOfInterest.addChosen(testerUid);
+
+        // Login
+        login("owner@gmail.com", "password");
+
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on ENTRANTS button
+        onView(withText("Entrants")).perform(click());
+
+        // Click on Chosen button
+        onView(withText("Chosen")).perform(click());
+
+        // Click on Remove button
+        onView(withText("Remove")).perform(click());
+
+        // Check if user not is displayed
+        onView(withText("Tester User (tester@gmail.com)")).check(doesNotExist());
+
+        // Click on cancelled button
+        onView(withText("Cancelled")).perform(click());
+
+        // Check if user is displayed
+        onView(withText("Tester User (tester@gmail.com)")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Check if organizer can export final list of entrants
+     * <p>
+     * US 02.06.05 As an organizer I want to export a final list of entrants who enrolled for the event in CSV format.
+     */
+    @Test
+    public void OrganizerCanExportFinalList() throws InterruptedException {
+        // Create an event to test on
+        Event eventOfInterest = createEvent();
+
+        // Create another test user
+        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "", "", true, new FirebaseCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                tester2Uid = result;
+            }
+
+            @Override
+            public void onFailure(Exception e) { }
+        });
+        Thread.sleep(1500);
+
+        // Add the test2 user to the event register list
+        eventOfInterest.addSignUp(tester2Uid);
+
+        // Add the test user to the event register list
+        eventOfInterest.addSignUp(testerUid);
+
+        // Login
+        login("owner@gmail.com", "password");
+
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on event
+        onView(withText("Good Party")).perform(click());
+
+        // FAIL TEST
+        onView(withId(0)).perform(click());
+    }
+
+    /**
+     * Check if organizer can send notifications to all registrants
+     * <p>
+     * US 02.07.01 As an organizer I want to send notifications to all entrants on the waiting list
+     */
+    @Test
+    public void OrganizerSendsNotificationsToAllRegistrants() {
+        // Fails test instantly
+        onView(withId(0)).perform(click());
+    }
+
+    /**
+     * Check if organizer can send notifications to all chosen entrants
+     * <p>
+     * US 02.07.02 As an organizer I want to send notifications to all selected entrants
+     */
+    @Test
+    public void OrganizerSendsNotificationsToAllChosenEntrants() {
+        // Fails test instantly
+        onView(withId(0)).perform(click());
+    }
+
+    /**
+     * Check if organizer can send notifications to all cancelled entrants
+     * <p>
+     * US 02.07.03 As an organizer I want to send a notification to all cancelled entrants
+     */
+    @Test
+    public void OrganizerSendsNotificationsToAllCancelledEntrants() {
+        // Fails test instantly
+        onView(withId(0)).perform(click());
+    }
 }

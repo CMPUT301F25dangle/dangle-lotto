@@ -11,6 +11,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withHint;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
 import android.util.Log;
@@ -80,10 +81,12 @@ public class UserStoriesTests {
 
         System.out.println("✅ Firebase emulator connected once before all tests.");
 
+        // Clear db
+        clearFirestore();
     }
 
     /**
-     *
+     * Sets up the emulator before every test for testing.
      */
     @Before
     public void setup() throws InterruptedException {
@@ -170,7 +173,7 @@ public class UserStoriesTests {
      * This test works because the buttons appearance only changes if the callback is successful for registering.
      */
     @Test
-    public void JoinWaitingList() {
+    public void UserCanJoinWaitingList() {
         // Login the user
         login("tester@gmail.com", "password");
 
@@ -191,7 +194,7 @@ public class UserStoriesTests {
      * This test works because the buttons appearance only changes if the callback is successful for registering.
      */
     @Test
-    public void LeaveWaitingList() {
+    public void UserCanLeaveWaitingList() {
         // Login the user
         login("tester@gmail.com", "password");
 
@@ -223,6 +226,17 @@ public class UserStoriesTests {
 
         // Check if an event is displayed on the home page
         onView(withText("Good Party")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Checks if user can filter events based on their interests.
+     * <p>
+     * US 01.01.04 As an entrant, I want to filter events based on my interests and availability.
+     */
+    @Test
+    public void UserCanFilterEvents() {
+        // FAIL TEST
+        onView(withId(0)).perform(click());
     }
 
     /**
@@ -277,7 +291,8 @@ public class UserStoriesTests {
      */
     @Test
     public void UserCanViewHistoryOfEvents() {
-
+        // FAIL TEST
+        onView(withId(0)).perform(click());
     }
 
     /**
@@ -304,6 +319,59 @@ public class UserStoriesTests {
         onView(withText("LOGIN")).check(matches(isDisplayed()));
     }
 
+    /**
+     * Checks if user can receive notification when they are chosen.
+     * <p>
+     * US 01.04.01 As an entrant I want to receive notification when I am chosen to participate from the waiting list (when I "win" the lottery)
+     */
+    @Test
+    public void UserCanReceiveNotificationWhenChosen() {
+        // Add user to chosen list
+        eventOfInterest.addChosen(testerUid);
+
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Navigate to notifications
+        onView(withId(R.id.navigation_notifications)).perform(click());
+
+        // Check if notification is displayed
+        onView(withText("Good Party")).check(matches(isDisplayed()));
+        onView(withText("You have won the lottery (Chosen)")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Checks if user can receive notification when they are not chosen.
+     * <p>
+     * US 01.04.02 As an entrant I want to receive notification of when I am not chosen on the app (when I "lose" the lottery)
+     */
+    @Test
+    public void UserCanReceiveNotificationWhenNotChosen() {
+        // Add user to chosen list
+        eventOfInterest.addCancelled(testerUid);
+
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Navigate to notifications
+        onView(withId(R.id.navigation_notifications)).perform(click());
+
+        // Check if notification is displayed
+        onView(withText("Good Party")).check(matches(isDisplayed()));
+        onView(withText("You have lost the lottery")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Checks if user can opt out of receiving notifications.
+     * <p>
+     * US 01.04.03 As an entrant I want to opt out of receiving notifications from organizers and admins
+     */
+    @Test
+    public void UserCanOptOutNotifications() {
+        // Fail test
+        onView(withId(0)).perform(click());
+    }
+
     /** Check if user can get another chance to sign up.
      * <p>
      * US 01.05.01 As an entrant I want another chance to be chosen from the waiting list if a selected user declines an invitation to sign up.
@@ -321,7 +389,7 @@ public class UserStoriesTests {
             public void onFailure(Exception e) { }
         });
         Thread.sleep(1500);
-        firebaseManager.userAddStatus(tester2Uid, eventOfInterest.getEid(), "Chosen");
+        eventOfInterest.addChosen(tester2Uid);
 
         // Login the user
         login("tester@gmail.com", "password");
@@ -339,10 +407,10 @@ public class UserStoriesTests {
         onView(withId(R.id.btn_back)).perform(click());
 
         // Make the tester2 user decline
-        firebaseManager.userAddStatus(tester2Uid, eventOfInterest.getEid(), "Cancelled");
+        eventOfInterest.addCancelled(tester2Uid);
 
         // Make the tester user chosen
-        firebaseManager.userAddStatus(testerUid, eventOfInterest.getEid(), "Chosen");
+        eventOfInterest.addChosen(testerUid);
 
         // User refreshes the home page
         onView(withId(R.id.refresh_button)).perform(click());
@@ -360,9 +428,9 @@ public class UserStoriesTests {
      * US 01.05.02 As an entrant I want to be able to accept the invitation to register/sign up when chosen to participate in an event.
      */
     @Test
-    public void AcceptEventInvitation() {
+    public void UserCanAcceptEventInvitation() {
         // Add the user to the event chosen list
-        firebaseManager.userAddStatus(testerUid, eventOfInterest.getEid(), "Chosen");
+        eventOfInterest.addChosen(testerUid);
 
         // Login the user
         login("tester@gmail.com", "password");
@@ -386,9 +454,9 @@ public class UserStoriesTests {
      * US 01.05.03 As an entrant I want to be able to decline an invitation when chosen to participate in an event.
      */
     @Test
-    public void DeclineEventInvitation() {
+    public void UserCanDeclineEventInvitation() {
         // Add the user to the event chosen list
-        firebaseManager.userAddStatus(testerUid, eventOfInterest.getEid(), "Chosen");
+        eventOfInterest.addChosen(testerUid);
 
         // Login the user
         login("tester@gmail.com", "password");
@@ -412,7 +480,7 @@ public class UserStoriesTests {
      * US 01.05.04 As an entrant, I want to know how many total entrants are on the waiting list for an event.
      */
     @Test
-    public void WaitingListSize() {
+    public void UserCanSeeWaitingListSize() {
         // Login the user
         login("tester@gmail.com", "password");
 
@@ -435,7 +503,7 @@ public class UserStoriesTests {
      * US 01.05.05 As an entrant, I want to be informed about the criteria or guidelines for the lottery selection process.
      */
     @Test
-    public void EventCriteria() {
+    public void UserCanSeeEventCriteria() {
         // Login the user
         login("tester@gmail.com", "password");
 
@@ -447,5 +515,38 @@ public class UserStoriesTests {
 
         // Check if criteria is displayed
         onView(withText("Event Criteria")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Checks if user can scan QR code
+     * <p>
+     * US 01.06.01 As an entrant I want to view event details within the app by scanning the promotional QR code.
+     */
+    @Test
+    public void UserCanScanQRCode() {
+        // Fail test
+        onView(withId(0)).perform(click());
+    }
+
+    /**
+     * Checks if user can sign up for an event
+     * <p>
+     * US 01.06.02 As an entrant I want to be able to be sign up for an event by from the event details.
+     */
+    @Test
+    public void UserCanSignUpForEventFromEventDetails() {
+        // Fail test
+        onView(withId(0)).perform(click());
+    }
+
+    /**
+     * Checks if user can sign up for an event
+     * <p>
+     * US 01.07.01 As an entrant, I want to be identified by my device, so that I don't have to use a username and password.
+     */
+    @Test
+    public void UserCanIdentifyByDevice() {
+        // Fail test
+        onView(withId(0)).perform(click());
     }
 }

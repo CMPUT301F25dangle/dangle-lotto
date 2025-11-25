@@ -52,6 +52,7 @@ public class YourEventsFragment extends Fragment {
     private static final int PAGE_SIZE = 4; // or however many events per page
     private DocumentSnapshot lastVisible = null;
     private ArrayList<String> interactedIds;
+    private Button[] buttons;
     Query query;
 
     @Override
@@ -87,7 +88,7 @@ public class YourEventsFragment extends Fragment {
 
             // open the event fragment
             NavController navController = NavHostFragment.findNavController(this);
-            navController.navigate(R.id.action_home_to_eventDetail);
+            navController.navigate(R.id.action_navigation_your_events_to_event_detail_fragment);
         });
         recyclerView.setAdapter(adapter);
 
@@ -115,7 +116,9 @@ public class YourEventsFragment extends Fragment {
         Button signUpButton = binding.yourEventsSignups;
         Button cancelledButton = binding.yourEventsCancelled;
 
-        for (Button button : new Button[]{registerButton, chosenButton, signUpButton, cancelledButton}) {
+        buttons = new Button[]{registerButton, chosenButton, signUpButton, cancelledButton};
+
+        for (Button button : buttons) {
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -143,9 +146,12 @@ public class YourEventsFragment extends Fragment {
 
     @SuppressLint("NotifyDataSetChanged")
     private void onTabButtonClicked(Button clickedButton) {
-        String uid = userViewModel.getUser().getValue().getUid();
-
+        for (Button b : buttons) {
+            b.setSelected(false);
+        }
         clickedButton.setSelected(true);
+
+        String uid = userViewModel.getUser().getValue().getUid();
 
         events.clear();
         lastVisible = null;
@@ -176,6 +182,22 @@ public class YourEventsFragment extends Fragment {
         loadFirstPage();
     }
 
+    private void loadEventDetails(String eid){
+        firebaseManager.getEvent(eid, new FirebaseCallback<Event>() {
+
+            @Override
+            public void onSuccess(Event result) {
+                events.add(result);
+                adapter.notifyItemInserted(events.size() - 1);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.d("Firebase", "Failed to load event details", e);
+            }
+        });
+    }
+
     /**
      * Loads the first page of events by querying firebase
      */
@@ -184,12 +206,10 @@ public class YourEventsFragment extends Fragment {
         firebaseManager.getQuery(null, query.limit(PAGE_SIZE), new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
-                int startPos = events.size();
                 for (DocumentSnapshot doc : result) {
-                    events.add(firebaseManager.documentToEvent(doc));
+                    loadEventDetails(doc.getId());
                 }
 
-                adapter.notifyItemRangeInserted(startPos, result.size());
                 isLoading = false;
                 if (!result.isEmpty()) {
                     lastVisible = result.get(result.size() - 1);
@@ -220,12 +240,10 @@ public class YourEventsFragment extends Fragment {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
                 Log.d("Firebase", "Loaded " + result.size() + " events");
-                int startPos = events.size();
                 for (DocumentSnapshot doc : result) {
-                    events.add(firebaseManager.documentToEvent(doc));
+                    loadEventDetails(doc.getId());
                 }
 
-                adapter.notifyItemRangeInserted(startPos, result.size());
                 isLoading = false;
                 if (!result.isEmpty()) {
                     lastVisible = result.get(result.size() - 1);

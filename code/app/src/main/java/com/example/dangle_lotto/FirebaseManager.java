@@ -545,8 +545,25 @@ public class FirebaseManager {
      */
     public Event documentToEvent(DocumentSnapshot doc) {
 
+        // Safe integer extraction
+        Integer eventSize = null;
+        Long eventSizeLong = doc.getLong("Event Size");
+        if (eventSizeLong != null) {
+            eventSize = eventSizeLong.intValue();
+        }
+
+        Integer maxEntrants = null;
         Long maxEntrantsLong = doc.getLong("Max Entrants");
-        Integer maxEntrants = (maxEntrantsLong != null) ? maxEntrantsLong.intValue() : null;
+        if (maxEntrantsLong != null) {
+            maxEntrants = maxEntrantsLong.intValue();
+        }
+
+        // Safe categories list
+        ArrayList<String> categories = new ArrayList<>();
+        Object catObj = doc.get("Categories");
+        if (catObj instanceof ArrayList) {
+            categories = (ArrayList<String>) catObj;
+        }
 
         return new Event(
                 doc.getId(),
@@ -557,14 +574,20 @@ public class FirebaseManager {
                 doc.getTimestamp("Event Date"),
                 doc.getString("Location"),
                 doc.getString("Description"),
+
+                // Default empty strings instead of null
                 doc.getString("Picture") != null ? doc.getString("Picture") : "",
                 doc.getString("QR") != null ? doc.getString("QR") : "",
-                Objects.requireNonNull(doc.getLong("Event Size")).intValue(),
+
+                // Use default value if missing
+                eventSize != null ? eventSize : 0,   // or null, your choice
                 maxEntrants,
-                doc.get("Categories") != null ? (ArrayList<String>) doc.get("Categories") : new ArrayList<>(),
+
+                categories,
                 this
         );
     }
+
 
     /**
      * Retrieves an event from the database and instantiates an object for it.

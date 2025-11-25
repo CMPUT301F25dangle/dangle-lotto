@@ -47,7 +47,11 @@
         android:id="@+id/navigation_your_events"
         android:name="com.example.dangle_lotto.ui.yourevents.YourEventsFragment"
         android:label="@string/title_your_events"
-        tools:layout="@layout/fragment_your_events" />
+        tools:layout="@layout/fragment_your_events" >
+        <action
+            android:id="@+id/action_navigation_your_events_to_event_detail_fragment"
+            app:destination="@id/event_detail_fragment" />
+    </fragment>
 
     <fragment
         android:id="@+id/userSettingFragment"

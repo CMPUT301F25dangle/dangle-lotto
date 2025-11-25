@@ -21,9 +21,8 @@ public class UserViewModel extends ViewModel {
     private final FirebaseManager firebaseManager = FirebaseManager.getInstance();
     private final MutableLiveData<GeneralUser> user = new MutableLiveData<GeneralUser>();
     private final MutableLiveData<ArrayList<Event>> homeEvents = new MutableLiveData<>();
-    private final MutableLiveData<Event> selectedHomeEvent = new MutableLiveData<>();
+    private final MutableLiveData<Event> selectedEvent = new MutableLiveData<>();
     private final MutableLiveData<ArrayList<Event>> yourEvents = new MutableLiveData<>();
-    private final MutableLiveData<Event> selectedYourEvent = new MutableLiveData<>();
     private final MutableLiveData<ArrayList<Event>> organizedEvents = new MutableLiveData<>();
     private final MutableLiveData<Event> selectedOrganizedEvent = new MutableLiveData<>();
 
@@ -93,8 +92,8 @@ public class UserViewModel extends ViewModel {
      *
      * @param event Index of selected event
      */
-    public void setSelectedHomeEvent(Event event) {
-        selectedHomeEvent.setValue(event);
+    public void setSelectedEvent(Event event) {
+        selectedEvent.setValue(event);
     }
 
     /**
@@ -102,8 +101,8 @@ public class UserViewModel extends ViewModel {
      *
      * @return Index
      */
-    public LiveData<Event> getSelectedHomeEvent() {
-        return selectedHomeEvent;
+    public LiveData<Event> getSelectedEvent() {
+        return selectedEvent;
     }
 
     /**
@@ -127,25 +126,6 @@ public class UserViewModel extends ViewModel {
     public LiveData<ArrayList<Event>> getYourEvents() {
         return yourEvents;
     }
-
-    /**
-     * Sets the event that is currently selected in the Your Events Fragment
-     *
-     * @param event Event that is currently selected
-     */
-    public void setSelectedYourEvent(Event event) {
-        selectedYourEvent.setValue(event);
-    }
-
-    /**
-     * Gets the event that is currently selected in the Your Events Fragment
-     *
-     * @return Event that is currently selected
-     */
-    public LiveData<Event> getSelectedYourEvent() {
-        return selectedYourEvent;
-    }
-
 
     /**
      * Sets the events that are currently in the Organized Fragment

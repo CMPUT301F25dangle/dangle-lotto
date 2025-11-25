@@ -16,8 +16,57 @@
         android:layout_margin="16dp"
         android:textColor="@color/black"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/your_events_recycler_view"/>
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <Button
+        android:id="@+id/your_events_registered"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="@drawable/rounded_buttons_organizer_event_details"
+        android:text="Register"
+        android:textSize="12dp"
+        android:textColor="@drawable/text_color_organizer_event_details"
+        app:layout_constraintBottom_toTopOf="@id/your_events_recycler_view"
+        app:layout_constraintEnd_toStartOf="@id/your_events_chosen"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <Button
+        android:id="@+id/your_events_chosen"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Chosen"
+        android:textSize="12dp"
+        android:textColor="@drawable/text_color_organizer_event_details"
+        android:background="@drawable/rounded_buttons_organizer_event_details"
+        app:layout_constraintEnd_toStartOf="@id/your_events_signups"
+        app:layout_constraintStart_toEndOf="@id/your_events_registered"
+        app:layout_constraintTop_toBottomOf="@+id/your_events_title" />
+
+    <Button
+        android:id="@+id/your_events_signups"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Sign Ups"
+        android:textSize="12dp"
+        android:textColor="@drawable/text_color_organizer_event_details"
+        android:background="@drawable/rounded_buttons_organizer_event_details"
+        app:layout_constraintEnd_toStartOf="@id/your_events_cancelled"
+        app:layout_constraintStart_toEndOf="@id/your_events_chosen"
+        app:layout_constraintTop_toBottomOf="@+id/your_events_title" />
+
+    <Button
+        android:id="@+id/your_events_cancelled"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Cancelled"
+        android:textSize="12dp"
+        android:textColor="@drawable/text_color_organizer_event_details"
+        android:background="@drawable/rounded_buttons_organizer_event_details"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toEndOf="@id/your_events_signups"
+        app:layout_constraintTop_toBottomOf="@+id/your_events_title"
+        app:layout_constraintBottom_toTopOf="@id/your_events_recycler_view" />
+
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/your_events_recycler_view"
@@ -28,6 +77,6 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/your_events_title" />
+        app:layout_constraintTop_toBottomOf="@+id/your_events_chosen" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

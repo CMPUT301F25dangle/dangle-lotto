@@ -66,7 +66,7 @@ public class EventDetailFragment extends Fragment {
 
         FirebaseManager firebaseManager = FirebaseManager.getInstance();
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
-        selectedEvent = userViewModel.getSelectedHomeEvent().getValue();
+        selectedEvent = userViewModel.getSelectedEvent().getValue();
 
         if (selectedEvent == null) {
             Log.e("EventDetailFragment", "No selected event found.");

@@ -135,6 +135,7 @@ public class FirebaseManager {
      * @param email  Email of the user
      * @param password  Password of the user
      * @param name  Name of the user
+     * @param username Username of the user
      * @param phone  Phone number of the user - set null if not provided
      * @param photo_id  Photo id for user profile picture - set null if not provided
      * @param canOrganize  Boolean value indicating whether the user can organize events
@@ -182,12 +183,13 @@ public class FirebaseManager {
     /**
      * Creates and stores a new user document in Firestore.
      *
-     * @param uid          Firebase Auth user ID.
-     * @param name         User name.
-     * @param email        User email.
-     * @param phone        User phone number (nullable).
-     * @param pid          Profile photo ID (nullable).
-     * @param canOrganize  Whether the user can organize events.
+     * @param uid         Firebase Auth user ID.
+     * @param name        User name.
+     * @param username    Username of the user
+     * @param email       User email.
+     * @param phone       User phone number (nullable).
+     * @param pid         Profile photo ID (nullable).
+     * @param canOrganize Whether the user can organize events.
      * @return Instantiated {@link GeneralUser} object.
      */
     public GeneralUser createNewUser(String uid, String username, String name, String email, String phone, String pid, boolean canOrganize){

@@ -1,5 +1,6 @@
 package com.example.dangle_lotto.ui.detail;
 
+import android.annotation.SuppressLint;
 import android.app.AlertDialog;
 import android.os.Bundle;
 import android.util.Log;
@@ -7,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -45,7 +45,6 @@ import java.util.Locale;
 public class EventDetailFragment extends Fragment {
 
     private FragmentEventDetailBinding binding;
-    private FirebaseManager firebaseManager;
     private UserViewModel userViewModel;
     private Event selectedEvent;
 
@@ -56,6 +55,7 @@ public class EventDetailFragment extends Fragment {
     private boolean isCancelled = false;
     private boolean postDraw = false;
 
+    @SuppressLint("SetTextI18n")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -64,9 +64,9 @@ public class EventDetailFragment extends Fragment {
         binding = FragmentEventDetailBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        firebaseManager = new FirebaseManager();
+        FirebaseManager firebaseManager = FirebaseManager.getInstance();
         userViewModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
-        selectedEvent = userViewModel.getSelectedHomeEvent().getValue();
+        selectedEvent = userViewModel.getSelectedEvent().getValue();
 
         if (selectedEvent == null) {
             Log.e("EventDetailFragment", "No selected event found.");
@@ -74,10 +74,10 @@ public class EventDetailFragment extends Fragment {
         }
 
         // get organizer and set their name
-        firebaseManager.getUser(selectedEvent.getOrganizerID(), new FirebaseCallback<GeneralUser>() {
+        firebaseManager.getUser(selectedEvent.getOrganizerID(), new FirebaseCallback<>() {
             @Override
             public void onSuccess(GeneralUser result) {
-                binding.organizerName.setText("Organizer: " + result.getName());
+                binding.organizerName.setText("Organizer: " + result.getUsername());
             }
 
             @Override
@@ -89,7 +89,8 @@ public class EventDetailFragment extends Fragment {
         // Display event information
         binding.eventTitle.setText(selectedEvent.getName());
         binding.eventDescription.setText(selectedEvent.getDescription());
-        binding.eventDate.setText("Deadline: " + formatTimestamp(selectedEvent.getDate()));
+        binding.eventDate.setText("Registration Period: " + formatTimestamp(selectedEvent.getStartDate())
+                + " to " + formatTimestamp(selectedEvent.getEndDate()));
         if (!(selectedEvent.getPhotoID().isEmpty() || selectedEvent.getPhotoID() == null))
             Glide.with(requireContext()).load(selectedEvent.getPhotoID()).into(binding.imgPoster);
 
@@ -98,6 +99,14 @@ public class EventDetailFragment extends Fragment {
         binding.btnBack.setOnClickListener(
                 v -> Navigation.findNavController(v).popBackStack()
         );
+
+        binding.eventDetailInformationButton.setOnClickListener(v -> {
+            new AlertDialog.Builder(v.getContext())
+                    .setTitle("Event Criteria")
+                    .setMessage("Everybody is able to register for this event. To register, simply click the 'Register for Lottery' button. The lottery will randomly select registrants, who will be given the option to sign up for the event. If some chosen users decline, then more registrants will be randomly chosen.\nThe maximum size of event: " + selectedEvent.getMaxEntrants())
+                    .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
+                    .show();
+        });
 
         return root;
     }
@@ -137,9 +146,9 @@ public class EventDetailFragment extends Fragment {
      */
     private void updateSpotsUI() {
         Integer registrantsLimit = selectedEvent.getMaxEntrants();
-        int registrantsCount = selectedEvent.getSignUps().size() + selectedEvent.getCancelled().size() +selectedEvent.getChosen().size() + selectedEvent.getRegistered().size();
+        int registrantsCount = selectedEvent.getSignUps().size() + selectedEvent.getCancelled().size() + selectedEvent.getChosen().size() + selectedEvent.getRegistered().size();
 
-        if (registrantsLimit != null) {
+        if (registrantsLimit != -1) {
             int spotsRemaining = Math.max(0, registrantsLimit - registrantsCount);
             binding.eventSpots.setText("Spots Remaining: " + spotsRemaining + "/" + registrantsLimit);
         } else {
@@ -156,10 +165,10 @@ public class EventDetailFragment extends Fragment {
         if (!postDraw) {
             // BEFORE LOTTERY — join or leave the registration list
             if (isRegistered) {
-                performTask(selectedEvent.deleteRegistered(uid), "Registration removed");
+                performTask(selectedEvent.deleteRegistered(uid));
                 isRegistered = false;
             } else {
-                performTask(selectedEvent.addRegistered(uid), "Registered for lottery");
+                performTask(selectedEvent.addRegistered(uid));
                 isRegistered = true;
             }
 
@@ -176,10 +185,10 @@ public class EventDetailFragment extends Fragment {
             // If not chosen, allow waitlist toggling
             if (!isChosen && !isSignedUp && !isCancelled) {
                 if (isRegistered) {
-                    performTask(selectedEvent.deleteRegistered(uid), "Left waitlist");
+                    performTask(selectedEvent.deleteRegistered(uid));
                     isRegistered = false;
                 } else {
-                    performTask(selectedEvent.addRegistered(uid), "Joined waitlist");
+                    performTask(selectedEvent.addRegistered(uid));
                     isRegistered = true;
                 }
 
@@ -187,8 +196,6 @@ public class EventDetailFragment extends Fragment {
 
             }
         }
-
-        updateButtonState();
     }
 
     /**
@@ -201,16 +208,14 @@ public class EventDetailFragment extends Fragment {
                 .setTitle("You’ve Been Chosen!")
                 .setMessage("Would you like to attend this event?")
                 .setPositiveButton("Attend", (dialog, which) -> {
-                    performTask(selectedEvent.addSignUp(uid), "Confirmed attendance");
+                    performTask(selectedEvent.addSignUp(uid));
                     isSignedUp = true;
                     isCancelled = false;
-                    updateButtonState();
                 })
                 .setNegativeButton("Decline", (dialog, which) -> {
-                    performTask(selectedEvent.addCancelled(uid), "Declined invitation");
+                    performTask(selectedEvent.addCancelled(uid));
                     isCancelled = true;
                     isSignedUp = false;
-                    updateButtonState();
                 })
                 .show();
     }
@@ -243,25 +248,15 @@ public class EventDetailFragment extends Fragment {
      * Executes a Firebase Task safely with toast feedback.
      *
      * @param task Firebase Task to execute.
-     * @param successMsg Message to display on success.
      */
-    private void performTask(Task<Void> task, String successMsg) {
+    private void performTask(Task<Void> task) {
         binding.btnSignUp.setEnabled(false);
         task.addOnCompleteListener(t -> {
             binding.btnSignUp.setEnabled(true);
             if (t.isSuccessful()) {
-                showMessage(successMsg);
-            } else {
-                showMessage("Error: " + (t.getException() != null ? t.getException().getMessage() : "Unknown"));
+                updateButtonState();
             }
         });
-    }
-
-    /**
-     * Displays a toast message.
-     */
-    private void showMessage(String msg) {
-        Toast.makeText(requireContext(), msg, Toast.LENGTH_SHORT).show();
     }
 
     /**

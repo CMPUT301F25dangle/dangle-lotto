@@ -58,7 +58,17 @@ public class Event {
     /**
      * Timestamp of the event’s deadline or draw date.
      */
-    Timestamp deadline;
+    Timestamp start_date;
+
+    /**
+     * Timestamp of the event’s deadline or draw date.
+     */
+    Timestamp end_date;
+
+    /**
+     * Timestamp of the event’s deadline or draw date.
+     */
+    Timestamp event_date;
 
     /**
      * Location where the event takes place.
@@ -74,6 +84,10 @@ public class Event {
      * ID of the associated event photo (if any).
      */
     String photo_id;
+    /**
+     * ID of the associated QR code
+     */
+    String qr_id;
 
     /**
      * List of category tags the event belongs to.
@@ -112,7 +126,9 @@ public class Event {
      * @param eid             Unique event identifier.
      * @param organizer_id    Organizer’s user ID.
      * @param name            Event name.
-     * @param deadline        Event deadline or draw date.
+     * @param start_date      Event deadline or draw date.
+     * @param end_date        Event deadline or draw date.
+     * @param event_date      Event deadline or draw date.
      * @param location        Location where event occurs.
      * @param description     Description of the event.
      * @param photo_id        Associated photo identifier.
@@ -121,17 +137,21 @@ public class Event {
      * @param categories      List of category tags.
      * @param firebaseManager Reference to FirebaseManager instance.
      */
-    public Event(String eid, String organizer_id, String name, Timestamp deadline, String location,
-                 String description, String photo_id, int eventSize, Integer maxEntrants,
+    public Event(String eid, String organizer_id, String name, Timestamp start_date,
+                 Timestamp end_date, Timestamp event_date, String location,
+                 String description, String photo_id, String qr_id, int eventSize, Integer maxEntrants,
                  ArrayList<String> categories, FirebaseManager firebaseManager) {
 
         this.eid = eid;
         this.organizer_id = organizer_id;
         this.name = name;
-        this.deadline = deadline;
+        this.start_date = start_date;
+        this.end_date = end_date;
+        this.event_date = event_date;
         this.location = location;
         this.description = description;
         this.photo_id = photo_id;
+        this.qr_id = qr_id;
         this.eventSize = eventSize;
         this.maxEntrants = maxEntrants;
         this.categories = categories;
@@ -220,8 +240,8 @@ public class Event {
     /**
      * @return The event deadline as a Firebase {@link Timestamp}.
      */
-    public Timestamp getDate() {
-        return deadline;
+    public Timestamp getStartDate() {
+        return start_date;
     }
 
     /**
@@ -229,8 +249,42 @@ public class Event {
      *
      * @param datetime New deadline timestamp.
      */
-    public void setDate(Timestamp datetime) {
-        this.deadline = datetime;
+    public void setStartDate(Timestamp datetime) {
+        this.start_date = datetime;
+        firebaseManager.updateEvent(this);
+    }
+
+    /**
+     * @return The event deadline as a Firebase {@link Timestamp}.
+     */
+    public Timestamp getEndDate() {
+        return end_date;
+    }
+
+    /**
+     * Sets the event deadline and updates Firebase.
+     *
+     * @param datetime New deadline timestamp.
+     */
+    public void setEndDate(Timestamp datetime) {
+        this.end_date = datetime;
+        firebaseManager.updateEvent(this);
+    }
+
+    /**
+     * @return The event deadline as a Firebase {@link Timestamp}.
+     */
+    public Timestamp getEventDate() {
+        return event_date;
+    }
+
+    /**
+     * Sets the event deadline and updates Firebase.
+     *
+     * @param datetime New deadline timestamp.
+     */
+    public void setEventDate(Timestamp datetime) {
+        this.event_date = datetime;
         firebaseManager.updateEvent(this);
     }
 
@@ -287,6 +341,32 @@ public class Event {
     }
 
     /**
+     * @return The associated photo identifier.
+     */
+    public String getPhotoID() {
+        return photo_id;
+    }
+
+    /**
+     * Sets the event’s photo ID.
+     *
+     * @param photo_id ID of the uploaded event photo.
+     */
+    public void setPhotoID(String photo_id) {
+        this.photo_id = photo_id;
+        firebaseManager.updateEvent(this);
+    }
+
+    public String getQR() {
+        return qr_id;
+    }
+
+    public void setQR(String qr_id) {
+        this.qr_id = qr_id;
+        firebaseManager.updateEvent(this);
+    }
+
+    /**
      * @return A list of category tags for this event.
      */
     public ArrayList<String> getCategories() {
@@ -328,21 +408,6 @@ public class Event {
         return cancelled;
     }
 
-    /**
-     * @return The associated photo identifier.
-     */
-    public String getPhotoID() {
-        return photo_id;
-    }
-
-    /**
-     * Sets the event’s photo ID.
-     *
-     * @param photo_id ID of the uploaded event photo.
-     */
-    public void setPhotoID(String photo_id) {
-        this.photo_id = photo_id;
-    }
 
     // ================================================================
     // Category Management
@@ -522,7 +587,7 @@ public class Event {
         }
 //        if (!chosen.isEmpty()) return; causes problems
 
-        if (registered.size() <= eventSize) {
+        if (registered.size() <= eventSize && chosen.isEmpty() && signUps.isEmpty()) {
             ArrayList<String> temp = new ArrayList<>(registered);
             for (String user : temp) {
                 addChosen(user);
@@ -530,15 +595,16 @@ public class Event {
         } else if (chosen.size() + signUps.size() < eventSize) {
             ArrayList<String> shuffled = new ArrayList<>(registered);
             Collections.shuffle(shuffled);
-            for (int i = 0; i < eventSize - chosen.size() - signUps.size(); i++) {
+            for (int i = 0; i < eventSize - chosen.size() - signUps.size() && i<shuffled.size(); i++) {
                 addChosen(shuffled.get(i));
             }
         } else {
-            ArrayList<String> shuffled = new ArrayList<>(registered);
-            Collections.shuffle(shuffled);
-            for (int i = 0; i < eventSize; i++) {
-                addChosen(shuffled.get(i));
-            }
+//            ArrayList<String> shuffled = new ArrayList<>(registered);
+//            Collections.shuffle(shuffled);
+//            for (int i = 0; i < eventSize; i++) {
+//                addChosen(shuffled.get(i));
+//            }
+            Log.e("Event", "Event is full");
         }
     }
 

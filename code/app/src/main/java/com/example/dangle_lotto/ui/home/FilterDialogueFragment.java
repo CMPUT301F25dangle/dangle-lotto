@@ -48,7 +48,10 @@ public class FilterDialogueFragment extends DialogFragment {
     }
 
     private ListView filterList;
-    private ArrayList<String> categories;
+    String[] categories = {
+            "Sports", "Music", "Volunteering", "Education",
+            "Gaming", "Food", "Tech", "Career", "Community"
+    };
     private ArrayList<String> preselectedCategories;
 
     @Override
@@ -58,12 +61,6 @@ public class FilterDialogueFragment extends DialogFragment {
 
         DialogueFilterBinding binding = DialogueFilterBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
-
-        // Example data
-        categories = new ArrayList<>();
-        for (int i = 0; i < 12; i++) {
-            categories.add("Item " + i);
-        }
 
         // attaching adapter to the listview
         filterList = binding.dialogueFilterList;
@@ -77,8 +74,8 @@ public class FilterDialogueFragment extends DialogFragment {
 
         // allows for filters to be saved when leaving dialogue and coming back
         if (preselectedCategories != null) {
-            for (int i = 0; i < categories.size(); i++) {
-                if (preselectedCategories.contains(categories.get(i))) {
+            for (int i = 0; i < categories.length; i++) {
+                if (preselectedCategories.contains(categories[i])) {
                     filterList.setItemChecked(i, true);
                 }
             }
@@ -87,9 +84,9 @@ public class FilterDialogueFragment extends DialogFragment {
         // pressing confirm gets all selected items from filter
         binding.dialogueFilterConfirmButton.setOnClickListener(v -> {
             ArrayList<String> selected = new ArrayList<>();
-            for (int i = 0; i < categories.size(); i++) {
+            for (int i = 0; i < categories.length; i++) {
                 if (filterList.isItemChecked(i)) {
-                    selected.add(categories.get(i));
+                    selected.add(categories[i]);
                 }
             }
 

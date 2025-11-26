@@ -29,7 +29,6 @@ import com.example.dangle_lotto.ui.login.SimpleTextWatcher;
  * @version 1.0
  * @since 2025-11-06
  */
-
 public class UserSettingFragment extends Fragment {
     private FragmentUserSettingBinding binding;
     private UserViewModel userViewModel;
@@ -39,7 +38,6 @@ public class UserSettingFragment extends Fragment {
     private boolean confirmUpdate = false;
     private EditText nameEditText;
     private EditText usernameEditText;
-
     private EditText emailEditText;
     private EditText phoneEditText;
 

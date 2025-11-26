@@ -406,7 +406,9 @@ public class FirebaseManager {
      *
      * @param oid          Organizer ID.
      * @param name         Event name.
-     * @param datetime     Event timestamp.
+     * @param start_date   Event start date.
+     * @param end_date     Event end date.
+     * @param event_date   Event timestamp.
      * @param location     Event location.
      * @param description  Event description.
      * @param eventSize    Event size limit.
@@ -416,7 +418,8 @@ public class FirebaseManager {
      * @return Instantiated {@link Event} object.
      */
     public Event createEvent(
-            String oid, String name, Timestamp datetime, String location,
+            String oid, String name, Timestamp start_date, Timestamp end_date,
+            Timestamp event_date, String location,
             String description, int eventSize, int maxEntrants,
             String photo_url, String qr_url, ArrayList<String> categories
     ) {
@@ -424,7 +427,9 @@ public class FirebaseManager {
         Map<String, Object> data = new HashMap<>();
         data.put("Organizer", oid);
         data.put("Name", name);
-        data.put("Date", datetime);
+        data.put("Start Date", start_date);
+        data.put("End Date", end_date);
+        data.put("Event Date", event_date);
         data.put("Location", location);
         data.put("Description", description);
         data.put("Event Size", eventSize);
@@ -437,10 +442,12 @@ public class FirebaseManager {
         // idling resource for testing
         idlingResource.increment();
 
+        Timestamp current = Timestamp.now();
+
         Task<Void> t1 = users.document(oid)
                 .collection("Organize")
                 .document(eid)
-                .set(Map.of("Timestamp", datetime));
+                .set(Map.of("Timestamp", current));
 
         Task<Void> t2 = events.document(eid).set(data);
 
@@ -450,7 +457,7 @@ public class FirebaseManager {
             idlingResource.decrement();
         });
 
-        return new Event(eid, oid, name, datetime, location, description,
+        return new Event(eid, oid, name, start_date, end_date, event_date, location, description,
                 photo_url, qr_url, eventSize, maxEntrants, categories, this);
     }
 
@@ -462,7 +469,10 @@ public class FirebaseManager {
     public void updateEvent(Event event) {
         events.document(event.getEid()).update(
                 "Name", event.getName(),
-                "Date", event.getDate(),
+                "Start Date", event.getStartDate(),
+                "End Date", event.getEndDate(),
+                "Event Date", event.getEventDate(),
+                "Organizer", event.getOrganizerID(),
                 "Location", event.getLocation(),
                 "Description", event.getDescription(),
                 "Event Size", event.getEventSize(),
@@ -536,24 +546,49 @@ public class FirebaseManager {
      */
     public Event documentToEvent(DocumentSnapshot doc) {
 
+        // Safe integer extraction
+        Integer eventSize = null;
+        Long eventSizeLong = doc.getLong("Event Size");
+        if (eventSizeLong != null) {
+            eventSize = eventSizeLong.intValue();
+        }
+
+        Integer maxEntrants = null;
         Long maxEntrantsLong = doc.getLong("Max Entrants");
-        Integer maxEntrants = (maxEntrantsLong != null) ? maxEntrantsLong.intValue() : null;
+        if (maxEntrantsLong != null) {
+            maxEntrants = maxEntrantsLong.intValue();
+        }
+
+        // Safe categories list
+        ArrayList<String> categories = new ArrayList<>();
+        Object catObj = doc.get("Categories");
+        if (catObj instanceof ArrayList) {
+            categories = (ArrayList<String>) catObj;
+        }
 
         return new Event(
                 doc.getId(),
                 doc.getString("Organizer"),
                 doc.getString("Name"),
-                doc.getTimestamp("Date"),
+                doc.getTimestamp("Start Date"),
+                doc.getTimestamp("End Date"),
+                doc.getTimestamp("Event Date"),
                 doc.getString("Location"),
                 doc.getString("Description"),
+
+                // Default empty strings instead of null
                 doc.getString("Picture") != null ? doc.getString("Picture") : "",
                 doc.getString("QR") != null ? doc.getString("QR") : "",
-                Objects.requireNonNull(doc.getLong("Event Size")).intValue(),
+
+                // Use default value if missing
+                eventSize != null ? eventSize : 0,   // or null, your choice
                 maxEntrants,
-                doc.get("Categories") != null ? (ArrayList<String>) doc.get("Categories") : new ArrayList<>(),
+
+                categories,
                 this
         );
     }
+
 
     /**
      * Retrieves an event from the database and instantiates an object for it.

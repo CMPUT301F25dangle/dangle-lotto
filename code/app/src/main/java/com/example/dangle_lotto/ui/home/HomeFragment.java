@@ -22,16 +22,13 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.dangle_lotto.Event;
-import com.example.dangle_lotto.FirebaseIdlingResource;
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentHomeBinding;
 import com.example.dangle_lotto.ui.EventCardAdapter;
-import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.ListenerRegistration;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
@@ -80,7 +77,7 @@ public class HomeFragment extends Fragment {
         // initializing and attaching adapter
         adapter = new EventCardAdapter(events, position -> {
             // update the view model
-            userViewModel.setSelectedHomeEvent(events.get(position));
+            userViewModel.setSelectedEvent(events.get(position));
 
             // open the event fragment
             NavController navController = NavHostFragment.findNavController(this);
@@ -164,7 +161,7 @@ public class HomeFragment extends Fragment {
 
                 @Override
                 public void onSuccess(Event result) {
-                    userViewModel.setSelectedHomeEvent(result);
+                    userViewModel.setSelectedEvent(result);
                     NavController navController = NavHostFragment.findNavController(HomeFragment.this);
                     navController.navigate(R.id.action_home_to_eventDetail);
                 }
@@ -209,7 +206,7 @@ public class HomeFragment extends Fragment {
         String userId = userViewModel.getUser().getValue().getUid();
 
         Query query = firebaseManager.getEventsReference()
-                .orderBy("Date", Query.Direction.DESCENDING)
+                .orderBy("Event Date", Query.Direction.DESCENDING)
                 .whereNotEqualTo("Organizer", userId)
                 .limit(PAGE_SIZE);
         firebaseManager.getQuery(null, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
@@ -250,7 +247,7 @@ public class HomeFragment extends Fragment {
         isLoading = true;
         Toast.makeText(getContext(), "Loading more events...", Toast.LENGTH_SHORT).show();
         Query query = firebaseManager.getEventsReference()
-                .orderBy("Date", Query.Direction.DESCENDING)
+                .orderBy("Event Date", Query.Direction.DESCENDING)
                 .whereNotEqualTo("Organizer", userId)
                 .startAfter(lastVisible)
                 .limit(PAGE_SIZE);

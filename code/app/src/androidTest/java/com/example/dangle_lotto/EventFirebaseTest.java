@@ -37,7 +37,7 @@ public class EventFirebaseTest {
     }
 
     public Event createTemplateEvent(){
-        return firebaseManager.createEvent(testOrganizer.getUid(), "Big ahh midterm", Timestamp.now(), "Da House", "Calculussy", 10, 0, "", "", new ArrayList<>());
+        return firebaseManager.createEvent(testOrganizer.getUid(), "Big ahh midterm", Timestamp.now(), Timestamp.now(), Timestamp.now(), "Da House", "Calculussy", 10, 0, "", "", new ArrayList<>());
     }
 
     @BeforeClass
@@ -86,6 +86,8 @@ public class EventFirebaseTest {
                 "POyVEkNrFErffhZYds1b",
                 "FvKUWJ366kM80HcFeM6gqZxGaIPU",
                 "Diddy Party",
+                new Timestamp(date),
+                new Timestamp(date),
                 new Timestamp(date),
                 null,
                 "A party for diddy kong",

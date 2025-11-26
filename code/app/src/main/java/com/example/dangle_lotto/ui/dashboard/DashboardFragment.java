@@ -22,7 +22,6 @@ import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.Event;
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.FirebaseCallback;
-import com.example.dangle_lotto.User;
 import com.example.dangle_lotto.databinding.FragmentDashboardBinding;
 import com.example.dangle_lotto.ui.EventCardAdapter;
 import com.google.firebase.firestore.DocumentSnapshot;
@@ -143,12 +142,14 @@ public class DashboardFragment extends Fragment {
         userViewModel.setOrganizedEvents(organizedEvents);
     }
 
+
     /**
      * Loads the first page of events by querying firebase
      */
     private void loadFirstPage() {
         isLoading = true;
-        Query query = firebaseManager.getEventsReference().whereEqualTo("Organizer", user.getUid()).orderBy("Date", Query.Direction.DESCENDING).limit(PAGE_SIZE);
+        Query query = firebaseManager.getEventsReference().whereEqualTo("Organizer",
+                user.getUid()).orderBy("Event Date", Query.Direction.DESCENDING).limit(PAGE_SIZE);
         firebaseManager.getQuery(null, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
@@ -162,6 +163,7 @@ public class DashboardFragment extends Fragment {
                 if (!result.isEmpty()) {
                     lastVisible = result.get(result.size() - 1);
                 } else {
+                    Log.e("Firebase", "No more pages");
                     // No more pages
                     lastVisible = null;
                 }
@@ -183,7 +185,8 @@ public class DashboardFragment extends Fragment {
         if (isLoading || lastVisible == null) return;
         isLoading = true;
         Toast.makeText(getContext(), "Loading more events...", Toast.LENGTH_SHORT).show();
-        Query query = firebaseManager.getEventsReference().whereEqualTo("Organizer", user.getUid()).orderBy("Date", Query.Direction.DESCENDING).limit(PAGE_SIZE);
+        Query query = firebaseManager.getEventsReference().whereEqualTo("Organizer",
+                user.getUid()).orderBy("Event Date", Query.Direction.DESCENDING).limit(PAGE_SIZE);
         firebaseManager.getQuery(lastVisible, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {

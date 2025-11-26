@@ -1,5 +1,6 @@
 package com.example.dangle_lotto.ui.yourevents;
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -14,6 +15,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.Toast;
 
 import com.example.dangle_lotto.Event;
@@ -31,6 +33,7 @@ import com.google.firebase.firestore.FieldPath;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 /**
@@ -48,8 +51,9 @@ public class YourEventsFragment extends Fragment {
     private boolean isLoading;
     private static final int PAGE_SIZE = 4; // or however many events per page
     private DocumentSnapshot lastVisible = null;
-    private int chunkIndex = 0;
     private ArrayList<String> interactedIds;
+    private Button[] buttons;
+    Query query;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -66,12 +70,7 @@ public class YourEventsFragment extends Fragment {
         layoutManager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(layoutManager);
 
-        // initializing events list
-        if (userViewModel.getYourEvents().getValue() != null) {
-            events = userViewModel.getYourEvents().getValue();
-        } else {
-            events = new ArrayList<>();
-        }
+        events = new ArrayList<>();
 
         // initializing interacted ids
         interactedIds = new ArrayList<>();
@@ -79,11 +78,10 @@ public class YourEventsFragment extends Fragment {
         // initializing and attaching adapter
         adapter = new EventCardAdapter(events, position -> {
             // update the view model
-            userViewModel.setSelectedYourEvent(events.get(position));
-
+            userViewModel.setSelectedEvent(events.get(position));
             // open the event fragment
             NavController navController = NavHostFragment.findNavController(this);
-            navController.navigate(R.id.action_home_to_eventDetail);
+            navController.navigate(R.id.action_navigation_your_events_to_event_detail_fragment);
         });
         recyclerView.setAdapter(adapter);
 
@@ -106,13 +104,25 @@ public class YourEventsFragment extends Fragment {
             }
         });
 
-        // if data is not cached, load first page
-        // also ensures that data is only loaded if user is accessible
-        userViewModel.getUser().observe(getViewLifecycleOwner(), user -> {
-            if (user != null && events.isEmpty()) {
-                loadFirstPage();
-            }
-        });
+        Button registerButton = binding.yourEventsRegistered;
+        Button chosenButton = binding.yourEventsChosen;
+        Button signUpButton = binding.yourEventsSignups;
+        Button cancelledButton = binding.yourEventsCancelled;
+
+        buttons = new Button[]{registerButton, chosenButton, signUpButton, cancelledButton};
+
+        for (Button button : buttons) {
+            button.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    onTabButtonClicked((Button) v);
+                }
+            });
+        }
+
+        // initialization of the fragment
+        onTabButtonClicked(registerButton);
+
 
         return root;
     }
@@ -126,95 +136,93 @@ public class YourEventsFragment extends Fragment {
         userViewModel.setYourEvents(events);
     }
 
-    public void getUserAllInteractions(String uid, FirebaseCallback<ArrayList<String>> callback) {
-        ArrayList<String> all = new ArrayList<>();
-        String[] cols = {"Chosen", "Register", "Signup", "Cancelled"};
-
-        final int[] remaining = {cols.length}; // use so that we can count how many subcollections we have looked through
-
-        for (String col : cols) {
-            firebaseManager.getUserSubcollection(uid, col, new FirebaseCallback<ArrayList<String>>() {
-                @Override
-                public void onSuccess(ArrayList<String> ids) {
-                    all.addAll(ids);
-                    remaining[0]--;
-
-                    if (remaining[0] == 0) {
-                        callback.onSuccess(all);
-                    }
-                }
-
-                @Override
-                public void onFailure(Exception e) {
-                    remaining[0]--;
-
-                    if (remaining[0] == 0) {
-                        callback.onSuccess(all); // return what we have
-                    }
-                }
-            });
+    @SuppressLint("NotifyDataSetChanged")
+    private void onTabButtonClicked(Button clickedButton) {
+        for (Button b : buttons) {
+            b.setSelected(false);
         }
+        clickedButton.setSelected(true);
+
+        String uid = userViewModel.getUser().getValue().getUid();
+
+        events.clear();
+        lastVisible = null;
+        adapter.notifyDataSetChanged();
+
+        if (clickedButton == binding.yourEventsRegistered) {
+            query = firebaseManager.getUsersReference()
+                    .document(uid)
+                    .collection("Register")
+                    .orderBy("Timestamp", Query.Direction.DESCENDING);
+        } else if (clickedButton == binding.yourEventsChosen) {
+            query = firebaseManager.getUsersReference()
+                    .document(uid)
+                    .collection("Chosen")
+                    .orderBy("Timestamp", Query.Direction.DESCENDING);
+        } else if (clickedButton == binding.yourEventsSignups){
+            query = firebaseManager.getUsersReference()
+                    .document(uid)
+                    .collection("SignUps")
+                    .orderBy("Timestamp", Query.Direction.DESCENDING);
+        }else{
+            query = firebaseManager.getUsersReference()
+                    .document(uid)
+                    .collection("Cancelled")
+                    .orderBy("Timestamp", Query.Direction.DESCENDING);
+        }
+
+        loadFirstPage();
     }
 
+    /**
+     * Gets the event object and adds it to the list of events. Notifies adapter of data change
+     *
+     * @param eid Unique event identifier.
+     *
+     */
+    private void loadEventDetails(String eid){
+        firebaseManager.getEvent(eid, new FirebaseCallback<Event>() {
+
+            @Override
+            public void onSuccess(Event result) {
+                events.add(result);
+                adapter.notifyItemInserted(events.size() - 1);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.d("Firebase", "Failed to load event details", e);
+            }
+        });
+    }
 
     /**
      * Loads the first page of events by querying firebase
      */
     private void loadFirstPage() {
         isLoading = true;
-        String userId = userViewModel.getUser().getValue().getUid();
-
-        getUserAllInteractions(userId, new FirebaseCallback<ArrayList<String>>() {
+        firebaseManager.getQuery(null, query.limit(PAGE_SIZE), new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
-            public void onSuccess(ArrayList<String> ids) {
-                interactedIds = ids;
-
-                if (ids.isEmpty()) {
-                    isLoading = false;
-                    return;
+            public void onSuccess(ArrayList<DocumentSnapshot> result) {
+                for (DocumentSnapshot doc : result) {
+                    loadEventDetails(doc.getId());
                 }
 
-                // take first chunk of 10
-                List<String> chunk = interactedIds.subList(0, Math.min(10, interactedIds.size()));
+                isLoading = false;
+                if (!result.isEmpty()) {
+                    lastVisible = result.get(result.size() - 1);
 
-                Query query = firebaseManager.getEventsReference()
-                        .whereIn(FieldPath.documentId(), chunk)
-                        .orderBy("Date", Query.Direction.DESCENDING)
-                        .limit(PAGE_SIZE);
-
-                firebaseManager.getQuery(
-                        null,
-                        query,
-                        new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
-                            @Override
-                            public void onSuccess(ArrayList<DocumentSnapshot> result) {
-                                int startPos = events.size();
-                                for (DocumentSnapshot doc : result) {
-                                    events.add(firebaseManager.documentToEvent(doc));
-                                }
-
-                                chunkIndex = 1;
-                                adapter.notifyItemRangeInserted(startPos, result.size());
-
-                                isLoading = false;
-                                lastVisible = result.isEmpty()
-                                        ? null
-                                        : result.get(result.size() - 1);
-                            }
-
-                            @Override
-                            public void onFailure(Exception e) {
-                                isLoading = false;
-                            }
-                        }
-                );
+                } else {
+                    // No more pages
+                    lastVisible = null;
+                }
             }
 
             @Override
             public void onFailure(Exception e) {
-                // If the user interactions could not load,
-                // we still need to stop loading state.
+                Log.d("Firebase", "Failed to load first page", e);
                 isLoading = false;
+
             }
         });
     }
@@ -223,38 +231,31 @@ public class YourEventsFragment extends Fragment {
      * Loads the next page of events by querying firebase
      */
     private void loadNextPage() {
-        if (isLoading) return;
+        if (isLoading || lastVisible == null) return;
         isLoading = true;
-
-        int start = chunkIndex * 10;
-        if (start >= interactedIds.size()) {
-            isLoading = false;
-            return; // no more chunks
-        }
-
-        int end = Math.min(start + 10, interactedIds.size());
-        List<String> chunk = interactedIds.subList(start, end);
-        chunkIndex++;
-
-        Query query = firebaseManager.getEventsReference()
-                .whereIn(FieldPath.documentId(), chunk)
-                .orderBy("Date", Query.Direction.DESCENDING)
-                .limit(chunk.size()); // match size of chunk
-
-        firebaseManager.getQuery(null, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
+        Toast.makeText(getContext(), "Loading more events...", Toast.LENGTH_SHORT).show();
+        firebaseManager.getQuery(lastVisible, query.startAfter(lastVisible).limit(PAGE_SIZE), new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
-                int startPos = events.size();
+                Log.d("Firebase", "Loaded " + result.size() + " events");
                 for (DocumentSnapshot doc : result) {
-                    events.add(firebaseManager.documentToEvent(doc));
+                    loadEventDetails(doc.getId());
                 }
 
-                adapter.notifyItemRangeInserted(startPos, result.size());
                 isLoading = false;
+                if (!result.isEmpty()) {
+                    lastVisible = result.get(result.size() - 1);
+                } else {
+                    // THIS MAY NEED FIXING, DOES NOT WORK IF NEW EVENTS ARE ADDED DURING RUNTIME SHOULD PROLLY IMPLEMENT A REFRESH
+                    // ADD REFRESH THROUGH BUTTON
+                    // No more pages
+                    lastVisible = null;
+                }
             }
 
             @Override
             public void onFailure(Exception e) {
+                Log.d("Firebase", "Failed to load next page", e);
                 isLoading = false;
             }
         });

@@ -587,7 +587,7 @@ public class Event {
         }
 //        if (!chosen.isEmpty()) return; causes problems
 
-        if (registered.size() <= eventSize) {
+        if (registered.size() <= eventSize && chosen.isEmpty() && signUps.isEmpty()) {
             ArrayList<String> temp = new ArrayList<>(registered);
             for (String user : temp) {
                 addChosen(user);
@@ -595,7 +595,7 @@ public class Event {
         } else if (chosen.size() + signUps.size() < eventSize) {
             ArrayList<String> shuffled = new ArrayList<>(registered);
             Collections.shuffle(shuffled);
-            for (int i = 0; i < eventSize - chosen.size() - signUps.size(); i++) {
+            for (int i = 0; i < eventSize - chosen.size() - signUps.size() && i<shuffled.size(); i++) {
                 addChosen(shuffled.get(i));
             }
         } else {

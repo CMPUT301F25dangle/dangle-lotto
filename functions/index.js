@@ -5,8 +5,8 @@ admin.initializeApp();
 
 // ✔ Required: direct Admin SDK to Auth emulator
 if (process.env.FUNCTIONS_EMULATOR) {
-  process.env.FIREBASE_AUTH_EMULATOR_HOST = "127.0.0.1:9099";
-  console.log("🔥 Running Auth Admin SDK against emulator");
+    process.env.FIREBASE_AUTH_EMULATOR_HOST = "127.0.0.1:9099";
+    console.log("🔥 Running Auth Admin SDK against emulator");
 }
 
 exports.deleteUserAuth = functions.https.onCall(async (data, context) => {
@@ -16,7 +16,7 @@ exports.deleteUserAuth = functions.https.onCall(async (data, context) => {
   try {
     await admin.auth().deleteUser(uid);
     console.log("✅ Deleted:", uid);
-    return {success: true};
+    return { success: true };
   } catch (err) {
     console.error("❌ Auth delete failed:", err);
     throw new functions.https.HttpsError("internal", err.message);

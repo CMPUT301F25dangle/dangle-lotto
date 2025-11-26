@@ -31,35 +31,48 @@
         app:layout_constraintVertical_bias="0.15" />
 
     <EditText
-        android:id="@+id/settings_fragment_username_input"
+        android:id="@+id/settings_fragment_name_input"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="40dp"
-        android:hint="Username"
+        android:hint="Name"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/settings_fragment_title" />
 
     <EditText
+        android:id="@+id/settings_fragment_username_input"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:hint="Username"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/settings_fragment_name" />
+
+    <EditText
         android:id="@+id/settings_fragment_email_input"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="12dp"
         android:hint="Email"
         android:inputType="textEmailAddress"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/settings_fragment_username_input" />
+        app:layout_constraintTop_toBottomOf="@+id/settings_fragment_username" />
 
     <EditText
         android:id="@+id/settings_fragment_phone_input"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="12dp"
         android:hint="Phone Number"
         android:inputType="phone"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/settings_fragment_email_input" />
 
@@ -72,6 +85,19 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/settings_fragment_phone_input" />
+
+
+    <Button
+        android:id="@+id/logoutBtn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Logout"
+        app:layout_constraintBottom_toTopOf="@+id/user_settings_delete_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.498"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/user_settings_update_button"
+        app:layout_constraintVertical_bias="0.899" />
 
     <Button
         android:id="@+id/user_settings_delete_button"

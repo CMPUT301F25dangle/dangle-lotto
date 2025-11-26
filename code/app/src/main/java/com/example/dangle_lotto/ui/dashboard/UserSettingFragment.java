@@ -42,7 +42,6 @@ public class UserSettingFragment extends Fragment {
     private EditText usernameEditText;
     private EditText emailEditText;
     private EditText phoneEditText;
-    private Button logoutButton;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -89,10 +88,10 @@ public class UserSettingFragment extends Fragment {
         });
 
         // attaching edit text views
-        nameEditText = binding.settingsFragmentName;
-        usernameEditText = binding.settingsFragmentUsername;
-        emailEditText = binding.settingsFragmentEmail;
-        phoneEditText = binding.settingsFragmentPhoneNumber;
+        nameEditText = binding.settingsFragmentNameInput;
+        usernameEditText = binding.settingsFragmentUsernameInput;
+        emailEditText = binding.settingsFragmentEmailInput;
+        phoneEditText = binding.settingsFragmentPhoneInput;
 
         // setting edit text views with user info
         nameEditText.setText(user.getName());

@@ -11,6 +11,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -20,6 +21,7 @@ import com.example.dangle_lotto.LoginActivity;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentUserSettingBinding;
 import com.example.dangle_lotto.ui.login.SimpleTextWatcher;
+import com.google.firebase.auth.FirebaseAuth;
 
 /**
  * UserSettingFragment - Fragment shows user settings.
@@ -40,6 +42,7 @@ public class UserSettingFragment extends Fragment {
     private EditText usernameEditText;
     private EditText emailEditText;
     private EditText phoneEditText;
+    private Button logoutButton;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -57,6 +60,13 @@ public class UserSettingFragment extends Fragment {
 
         // getting user from view model
         user = userViewModel.getUser().getValue();
+
+        binding.logoutBtn.setOnClickListener(v -> {
+            FirebaseAuth.getInstance().signOut();
+            Intent intent = new Intent(getActivity(), LoginActivity.class);
+            startActivity(intent);
+            requireActivity().finish();
+        });
 
         // making back button actually take you to previous fragment
         binding.settingsFragmentBackButton.setOnClickListener(v -> {

@@ -192,7 +192,7 @@ public class FirebaseManager {
      * @param canOrganize Whether the user can organize events.
      * @return Instantiated {@link GeneralUser} object.
      */
-    public GeneralUser createNewUser(String uid, String username, String name, String email, String phone, String pid, boolean canOrganize){
+    public void createNewUser(String uid, String username, String name, String email, String phone, String pid, boolean canOrganize){
         Map<String, Object> data = new HashMap<>();
         data.put("UID", uid);
         data.put("Username", username);
@@ -201,9 +201,9 @@ public class FirebaseManager {
         data.put("Phone", phone);
         data.put("Picture", pid);
         data.put("CanOrganize", canOrganize);
+        data.put("isAdmin", false); // no admin creation interface in app but can add later
 
         users.document(uid).set(data);
-        return new GeneralUser(uid, username, name, email, phone, pid,this, canOrganize);
     }
 
     /**
@@ -316,12 +316,13 @@ public class FirebaseManager {
     }
 
     /**
-     * Retrieves a {@link GeneralUser} by UID from Firestore.
+     * Retrieves a {@link User} by UID from Firestore.
+     * May be a {@link GeneralUser} or {@link AdminUser}
      *
      * @param uid       User ID.
      * @param callback  Callback that receives the retrieved user object.
      */
-    public void getUser(String uid, FirebaseCallback<GeneralUser> callback) {
+    public void getUser(String uid, FirebaseCallback<User> callback) {
         // idling resource for testing
         idlingResource.increment();
 
@@ -330,16 +331,7 @@ public class FirebaseManager {
                 DocumentSnapshot doc = task.getResult();
                 Log.d("FirebaseManager", "User retrieved: " + doc.getId());
                 if (doc.exists()) {
-                    Map<String, Object> data = doc.getData();
-                    assert data != null;
-                    String username = (String) data.get("Username");
-                    String name = (String) data.get("Name");
-                    String email = (String) data.get("Email");
-                    Boolean canOrganize = (Boolean) data.get("CanOrganize");
-                    String phone = (String) data.get("Phone");
-                    String pid = (String) data.get("Picture");
-                    GeneralUser user = new GeneralUser(uid, username, name, email, phone, pid, this, Boolean.TRUE.equals(canOrganize));
-                    Log.d("FirebaseManager", "User loaded: " + user.getUsername());
+                    User user = UserFactory.getUser(doc, this);;
                     callback.onSuccess(user);
                 } else {
                     callback.onFailure(new Exception("User not found"));

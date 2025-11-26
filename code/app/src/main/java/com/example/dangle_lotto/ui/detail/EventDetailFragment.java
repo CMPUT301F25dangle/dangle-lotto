@@ -138,7 +138,7 @@ public class EventDetailFragment extends Fragment {
 
         updateButtonState();
 
-        binding.btnSignUp.setOnClickListener(v -> handleClick(uid));
+        binding.eventDetailDynamicButton.setOnClickListener(v -> handleClick(uid));
     }
 
     /**
@@ -224,7 +224,7 @@ public class EventDetailFragment extends Fragment {
      * Updates the button text and state depending on user’s position in the event flow.
      */
     private void updateButtonState() {
-        Button btn = binding.btnSignUp;
+        Button btn = binding.eventDetailDynamicButton;
 
         if (isCancelled) {
             btn.setText("Cancelled");
@@ -250,9 +250,9 @@ public class EventDetailFragment extends Fragment {
      * @param task Firebase Task to execute.
      */
     private void performTask(Task<Void> task) {
-        binding.btnSignUp.setEnabled(false);
+        binding.eventDetailDynamicButton.setEnabled(false);
         task.addOnCompleteListener(t -> {
-            binding.btnSignUp.setEnabled(true);
+            binding.eventDetailDynamicButton.setEnabled(true);
             if (t.isSuccessful()) {
                 updateButtonState();
             }

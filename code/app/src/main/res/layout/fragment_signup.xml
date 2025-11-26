@@ -8,86 +8,139 @@
     android:padding="24dp">
 
     <TextView
-        android:id="@+id/tvSignupTitle"
+        android:id="@+id/signup_title"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="56dp"
         android:text="DANGLE LOTTO"
+        android:textColor="@color/black"
         android:textSize="24sp"
         android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/signup_name_label"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:text="Name (Required)"
         android:textColor="@color/black"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
+        android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.172" />
+        app:layout_constraintTop_toBottomOf="@+id/signup_title" />
 
     <EditText
-        android:id="@+id/settings_fragment_name"
+        android:id="@+id/signup_name_input"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
-        android:hint="Name (Required)"
+        android:layout_height="50dp"
+        android:background="@drawable/bg_input_field"
+        android:hint="Mahd Afzal"
+        android:paddingHorizontal="8dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/tvSignupTitle" />
+        app:layout_constraintTop_toBottomOf="@+id/signup_name_label" />
 
-    <EditText
-        android:id="@+id/settings_fragment_username"
-        android:layout_width="0dp"
+    <TextView
+        android:id="@+id/signup_username_label"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:hint="Username (Required)"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        android:text="Username (Required)"
+        android:textColor="@color/black"
+        android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/settings_fragment_name" />
+        app:layout_constraintTop_toBottomOf="@+id/signup_name_input" />
 
     <EditText
-        android:id="@+id/settings_fragment_email"
+        android:id="@+id/signup_username_input"
         android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:background="@drawable/bg_input_field"
+        android:hint="Afzal1"
+        android:paddingHorizontal="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/signup_username_label" />
+
+    <TextView
+        android:id="@+id/signup_email_label"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:hint="Email (Required)"
+        android:text="Email (Required)"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/signup_username_input" />
+
+    <EditText
+        android:id="@+id/signup_email_input"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:background="@drawable/bg_input_field"
+        android:hint="mahd@gmail.com"
         android:inputType="textEmailAddress"
+        android:paddingHorizontal="8dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/settings_fragment_username" />
+        app:layout_constraintTop_toBottomOf="@+id/signup_email_label" />
 
-    <EditText
-        android:id="@+id/settings_fragment_phone_number"
-        android:layout_width="0dp"
+    <TextView
+        android:id="@+id/signup_phone_label"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:hint="Phone Number"
+        android:text="Phone Number"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/signup_email_input" />
+
+    <EditText
+        android:id="@+id/signup_phone_input"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:background="@drawable/bg_input_field"
+        android:hint="1234567890"
         android:inputType="phone"
+        android:paddingHorizontal="8dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/settings_fragment_email" />
+        app:layout_constraintTop_toBottomOf="@+id/signup_phone_label" />
 
-    <EditText
-        android:id="@+id/etSignupPassword"
-        android:layout_width="0dp"
+    <TextView
+        android:id="@+id/signup_password_label"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:hint="Password  (Required)"
-        android:inputType="textPassword"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        android:text="Password (Required)"
+        android:textColor="@color/black"
+        android:textSize="18sp"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/settings_fragment_phone_number" />
+        app:layout_constraintTop_toBottomOf="@+id/signup_phone_input" />
+
+    <EditText
+        android:id="@+id/signup_password_input"
+        android:layout_width="0dp"
+        android:layout_height="50dp"
+        android:background="@drawable/bg_input_field"
+        android:hint="••••••••"
+        android:inputType="textPassword"
+        android:paddingHorizontal="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/signup_password_label" />
 
     <Button
-        android:id="@+id/btnSignUp"
+        android:id="@+id/signup_button"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="64dp"
+        android:layout_marginTop="32dp"
         android:text="Sign Up"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/etSignupPassword" />
+        app:layout_constraintTop_toBottomOf="@+id/signup_password_input" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

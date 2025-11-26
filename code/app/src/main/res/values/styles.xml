@@ -11,4 +11,9 @@
         <item name="boxStrokeWidthFocused">1dp</item>
         <item name="shapeAppearance">@style/RoundedShapeAppearance</item>
     </style>
+
+    <style name="ShapeAppearanceOverlay.App.CircularImageView" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
 </resources>

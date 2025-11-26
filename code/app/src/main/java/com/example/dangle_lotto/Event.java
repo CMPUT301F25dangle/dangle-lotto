@@ -1,5 +1,7 @@
 package com.example.dangle_lotto;
 
+import android.util.Log;
+
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.Timestamp;
@@ -597,11 +599,12 @@ public class Event {
                 addChosen(shuffled.get(i));
             }
         } else {
-            ArrayList<String> shuffled = new ArrayList<>(registered);
-            Collections.shuffle(shuffled);
-            for (int i = 0; i < eventSize; i++) {
-                addChosen(shuffled.get(i));
-            }
+//            ArrayList<String> shuffled = new ArrayList<>(registered);
+//            Collections.shuffle(shuffled);
+//            for (int i = 0; i < eventSize; i++) {
+//                addChosen(shuffled.get(i));
+//            }
+            Log.e("Event", "Event is full");
         }
     }
 

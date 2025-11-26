@@ -157,6 +157,12 @@ public class UserStoriesTests {
         Thread.sleep(1000);
     }
 
+    @Test
+    public void test() {
+
+    }
+
+
     public void login(String email, String password) {
         // Logs the user in
         onView(withHint("Email")).perform(typeText(email), closeSoftKeyboard());

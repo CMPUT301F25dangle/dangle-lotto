@@ -87,6 +87,8 @@ public class EventFirebaseTest {
                 "FvKUWJ366kM80HcFeM6gqZxGaIPU",
                 "Diddy Party",
                 new Timestamp(date),
+                new Timestamp(date),
+                new Timestamp(date),
                 null,
                 "A party for diddy kong",
                 null,

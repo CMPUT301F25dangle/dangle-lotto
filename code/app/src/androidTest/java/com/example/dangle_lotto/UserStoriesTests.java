@@ -268,7 +268,7 @@ public class UserStoriesTests {
         onView(withId(R.id.dashboard_fragment_setting_button)).perform(click());
 
         // User updates email
-        onView(withId(R.id.singup_email_input)).perform(typeText("s"), closeSoftKeyboard());
+        onView(withId(R.id.signup_email_input)).perform(typeText("s"), closeSoftKeyboard());
 
         // User updates phone number
         onView(withId(R.id.signup_phone_input)).perform(typeText("000"), closeSoftKeyboard());

@@ -20,6 +20,7 @@ import java.util.ArrayList;
 public class UserViewModel extends ViewModel {
     private final FirebaseManager firebaseManager = FirebaseManager.getInstance();
     private final MutableLiveData<GeneralUser> user = new MutableLiveData<GeneralUser>();
+    private final MutableLiveData<AdminUser> admin = new MutableLiveData<AdminUser>();
     private final MutableLiveData<ArrayList<Event>> homeEvents = new MutableLiveData<>();
     private final MutableLiveData<Event> selectedEvent = new MutableLiveData<>();
     private final MutableLiveData<ArrayList<Event>> yourEvents = new MutableLiveData<>();
@@ -50,11 +51,15 @@ public class UserViewModel extends ViewModel {
             return;
         }
 
-        firebaseManager.getUser(uid, new FirebaseCallback<GeneralUser>() {
+        firebaseManager.getUser(uid, new FirebaseCallback<User>() {
             @Override
-            public void onSuccess(GeneralUser result) {
+            public void onSuccess(User result) {
                 Log.d("UserViewModel", "User loaded: " + result.getUsername());
-                user.setValue(result);
+                if (result instanceof GeneralUser) {
+                    user.setValue((GeneralUser) result);
+                } else if (result instanceof AdminUser) {
+                    admin.setValue((AdminUser) result);
+                }
             }
 
             @Override

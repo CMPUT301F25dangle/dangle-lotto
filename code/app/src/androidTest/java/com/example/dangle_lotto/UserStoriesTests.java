@@ -330,10 +330,14 @@ public class UserStoriesTests {
         onView(withId(R.id.settings_fragment_username_input)).perform(replaceText("Does This Replace Too?"), closeSoftKeyboard());
         onView(withId(R.id.settings_fragment_email_input)).perform(replaceText("replaced@gmail.com"), closeSoftKeyboard());
         onView(withId(R.id.settings_fragment_phone_input)).perform(typeText("000"), closeSoftKeyboard());
+        onView(withId(R.id.settings_fragment_password_input)).perform(typeText("password"), closeSoftKeyboard());
 
         // User clicks on update button
         onView(withText("Update Profile")).perform(click());
         onView(withText("Confirm Update")).perform(click());
+
+        // Click on settings button
+        onView(withId(R.id.dashboard_fragment_setting_button)).perform(click());
 
         // Update button is unclickable
         onView(withId(R.id.user_settings_update_button)).check(matches(not(isEnabled())));

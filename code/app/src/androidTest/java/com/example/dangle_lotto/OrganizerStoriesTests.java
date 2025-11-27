@@ -260,17 +260,48 @@ public class OrganizerStoriesTests {
         // Click on create event button
         onView(withId(R.id.dashboard_fragment_new_event_button)).perform(click());
 
-        // Fill out event details
+        // Event name
         onView(withHint("Dangle Lotto Gathering")).perform(typeText("Good Party"), closeSoftKeyboard());
 
-        // Fill out the event size
+        // Event size
         onView(withId(R.id.create_event_size_input)).perform(typeText("100"), closeSoftKeyboard());
 
-        // Fill in start date
+        // Event registration start date
         onView(withId(R.id.create_event_registration_start_input)).perform(scrollTo(), click());
+        fillDatePicker("12122026");
+
+        // Event registration end date
+        onView(withId(R.id.create_event_registration_end_input)).perform(scrollTo(), click());
+        fillDatePicker("12132026");
+
+        // Event date
+        onView(withId(R.id.create_event_date_input)).perform(scrollTo(), click());
+        fillDatePicker("12142026");
+
+        // Event description
+        onView(withId(R.id.create_event_description_input)).perform(scrollTo(), typeText("A party for good people"), closeSoftKeyboard());
+
+        // Click on done button
+        onView(withText("Done")).perform(scrollTo(), click());
+
+        // Let QR code dialogue to appear
+        Thread.sleep(3000);
+
+        // Check if qr code is displayed
+        onView(withId(R.id.create_event_banner_QR_display)).check(matches(isDisplayed()));
 
         // Click on done button
         onView(withText("Done")).perform(click());
+
+        // Click on event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on EVENT button
+        onView(withText("EVENT")).perform(click());
+
+        // Check if registration period is displayed
+        onView(withText("Opens: Dec 12, 2026 00:00")).check(matches(isDisplayed()));
+        onView(withText("Closes: Dec 13, 2026 00:00")).check(matches(isDisplayed()));
     }
 
     /**

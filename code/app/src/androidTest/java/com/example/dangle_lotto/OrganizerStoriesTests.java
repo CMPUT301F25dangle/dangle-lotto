@@ -3,11 +3,14 @@ package com.example.dangle_lotto;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isAssignableFrom;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
+import static androidx.test.espresso.matcher.ViewMatchers.withContentDescription;
 import static androidx.test.espresso.matcher.ViewMatchers.withHint;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
@@ -16,6 +19,7 @@ import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
 import android.Manifest;
+import android.widget.EditText;
 
 import androidx.test.espresso.IdlingRegistry;
 import androidx.test.espresso.IdlingResource;
@@ -169,6 +173,24 @@ public class OrganizerStoriesTests {
     }
 
     /**
+     * Manages filling in the date picker for the event.
+     *
+     * @param date String representing the date in the format mmddyyyy
+     */
+    public void fillDatePicker(String date) {
+        // Switches to manual date mode
+        onView(withContentDescription("Switch to text input mode")).perform(click());
+
+        // Enter date (mm/dd/yyyy)
+        onView(isAssignableFrom(EditText.class)).perform(replaceText(""));
+        onView(isAssignableFrom(EditText.class)).perform(typeText(date));
+        onView(withText("OK")).perform(click());
+
+        // Pick date (press ok for auto date)
+        onView(withText("OK")).perform(click());
+    }
+
+    /**
      * Checks if organizer can make a new event, alongside a qr code that links to the event.
      * <p>
      * US 02.01.01 As an organizer I want to create a new event and generate a unique promotional
@@ -185,9 +207,26 @@ public class OrganizerStoriesTests {
         // Click on create event button
         onView(withId(R.id.dashboard_fragment_new_event_button)).perform(click());
 
-        // Fill out event details
+        // Event name
         onView(withHint("Dangle Lotto Gathering")).perform(typeText("Good Party"), closeSoftKeyboard());
-        onView(withHint("We will be gathering…")).perform(scrollTo(), typeText("A party for good people"), closeSoftKeyboard());
+
+        // Event size
+        onView(withId(R.id.create_event_size_input)).perform(typeText("100"), closeSoftKeyboard());
+
+        // Event registration start date
+        onView(withId(R.id.create_event_registration_start_input)).perform(scrollTo(), click());
+        fillDatePicker("12122026");
+
+        // Event registration end date
+        onView(withId(R.id.create_event_registration_end_input)).perform(scrollTo(), click());
+        fillDatePicker("12132026");
+
+        // Event date
+        onView(withId(R.id.create_event_date_input)).perform(scrollTo(), click());
+        fillDatePicker("12142026");
+
+        // Event description
+        onView(withId(R.id.create_event_description_input)).perform(scrollTo(), typeText("A party for good people"), closeSoftKeyboard());
 
         // Click on done button
         onView(withText("Done")).perform(scrollTo(), click());
@@ -229,7 +268,6 @@ public class OrganizerStoriesTests {
 
         // Fill in start date
         onView(withId(R.id.create_event_registration_start_input)).perform(scrollTo(), click());
-
 
         // Click on done button
         onView(withText("Done")).perform(click());
@@ -739,12 +777,15 @@ public class OrganizerStoriesTests {
     }
 
     /**
-     * Check if organizer can send notifications to all chosen entrants
+     * Check if organizer can send notifications to all selected entrants
      * <p>
      * US 02.07.02 As an organizer I want to send notifications to all selected entrants
      */
     @Test
-    public void OrganizerSendsNotificationsToAllChosenEntrants() {
+    public void OrganizerSendsNotificationsToAllSelectedEntrants() {
+        // Login
+        login("owner@gmail.com", "password");
+
         // Fails test instantly
         fail("Test not implemented");
     }

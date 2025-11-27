@@ -2,11 +2,14 @@ package com.example.dangle_lotto;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.util.Log;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.Timestamp;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
@@ -44,6 +47,7 @@ public class FirebaseManager {
     private final CollectionReference events;
     private final FirebaseStorage storage;
     private final StorageReference storageRef;
+    private final FirebaseFunctions functions;
 
     private final String[] collections = new String[]{"Register", "Chosen", "SignUps", "Cancelled"};
     private final FirebaseIdlingResource idlingResource = new FirebaseIdlingResource();
@@ -56,6 +60,7 @@ public class FirebaseManager {
         events = db.collection("events");
         storage = FirebaseStorage.getInstance();
         storageRef = storage.getReference();
+        functions = FirebaseFunctions.getInstance();
     }
 
     public static FirebaseManager getInstance(){
@@ -107,7 +112,7 @@ public class FirebaseManager {
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                        FirebaseUser user = mAuth.getCurrentUser();
                         String uid;
                         if (user != null) {
                             uid = user.getUid();
@@ -208,16 +213,58 @@ public class FirebaseManager {
     /**
      * Updates an existing user’s data in Firestore.
      *
-     * @param user {@link User} object containing updated fields.
+     * @param userObj {@link User} object containing updated fields.
+     * @param name    New name.
+     * @param username New username.
+     * @param newEmail New email.
+     * @param phone    New phone number.
+     * @param photo_id New profile photo ID.
+     * @param password New password.
      */
-    public void updateUser(User user) {
-        users.document(user.getUid()).update(
-                "Name", user.getName(),
-                "Email", user.getEmail(),
-                "Username", user.getUsername(),
-                "Phone", user.getPhone(),
-                "Picture", user.getPhotoID()
-        );
+    public void updateUser(User userObj, String name, String username, String newEmail,
+                           String phone, String photo_id, String password,
+                            FirebaseCallback<Boolean> callback) {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) return;
+        AuthCredential credential = EmailAuthProvider.getCredential(Objects.requireNonNull(user.getEmail()), password);
+        user.reauthenticate(credential)
+                .addOnSuccessListener(unused -> {
+                    if (!Objects.equals(newEmail, user.getEmail())) {
+                        Map<String, Object> data = new HashMap<>();
+                        data.put("uid", user.getUid());
+                        data.put("newEmail", newEmail);
+                        functions.getHttpsCallable("updateUserEmail").call(data)
+                                .addOnSuccessListener(s -> {
+                                    userObj.setEmail(newEmail);
+                                    users.document(userObj.getUid())
+                                            .update("Email", userObj.getEmail());
+                                    Log.d("Update User", "User email address updated.");
+                                }).addOnFailureListener(e -> {
+                            Log.w("Update User", "User email address update failed with exception " + e);
+                        });
+                    }
+                    if (!Objects.equals(photo_id, userObj.getPhotoID())) {
+                        userObj.setPhotoID(photo_id);
+                    }
+                    if (!Objects.equals(phone, userObj.getPhone())) {
+                        userObj.setPhone(phone);
+                    }
+                    if (!Objects.equals(name, userObj.getName())) {
+                        userObj.setName(name);
+                    }
+                    if (!Objects.equals(username, userObj.getUsername())) {
+                        userObj.setUsername(username);
+                    }
+
+                    users.document(userObj.getUid()).update(
+                            "Name", userObj.getName(),
+                            "Username", userObj.getUsername(),
+                            "Phone", userObj.getPhone(),
+                            "Picture", userObj.getPhotoID()
+                    );
+
+                    callback.onSuccess(true);
+                }).addOnFailureListener(callback::onFailure);
     }
 
     /**
@@ -298,7 +345,7 @@ public class FirebaseManager {
                     Map<String, Object> data = new HashMap<>();
                     data.put("uid", uid);
                     // cloud function: delete auth user
-                    return FirebaseFunctions.getInstance()
+                    return functions
                             .getHttpsCallable("deleteUserAuth")
                             .call(data);
                 })

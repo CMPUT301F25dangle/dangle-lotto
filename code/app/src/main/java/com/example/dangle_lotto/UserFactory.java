@@ -3,6 +3,8 @@ package com.example.dangle_lotto;
 import android.util.Log;
 
 import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.GeoPoint;
+
 /**
  * UserFactory — generates a User object from a Firestore document.
  * <p>
@@ -29,6 +31,7 @@ public class UserFactory {
         String email = doc.getString("Email");
         String phone = doc.getString("Phone");
         String pid = doc.getString("Picture");
+        GeoPoint location = doc.getGeoPoint("Location");
         Log.d("UserFactory", "User loaded: " + username);
 
 
@@ -36,7 +39,8 @@ public class UserFactory {
             return new AdminUser(doc.getId(), name, username, email, phone, pid, firebaseManager);
         }else{
             Boolean canOrganize = doc.getBoolean("CanOrganize");
-            return new GeneralUser(doc.getId(), name, username, email, phone, pid, firebaseManager, Boolean.TRUE.equals(canOrganize));
+            return new GeneralUser(doc.getId(), name, username, email, phone, location, pid,
+                    firebaseManager, Boolean.TRUE.equals(canOrganize));
         }
 
     }

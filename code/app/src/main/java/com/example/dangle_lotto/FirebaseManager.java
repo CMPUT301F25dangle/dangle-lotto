@@ -15,6 +15,7 @@ import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.functions.FirebaseFunctions;
 import com.google.firebase.storage.FirebaseStorage;
@@ -196,7 +197,7 @@ public class FirebaseManager {
      * @param canOrganize Whether the user can organize events.
      * @return Instantiated {@link GeneralUser} object.
      */
-    public void createNewUser(String uid, String name,  String username, String email, String phone, String pid, boolean canOrganize){
+    public void createNewUser(String uid, String name, String username, String email, String phone, String pid, boolean canOrganize){
         Map<String, Object> data = new HashMap<>();
         data.put("UID", uid);
         data.put("Username", username);
@@ -205,6 +206,7 @@ public class FirebaseManager {
         data.put("Phone", phone);
         data.put("Picture", pid);
         data.put("CanOrganize", canOrganize);
+        data.put("Location", null);
         data.put("isAdmin", false); // no admin creation interface in app but can add later
 
         users.document(uid).set(data);
@@ -265,6 +267,16 @@ public class FirebaseManager {
 
                     callback.onSuccess(true);
                 }).addOnFailureListener(callback::onFailure);
+    }
+
+    public void updateUserLocation(String uid, GeoPoint location) {
+        users.document(uid).update("Location", location)
+                .addOnSuccessListener(unused -> {
+                    Log.d("Update User", "User location updated.");
+                })
+                .addOnFailureListener(e -> {
+                    Log.w("Update User", "User location update failed with exception " + e);
+                });
     }
 
     /**

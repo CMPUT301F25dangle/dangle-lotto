@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="10dp"
+    android:padding="20dp"
+    app:cardCornerRadius="16dp"
+    android:backgroundTint="@color/light_blue"
+    app:cardElevation="4dp">
+    <androidx.cardview.widget.CardView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        app:cardCornerRadius="60dp"
+        android:padding="10dp"
+        android:layout_margin="10dp"
+        android:id="@+id/admin_user_pfp">
+        <ImageView
+            android:layout_width="70dp"
+            android:layout_height="70dp"
+            android:src="@drawable/event_card_test_image"
+            android:scaleType="centerCrop"/>
+    </androidx.cardview.widget.CardView>
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_gravity="center_vertical"
+        android:layout_marginStart="90dp"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/admin_user_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:layout_weight="2"
+            android:text="User Name"
+            android:textColor="@color/dark_blue"
+            android:textSize="25sp" />
+
+        <TextView
+            android:id="@+id/admin_user_email"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="User email"
+            android:textColor="@color/dark_blue"
+            android:textSize="25sp" />
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

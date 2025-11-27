@@ -58,6 +58,7 @@ public abstract class User {
      * @param photo_id        Profile photo identifier (nullable).
      * @param firebaseManager Reference to the FirebaseManager for database updates.
      */
+
     public User(String uid, String name, String username, String email, String phone, String photo_id, FirebaseManager firebaseManager) {
         this.uid = uid;
         this.name = name;

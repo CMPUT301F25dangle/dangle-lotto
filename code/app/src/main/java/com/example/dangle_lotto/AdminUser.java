@@ -1,7 +1,17 @@
 package com.example.dangle_lotto;
 
 import java.util.ArrayList;
-
+/**
+ * Admin class to generate an admin user that manages events, notifications, pictures, and general
+ * users.
+ * <p>
+ * This class overrides the isAdmin() boolean to be true.
+ * </p>
+ *
+ * @author Mahd Afzal, Annie Ding
+ * @version 1.0
+ * @since 2025-11-20
+ */
 public class AdminUser extends User{
     /**
      * Constructs a new User object with basic identifying information.

@@ -3,6 +3,7 @@ package com.example.dangle_lotto.ui.login;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,10 +16,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 
+import com.example.dangle_lotto.AdminActivity;
 import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.MainActivity;
 import com.example.dangle_lotto.R;
+import com.example.dangle_lotto.User;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -67,7 +70,32 @@ public class LoginFragment extends Fragment {
         return view;
     }
 
-    /**
+    // Load the new User and check if they are admin then redirect them appropriately
+    private void loadUser(String uid){
+        firebaseManager.getUser(uid, new FirebaseCallback<User>() {
+
+                    @Override
+                    public void onSuccess(User result) {
+                        Intent intent = null;
+                        if (result.isAdmin())
+                            intent = new Intent(getActivity(), AdminActivity.class);
+                        else
+                            intent = new Intent(getActivity(), MainActivity.class);
+                        intent.putExtra("UID", uid);
+                        startActivity(intent);
+                        Toast.makeText(getActivity(), "Login successful", Toast.LENGTH_SHORT).show();
+                        requireActivity().finish();
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.e("LoginFragment", "Error loading user: " + e.getMessage());
+                        Toast.makeText(getActivity(), "Error loading user", Toast.LENGTH_SHORT).show();
+                    }
+                });
+    }
+
+            /**
      * loginUser - Handles user login using Firebase Authentication.
      * <p>
      * Validates the entered email and password, attempts to sign in through Firebase,
@@ -99,11 +127,7 @@ public class LoginFragment extends Fragment {
 
             @Override
             public void onSuccess(String result) {
-                Toast.makeText(getActivity(), "Login successful", Toast.LENGTH_SHORT).show();
-                Intent intent = new Intent(getActivity(), MainActivity.class);
-                intent.putExtra("UID", result);
-                startActivity(intent);
-                requireActivity().finish();
+                loadUser(result);
             }
 
             @Override

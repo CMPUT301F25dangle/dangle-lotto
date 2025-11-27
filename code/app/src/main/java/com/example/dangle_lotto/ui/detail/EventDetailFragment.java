@@ -98,6 +98,17 @@ public class EventDetailFragment extends Fragment {
         if (!(selectedEvent.getPhotoID().isEmpty() || selectedEvent.getPhotoID() == null))
             Glide.with(requireContext()).load(selectedEvent.getPhotoID()).into(binding.imgPoster);
 
+        // Display categories if available
+        if (!selectedEvent.getCategories().isEmpty()) {
+            binding.eventDetailsCategoriesInput.setText(String.join(", ", selectedEvent.getCategories()));
+        } else {
+            binding.eventDetailsCategoriesTitle.setVisibility(View.GONE);
+            binding.eventDetailsCategoriesInput.setVisibility(View.GONE);
+        }
+
+        // Geolocation
+
+        // Display spots remaining
         updateSpotsUI();
 
         binding.btnBack.setOnClickListener(
@@ -149,7 +160,7 @@ public class EventDetailFragment extends Fragment {
      * Updates the number of spots remaining in the event.
      */
     private void updateSpotsUI() {
-        Integer registrantsLimit = selectedEvent.getMaxEntrants();
+        int registrantsLimit = selectedEvent.getMaxEntrants();
         int registrantsCount = selectedEvent.getSignUps().size() + selectedEvent.getCancelled().size() + selectedEvent.getChosen().size() + selectedEvent.getRegistered().size();
 
         if (registrantsLimit != -1) {

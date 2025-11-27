@@ -387,7 +387,8 @@ public class CreateEventFragment extends Fragment {
             Timestamp eventDateTimeStamp = new Timestamp(new Date(eventDate));
 
             // Checking if geo location is enabled
-            String location = String.valueOf(binding.cbEnableGeolocation.isChecked());
+            String location = "template";
+            Boolean locationRequired = binding.cbEnableGeolocation.isChecked();
 
             // Checking if max entrants is enabled (has text in it)
             String maxEntrantsInput = binding.createEventInputMaxEntrants.getText().toString();
@@ -405,6 +406,7 @@ public class CreateEventFragment extends Fragment {
                     registrationEndDateStamp,
                     eventDateTimeStamp,
                     location,
+                    locationRequired,
                     description,
                     Integer.parseInt(binding.createEventSizeInput.getText().toString()),
                     maxEntrants,

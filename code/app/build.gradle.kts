@@ -81,6 +81,9 @@ dependencies {
 
     // qr code scanning
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+
+    // get location permissions
+    implementation("com.google.android.gms:play-services-location:21.3.0")
 }
 
 

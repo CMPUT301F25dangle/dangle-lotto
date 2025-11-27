@@ -450,6 +450,7 @@ public class FirebaseManager {
      * @param end_date     Event end date.
      * @param event_date   Event timestamp.
      * @param location     Event location.
+     * @param location_required  Whether the location is required to sign up for event.
      * @param description  Event description.
      * @param eventSize    Event size limit.
      * @param maxEntrants  Maximum number of registrants.
@@ -459,7 +460,7 @@ public class FirebaseManager {
      */
     public Event createEvent(
             String oid, String name, Timestamp start_date, Timestamp end_date,
-            Timestamp event_date, String location,
+            Timestamp event_date, String location, Boolean location_required,
             String description, int eventSize, int maxEntrants,
             String photo_url, String qr_url, ArrayList<String> categories
     ) {
@@ -471,6 +472,7 @@ public class FirebaseManager {
         data.put("End Date", end_date);
         data.put("Event Date", event_date);
         data.put("Location", location);
+        data.put("Location Required", location_required);
         data.put("Description", description);
         data.put("Event Size", eventSize);
         data.put("Max Entrants", maxEntrants);
@@ -496,8 +498,8 @@ public class FirebaseManager {
             idlingResource.decrement();
         });
 
-        return new Event(eid, oid, name, start_date, end_date, event_date, location, description,
-                photo_url, qr_url, eventSize, maxEntrants, categories, this);
+        return new Event(eid, oid, name, start_date, end_date, event_date, location, location_required,
+                description, photo_url, qr_url, eventSize, maxEntrants, categories, this);
     }
 
     /**
@@ -513,6 +515,7 @@ public class FirebaseManager {
                 "Event Date", event.getEventDate(),
                 "Organizer", event.getOrganizerID(),
                 "Location", event.getLocation(),
+                "Location Required", event.isLocationRequired(),
                 "Description", event.getDescription(),
                 "Event Size", event.getEventSize(),
                 "Max Entrants", event.getMaxEntrants(),
@@ -613,6 +616,7 @@ public class FirebaseManager {
                 doc.getTimestamp("End Date"),
                 doc.getTimestamp("Event Date"),
                 doc.getString("Location"),
+                doc.getBoolean("Location Required"),
                 doc.getString("Description"),
 
                 // Default empty strings instead of null

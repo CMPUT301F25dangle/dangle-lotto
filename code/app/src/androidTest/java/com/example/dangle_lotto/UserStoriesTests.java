@@ -120,7 +120,7 @@ public class UserStoriesTests {
         Thread.sleep(1500);
 
         // Create an event to test on
-        eventOfInterest = firebaseManager.createEvent(ownerUid, "Good Party", makeTimestamp(2024, 11, 1), makeTimestamp(2026, 11, 1), makeTimestamp(2026, 11, 2), "Da House", "A party for good people", 10, 100, "", "", new ArrayList<String>());
+        eventOfInterest = firebaseManager.createEvent(ownerUid, "Good Party", makeTimestamp(2024, 11, 1), makeTimestamp(2026, 11, 1), makeTimestamp(2026, 11, 2), "Da House", false,"A party for good people", 10, 100, "", "", new ArrayList<String>());
     }
 
     @After
@@ -717,7 +717,7 @@ public class UserStoriesTests {
     @Test
     public void UserCannotJoinWaitlistForEventThatHasNotStarted() {
         // Create event
-        Event event = firebaseManager.createEvent(ownerUid, "Event that has not started yet", makeTimestamp(2026, 11, 1), makeTimestamp(2026, 11, 2), makeTimestamp(2026, 11, 3), "Da House", "A party for good people", 10, 100, "", "", new ArrayList<String>());
+        Event event = firebaseManager.createEvent(ownerUid, "Event that has not started yet", makeTimestamp(2026, 11, 1), makeTimestamp(2026, 11, 2), makeTimestamp(2026, 11, 3), "Da House", false,"A party for good people", 10, 100, "", "", new ArrayList<String>());
 
         // Login the user
         login("tester@gmail.com", "password");
@@ -738,7 +738,7 @@ public class UserStoriesTests {
     @Test
     public void UserCannotJoinWaitlistForEventThatEnded() {
         // Create event
-        Event event = firebaseManager.createEvent(ownerUid, "Event that not ended", makeTimestamp(2025, 11, 1), makeTimestamp(2025, 11, 2), makeTimestamp(2026, 11, 3), "Da House", "A party for good people", 10, 100, "", "", new ArrayList<String>());
+        Event event = firebaseManager.createEvent(ownerUid, "Event that not ended", makeTimestamp(2025, 11, 1), makeTimestamp(2025, 11, 2), makeTimestamp(2026, 11, 3), "Da House", false,"A party for good people", 10, 100, "", "", new ArrayList<String>());
 
         // Login the user
         login("tester@gmail.com", "password");

@@ -75,6 +75,8 @@ public class Event {
      */
     String location;
 
+    Boolean location_required;
+
     /**
      * Unique ID of the event organizer.
      */
@@ -130,6 +132,7 @@ public class Event {
      * @param end_date        Event deadline or draw date.
      * @param event_date      Event deadline or draw date.
      * @param location        Location where event occurs.
+     * @param location_required Whether location is required to register for event.
      * @param description     Description of the event.
      * @param photo_id        Associated photo identifier.
      * @param eventSize       Maximum number of attendees.
@@ -138,7 +141,7 @@ public class Event {
      * @param firebaseManager Reference to FirebaseManager instance.
      */
     public Event(String eid, String organizer_id, String name, Timestamp start_date,
-                 Timestamp end_date, Timestamp event_date, String location,
+                 Timestamp end_date, Timestamp event_date, String location, Boolean location_required,
                  String description, String photo_id, String qr_id, int eventSize, Integer maxEntrants,
                  ArrayList<String> categories, FirebaseManager firebaseManager) {
 
@@ -149,6 +152,7 @@ public class Event {
         this.end_date = end_date;
         this.event_date = event_date;
         this.location = location;
+        this.location_required = location_required;
         this.description = description;
         this.photo_id = photo_id;
         this.qr_id = qr_id;
@@ -236,6 +240,26 @@ public class Event {
         this.location = location;
         firebaseManager.updateEvent(this);
     }
+
+    /**
+     * Returns whether the event requires a location.
+     *
+     * @return if the event requires a location to register
+     */
+    public Boolean isLocationRequired() {
+        return location_required;
+    }
+
+    /**
+     * Sets the location required and updates Firebase.
+     *
+     * @param location_required if the event requires a location to register
+     */
+    public void setLocationRequired(Boolean location_required) {
+        this.location_required = location_required;
+        firebaseManager.updateEvent(this);
+    }
+
 
     /**
      * @return The event deadline as a Firebase {@link Timestamp}.

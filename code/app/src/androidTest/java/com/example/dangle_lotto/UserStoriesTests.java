@@ -1,14 +1,19 @@
 package com.example.dangle_lotto;
 
 import static androidx.test.espresso.Espresso.onView;
+import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
-import static androidx.test.espresso.matcher.ViewMatchers.isRoot;
+import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
 import static androidx.test.espresso.matcher.ViewMatchers.withHint;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
+
+import static org.hamcrest.Matchers.not;
+
+import android.util.Log;
 
 import androidx.test.espresso.IdlingRegistry;
 import androidx.test.espresso.IdlingResource;
@@ -17,15 +22,30 @@ import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
 
+import com.example.dangle_lotto.FirebaseCallback;
+import com.example.dangle_lotto.FirebaseManager;
+import com.example.dangle_lotto.LoginActivity;
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
+import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
+import com.google.firebase.functions.FirebaseFunctions;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
@@ -34,42 +54,165 @@ public class UserStoriesTests {
     public ActivityScenarioRule<LoginActivity> scenario = new
             ActivityScenarioRule<>(LoginActivity.class);
 
-    private final FirebaseManager firebaseManager = FirebaseManager.getInstance();
+    private static FirebaseManager firebaseManager;
     private IdlingResource firebaseIdlingResource;
+
+    private static String ownerUid;
+    private static String testerUid;
+    private String tester2Uid;
+
+    private Event eventOfInterest;
 
     /**
      * Sets up the Firebase emulator for testing.
      */
     @BeforeClass
-    public static void setupOnce() {
+    public static void setupOnce() throws InterruptedException {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         FirebaseAuth mAuth = FirebaseAuth.getInstance();
+        FirebaseFunctions func = FirebaseFunctions.getInstance();
 
         db.useEmulator("10.0.2.2", 8080);
         mAuth.useEmulator("10.0.2.2", 9099);
+        func.useEmulator("10.0.2.2", 5001);
+
+        firebaseManager = FirebaseManager.getInstance();
 
         System.out.println("✅ Firebase emulator connected once before all tests.");
+
     }
 
     /**
-     * Logs in the user before each test.
+     *
      */
     @Before
-    public void setup() {
+    public void setup() throws InterruptedException {
         // Register idling resource so Espresso waits for Firebase calls
         firebaseIdlingResource = firebaseManager.getIdlingResource();
         IdlingRegistry.getInstance().register(firebaseIdlingResource);
 
-        // Logs the user in
-        onView(withHint("Email")).perform(typeText("afzalmahd@gmail.com"), closeSoftKeyboard());
-        onView(withHint("Password")).perform(typeText("password"), closeSoftKeyboard());
-        onView(withText("LOGIN")).perform(ViewActions.click());
+        // Creates owner user
+        firebaseManager.signUp("owner@gmail.com", "password", "owner","Owner User", "1234123123", "", true, new FirebaseCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                ownerUid = result;
+            }
+
+            @Override
+            public void onFailure(Exception e) { }
+        });
+
+        Thread.sleep(1500);
+
+        // Create tester AFTER owner is created
+        firebaseManager.signUp("tester@gmail.com", "password", "tester", "Tester User", "", "", true, new FirebaseCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                testerUid = result;
+            }
+
+            @Override
+            public void onFailure(Exception e) { }
+        });
+
+        Thread.sleep(1500);
+
+
+        // Create an event to test on
+        eventOfInterest = firebaseManager.createEvent(ownerUid, "Good Party", Timestamp.now(), Timestamp.now(), Timestamp.now(), "Da House", "A party for good people", 10, 100, "", "", new ArrayList<String>());
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws InterruptedException {
+        clearFirestore();
+
         // Unregister idling resource
         IdlingRegistry.getInstance().unregister(firebaseIdlingResource);
+    }
+
+    /**
+     * Deletes all users and events from the database.
+     *
+     * @return A Firebase {@link Task} representing the operation.
+     */
+    public static void clearFirestore() throws InterruptedException {
+        try {
+            // Delete users collection
+            QuerySnapshot users = Tasks.await(firebaseManager.getUsersReference().get());
+            for (DocumentSnapshot doc : users) {
+                System.out.println("Deleting user: " + doc.getId());
+                Tasks.await(firebaseManager.deleteUser(doc.getId()));
+            }
+
+            // Delete events collection
+            QuerySnapshot events = Tasks.await(firebaseManager.getEventsReference().get());
+            for (DocumentSnapshot doc : events) {
+                Tasks.await(firebaseManager.deleteEvent(doc.getId()));
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        Thread.sleep(1000);
+    }
+
+    @Test
+    public void test() {
+
+    }
+
+
+    public void login(String email, String password) {
+        // Logs the user in
+        onView(withHint("Email")).perform(typeText(email), closeSoftKeyboard());
+        onView(withHint("Password")).perform(typeText(password), closeSoftKeyboard());
+        onView(withText("LOGIN")).perform(click());
+    }
+
+    /**
+     * Joins the waiting list for an event. We call it registering.
+     * <p>
+     * US 01.01.01 As an entrant, I want to join the waiting list for a specific event
+     * This test works because the buttons appearance only changes if the callback is successful for registering.
+     */
+    @Test
+    public void JoinWaitingList() {
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Click on the event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on the join button
+        onView(withText("Register for Lottery")).perform(click());
+
+        // Check if button says "Withdraw Registration"
+        onView(withText("Withdraw Registration")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Leaves the waiting list for an event. We call it unregistering.
+     * <p>
+     * US 01.01.02 As an entrant, I want to leave the waiting list for a specific event
+     * This test works because the buttons appearance only changes if the callback is successful for registering.
+     */
+    @Test
+    public void LeaveWaitingList() {
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Click on the event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on the join button
+        onView(withText("Register for Lottery")).perform(click());
+
+        // Click on the join button
+        onView(withText("Withdraw Registration")).perform(click());
+
+        // Check if button says "Register for Lottery"
+        onView(withText("Register for Lottery")).check(matches(isDisplayed()));
     }
 
     /**
@@ -79,10 +222,237 @@ public class UserStoriesTests {
      */
     @Test
     public void HomePageOpensAndHasEvents() {
+        // Login the user
+        login("tester@gmail.com", "password");
+
         // check if home page opens by scanning for id
         onView(withId(R.id.home_fragment_title)).check(matches(isDisplayed()));
 
         // Check if an event is displayed on the home page
-        onView(withText("Diddy Party")).check(matches(isDisplayed()));
+        onView(withText("Good Party")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Checks if user can provide optional personal information.
+     * <p>
+     * US 01.02.01 As an entrant, I want to provide my personal information such as name, email and optional phone number in the app
+     */
+    @Test
+    public void UserCanProvidePersonalInfo() {
+        // User wants to sign up
+        onView(withText("Don’t have an account? Sign Up")).perform(click());
+
+        // Check for optional fields
+        onView(withHint("Email")).check(matches(isDisplayed()));
+        onView(withHint("Phone Number")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Checks if user can update their personal information
+     * <p>
+     * US 01.02.02 As an entrant I want to update information such as name, email and contact information on my profile
+     */
+    @Test
+    public void UserCanUpdatePersonalInfo() {
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // User navigates to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // User clicks on settings button
+        onView(withId(R.id.dashboard_fragment_setting_button)).perform(click());
+
+        // User updates email
+        onView(withId(R.id.settings_fragment_email)).perform(typeText("s"), closeSoftKeyboard());
+
+        // User updates phone number
+        onView(withId(R.id.settings_fragment_phone_number)).perform(typeText("000"), closeSoftKeyboard());
+
+        // User clicks on update button
+        onView(withText("Update Profile")).perform(click());
+        onView(withText("Confirm Update")).perform(click());
+
+        // Update button is unclickable
+        onView(withId(R.id.user_settings_update_button)).check(matches(not(isEnabled())));
+    }
+
+    /**
+     * Checks if user can view their history of events.
+     * <p>
+     * US 01.02.03 As an entrant, I want to have a history of events I have registered for, whether I was selected or not.
+     */
+    @Test
+    public void UserCanViewHistoryOfEvents() {
+
+    }
+
+    /**
+     * Checks if user can delete their account.
+     * <p>
+     * US 01.02.04 As an entrant, I want to delete my profile if I no longer wish to use the app.
+     */
+    @Test
+    public void UserCanDeleteAccount() {
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // User navigates to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // User clicks on settings button
+        onView(withId(R.id.dashboard_fragment_setting_button)).perform(click());
+
+        // User clicks on delete button
+        onView(withText("Delete Profile")).perform(click());
+        onView(withText("Confirm Delete")).perform(click());
+
+        // Check if back on login page
+        onView(withText("LOGIN")).check(matches(isDisplayed()));
+    }
+
+    /** Check if user can get another chance to sign up.
+     * <p>
+     * US 01.05.01 As an entrant I want another chance to be chosen from the waiting list if a selected user declines an invitation to sign up.
+     * Users are automatically given a chance to be drawn if they have registered for the event.
+     */
+    @Test
+    public void UserCanGetAnotherChanceToSignUp() throws InterruptedException {
+        // Create a user to add to the event chosen list
+        firebaseManager.signUp("tester2@gmail.com", "password", "tester2","Tester User", "", "", true, new FirebaseCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                tester2Uid = result;
+            }
+            @Override
+            public void onFailure(Exception e) { }
+        });
+        Thread.sleep(1500);
+        firebaseManager.userAddStatus(tester2Uid, eventOfInterest.getEid(), "Chosen");
+
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Click on the event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on the join waitlist button
+        onView(withText("Join Waitlist")).perform(click());
+
+        // Check if button changed to "Leave Waitlist"
+        onView(withText("Leave Waitlist")).check(matches(isDisplayed()));
+
+        // Click on the back button
+        onView(withId(R.id.btn_back)).perform(click());
+
+        // Make the tester2 user decline
+        firebaseManager.userAddStatus(tester2Uid, eventOfInterest.getEid(), "Cancelled");
+
+        // Make the tester user chosen
+        firebaseManager.userAddStatus(testerUid, eventOfInterest.getEid(), "Chosen");
+
+        // User refreshes the home page
+        onView(withId(R.id.refresh_button)).perform(click());
+
+        // Click on the event
+        onView(withText("Good Party")).perform(click());
+
+        // Check if text says "You’ve Been Chosen!"
+        onView(withText("You’ve Been Chosen!")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Checks if user can accept an event invitation.
+     * <p>
+     * US 01.05.02 As an entrant I want to be able to accept the invitation to register/sign up when chosen to participate in an event.
+     */
+    @Test
+    public void AcceptEventInvitation() {
+        // Add the user to the event chosen list
+        firebaseManager.userAddStatus(testerUid, eventOfInterest.getEid(), "Chosen");
+
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Click on the event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on the join button
+        onView(withText("You’ve Been Chosen!")).perform(click());
+
+        // Click on the attend button to accept
+        onView(withText("Attend")).perform(click());
+
+        // Check if button says "Attending"
+        onView(withText("Attending")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Checks if user can decline an event invitation.
+     * <p>
+     * US 01.05.03 As an entrant I want to be able to decline an invitation when chosen to participate in an event.
+     */
+    @Test
+    public void DeclineEventInvitation() {
+        // Add the user to the event chosen list
+        firebaseManager.userAddStatus(testerUid, eventOfInterest.getEid(), "Chosen");
+
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Click on the event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on the join button
+        onView(withText("You’ve Been Chosen!")).perform(click());
+
+        // Click on the decline button to not accept
+        onView(withText("Decline")).perform(click());
+
+        // Check if button says "Cancelled"
+        onView(withText("Cancelled")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Checks if user can see how many entrants are on the waiting list for an event.
+     * <p>
+     * US 01.05.04 As an entrant, I want to know how many total entrants are on the waiting list for an event.
+     */
+    @Test
+    public void WaitingListSize() {
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Click on the event
+        onView(withText("Good Party")).perform(click());
+
+        // Check number of registrants
+        onView(withText("Spots Remaining: 100/100")).check(matches(isDisplayed()));
+
+        // Click on the join button
+        onView(withText("Register for Lottery")).perform(click());
+
+        // Check number of registrants
+        onView(withText("Spots Remaining: 99/100")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Checks if user can see event criteria.
+     * <p>
+     * US 01.05.05 As an entrant, I want to be informed about the criteria or guidelines for the lottery selection process.
+     */
+    @Test
+    public void EventCriteria() {
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Click on the event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on info button for criteria
+        onView(withId(R.id.event_detail_information_button)).perform(click());
+
+        // Check if criteria is displayed
+        onView(withText("Event Criteria")).check(matches(isDisplayed()));
     }
 }

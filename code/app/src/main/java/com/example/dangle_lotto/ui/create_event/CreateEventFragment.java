@@ -20,10 +20,14 @@ import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
 import androidx.navigation.fragment.NavHostFragment;
 
+import com.example.dangle_lotto.Event;
 import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentCreateEventBinding;
+import com.google.android.material.datepicker.CalendarConstraints;
+import com.google.android.material.datepicker.DateValidatorPointBackward;
+import com.google.android.material.datepicker.DateValidatorPointForward;
 import com.google.android.material.datepicker.MaterialDatePicker;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.Timestamp;
@@ -35,6 +39,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
+import java.util.function.Consumer;
 
 import android.graphics.Bitmap;
 import android.widget.Toast;
@@ -49,21 +54,20 @@ import com.google.zxing.common.BitMatrix;
  * CreateEventFragment - This fragment will be displayed whenever a GeneralUser
  * wants to organize an event.
  *
- * Note: Sometimes the Cancel and Done buttons do not click and I don't know why
- * I will fix that later (i hope)
  *
- * @author Annie Ding
- * @version 1.5
- * @since 2025-11-07
+ * @author Annie Ding, Mahd Afzal
+ * @version 2.0
+ * @since 2025-11-23
  */
 public class CreateEventFragment extends Fragment {
     private FragmentCreateEventBinding binding;
-    private FirebaseManager firebaseManager = new FirebaseManager();
+    private FirebaseManager firebaseManager = FirebaseManager.getInstance();
     private UserViewModel userViewModel;
     private int maxEntrants;
-    private Bitmap qr = null;
 
-    private long selectedDateTimeMillis;
+    private Long registrationStartDate = null;
+    private Long registrationEndDate = null;
+    private Long eventDate = null;
     private ActivityResultLauncher<PickVisualMediaRequest> pickMedia;
 
     private Uri selectedUri;
@@ -90,9 +94,9 @@ public class CreateEventFragment extends Fragment {
         binding.btnCancel.bringToFront();
         binding.btnDone.bringToFront();
 
-        selectedDateTimeMillis = System.currentTimeMillis() + 1000*60*60; // an hour ahead is default time
+//        registrationStartDate = System.currentTimeMillis() + 1000*60*60; // an hour ahead is default time
 
-        // initalize image picker
+        // initialize image picker
         pickMedia = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(),
             uri -> {
                 if (uri != null) {
@@ -117,33 +121,70 @@ public class CreateEventFragment extends Fragment {
             goBack();
         });
 
+        // done button will upload banner to
         binding.btnDone.setOnClickListener(v -> {
-                    if (selectedUri != null) {
-                        firebaseManager.uploadBannerPic(selectedUri, new FirebaseCallback<String>() {
-                            @Override
-                            public void onSuccess(String result) {
+            if (selectedUri != null) {
+                firebaseManager.uploadBannerPic(selectedUri, new FirebaseCallback<String>() {
+                    @Override
+                    public void onSuccess(String result) {
                                 createEvent(result);
                             }
 
-                            @Override
-                            public void onFailure(Exception e) {
+                    @Override
+                    public void onFailure(Exception e) {
                                 createEvent(null);
                             }
-                        });
-                    } else createEvent(null);
                 });
-
-        // max entrants toggle
-        binding.cbMaxEntrants.setOnClickListener(v -> {
-            boolean isEnabled = binding.createEventInputMaxEntrants.isEnabled();
-            binding.createEventInputMaxEntrants.setEnabled(!isEnabled);
+            } else createEvent(null);
         });
 
-        // Set default max entrants
-        binding.createEventInputMaxEntrants.setText("50");
+        // date picker for registration start date
+        binding.createEventRegistrationStartInput.setOnClickListener(v -> {
+            showDateTimePicker(utcMillis -> {
+                registrationStartDate = utcMillis;
 
-        // open date and time picker
-        binding.createEventInputDate.setOnClickListener(v -> showDateTimePicker());
+                // check if the dates selected are valid
+                if (!validateEventDates()) {
+                    registrationStartDate = null;
+                    return;
+                }
+
+                SimpleDateFormat fmt = new SimpleDateFormat("MMMM d, yyyy h:mm a", Locale.getDefault());
+                binding.createEventRegistrationStartInput.setText(fmt.format(new Date(utcMillis)));
+            });
+        });
+
+        // date picker for registration end date
+        binding.createEventRegistrationEndInput.setOnClickListener(v -> {
+            showDateTimePicker(utcMillis -> {
+                registrationEndDate = utcMillis;
+
+                // check if the dates selected are valid
+                if (!validateEventDates()) {
+                    registrationEndDate = null;
+                    return;
+                }
+
+                SimpleDateFormat fmt = new SimpleDateFormat("MMMM d, yyyy h:mm a", Locale.getDefault());
+                binding.createEventRegistrationEndInput.setText(fmt.format(new Date(utcMillis)));
+            });
+        });
+
+        // date picker for event date
+        binding.createEventDateInput.setOnClickListener(v -> {
+            showDateTimePicker(utcMillis -> {
+                eventDate = utcMillis;
+
+                // check if the dates selected are valid
+                if (!validateEventDates()) {
+                    eventDate = null;
+                    return;
+                }
+
+                SimpleDateFormat fmt = new SimpleDateFormat("MMMM d, yyyy h:mm a", Locale.getDefault());
+                binding.createEventDateInput.setText(fmt.format(new Date(utcMillis)));
+            });
+        });
 
         // open category multiple choice dialogue
         binding.createEventCategoriesInput.setOnClickListener(v -> {
@@ -171,16 +212,23 @@ public class CreateEventFragment extends Fragment {
         return root;
     }
 
-    private void showDateTimePicker() {
+    private void showDateTimePicker(
+            Consumer<Long> onResultUtc  // callback giving final UTC timestamp
+    ) {
+        CalendarConstraints.Builder constraintsBuilder =
+                new CalendarConstraints.Builder();
+
+        constraintsBuilder.setStart(MaterialDatePicker.todayInUtcMilliseconds());
+        constraintsBuilder.setValidator(DateValidatorPointForward.now());
 
         MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
-                .setTitleText("Select deadline date")
                 .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
+                .setCalendarConstraints(constraintsBuilder.build())
                 .build();
 
         datePicker.addOnPositiveButtonClickListener(selection -> {
 
-            // Convert picked date from UTC → local time zone
+            // Convert picked date from UTC → local
             Calendar pickedUtc = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
             pickedUtc.setTimeInMillis(selection);
 
@@ -189,9 +237,9 @@ public class CreateEventFragment extends Fragment {
             localCal.set(Calendar.MONTH, pickedUtc.get(Calendar.MONTH));
             localCal.set(Calendar.DAY_OF_MONTH, pickedUtc.get(Calendar.DAY_OF_MONTH));
 
-            // ★ Get current local hour/minute for default time picker
+            // Default time: current local time
             Calendar now = Calendar.getInstance();
-            int defaultHour = now.get(Calendar.HOUR_OF_DAY);
+            int defaultHour   = now.get(Calendar.HOUR_OF_DAY);
             int defaultMinute = now.get(Calendar.MINUTE);
 
             // TIME PICKER
@@ -199,98 +247,157 @@ public class CreateEventFragment extends Fragment {
                     requireContext(),
                     (view, hour, minute) -> {
 
-                        // Combine chosen date + chosen time (local timezone)
+                        // combine date + picked time
                         localCal.set(Calendar.HOUR_OF_DAY, hour);
                         localCal.set(Calendar.MINUTE, minute);
                         localCal.set(Calendar.SECOND, 0);
                         localCal.set(Calendar.MILLISECOND, 0);
 
-                        if (localCal.getTimeInMillis() < System.currentTimeMillis()){
+                        long pickedLocalMillis = localCal.getTimeInMillis();
+
+                        if (localCal.getTimeInMillis() < System.currentTimeMillis()) {
                             Toast.makeText(getActivity(), "Invalid time. Time must be in the future",
                                     Toast.LENGTH_SHORT).show();
                             return;
-                        }else {
-                            // Convert local → UTC
-                            Calendar utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
-                            utcCal.setTimeInMillis(localCal.getTimeInMillis());
-                            selectedDateTimeMillis = utcCal.getTimeInMillis();
-
-                            // Display back to user in local time
-                            SimpleDateFormat fmt = new SimpleDateFormat("MMMM d, yyyy h:mm a", Locale.getDefault());
-                            binding.createEventInputDate.setText(fmt.format(localCal.getTime()));
                         }
+
+                        // Convert local → UTC
+                        Calendar utcCal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+                        utcCal.setTimeInMillis(pickedLocalMillis);
+
+                        long utcResult = utcCal.getTimeInMillis();
+
+                        // Call user callback
+                        onResultUtc.accept(utcResult);
                     },
-                    defaultHour,   // ★ starting hour
-                    defaultMinute, // ★ starting minute
+                    defaultHour,
+                    defaultMinute,
                     false
             );
 
             timePicker.show();
-
         });
 
         datePicker.show(getParentFragmentManager(), "DATE_PICKER");
     }
 
     /**
-     * Toggles the status of max entrants input to be in accordance with the checkbox
+     * Validates registrationStartDate, registrationEndDate, and eventDate ordering.
+     * Returns true if valid; otherwise false and shows appropriate messages.
      */
-    private void toggleMaxEntrants() {
-        boolean isEnabled = binding.createEventInputMaxEntrants.isEnabled();
-        binding.createEventInputMaxEntrants.setEnabled(!isEnabled);
-
-        // Optional: Change appearance when disabled
-        if (!isEnabled) {
-            binding.createEventInputMaxEntrants.setAlpha(1.0f);
-        } else {
-            binding.createEventInputMaxEntrants.setAlpha(0.5f);
+    private boolean validateEventDates() {
+        // check if registration start is before registration end
+        if (registrationStartDate != null && registrationEndDate != null) {
+            if (registrationStartDate >= registrationEndDate) {
+                Toast.makeText(getContext(),
+                        "Registration end must be after registration start",
+                        Toast.LENGTH_SHORT).show();
+                return false;
+            }
         }
+
+        // check if event date is after registration end
+        if (registrationEndDate != null && eventDate != null) {
+            if (registrationEndDate >= eventDate) {
+                Toast.makeText(getContext(),
+                        "Event date must be after registration end",
+                        Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        }
+
+        // check if event date is after registration start
+        if (registrationStartDate != null && eventDate != null) {
+            if (registrationStartDate >= eventDate) {
+                Toast.makeText(getContext(),
+                        "Event date must be after registration start",
+                        Toast.LENGTH_SHORT).show();
+                return false;
+            }
+        }
+
+        return true;
     }
 
     /**
      * Creates the event and adds it to the database
+     *
+     * @param photo_url - the url of the banner image
      */
     private void createEvent(String photo_url) {
         try {
             // Validate required fields
             String name = binding.createEventNameInput.getText().toString().trim();
             if (name.isEmpty()) {
-                Log.e("CreateEvent", "Event name is required");
-                // Show error to user
                 binding.createEventNameInput.setError("Event name is required");
                 return;
             }
 
+            // get event description
             String description = binding.createEventInputDescription.getText().toString().trim();
 
-            Timestamp dateTimeStamp;
-            try {
-                dateTimeStamp = new Timestamp(new Date(selectedDateTimeMillis));
-            } catch (Exception e) {
-                Log.e("CreateEvent", "Error parsing date: " + e.getMessage(), e);
-                return;
-            }
+            // Creating timestamps for the event
+            Timestamp registrationStartDateStamp = new Timestamp(new Date(registrationStartDate));
+            Timestamp registrationEndDateStamp = new Timestamp(new Date(registrationEndDate));
+            Timestamp eventDateTimeStamp = new Timestamp(new Date(eventDate));
 
+            // Checking if geo location is enabled
             String location = String.valueOf(binding.cbEnableGeolocation.isChecked());
 
-            if ((binding.cbMaxEntrants.isChecked())) {
-                maxEntrants = Integer.parseInt(binding.createEventInputMaxEntrants.getText().toString());
+            // Checking if max entrants is enabled (has text in it)
+            String maxEntrantsInput = binding.createEventInputMaxEntrants.getText().toString();
+            if (maxEntrantsInput.isEmpty()) {
+                maxEntrants = -1;
+            } else {
+                maxEntrants = Integer.parseInt(maxEntrantsInput);
             }
 
-            // Create event in Firebase
-            firebaseManager.createEvent(
+            // Create event
+            Event event = firebaseManager.createEvent(
                     userViewModel.getUser().getValue().getUid(),
                     name,
-                    dateTimeStamp,
+                    registrationStartDateStamp,
+                    registrationEndDateStamp,
+                    eventDateTimeStamp,
                     location,
                     description,
                     Integer.parseInt(binding.createEventSizeInput.getText().toString()),
                     maxEntrants,
                     photo_url,
+                    null,
                     selectedCategories
             );
-            userViewModel.setOrganizedEvents(null);
-            goBack();
+
+            // get event id
+            String eid = event.getEid();
+
+            // Generate the QR image (LOCALLY, not as a global field)
+            Bitmap qrBitmap = generateQRCodeBitmap(eid);
+            if (qrBitmap == null) {
+                Log.e("CreateEvent", "QR generation failed");
+                return;
+            }
+
+            // Upload QR
+            firebaseManager.uploadQR(qrBitmap, new FirebaseCallback<String>() {
+                @Override
+                public void onSuccess(String downloadUrl) {
+                    // Save QR URL on event
+                    event.setQR(downloadUrl);
+
+                    // update list (forces reload)
+                    userViewModel.setOrganizedEvents(null);
+
+                    // Show dialog ONLY NOW
+                    openQRDialogue(qrBitmap);
+
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Log.e("CreateEvent", "Error uploading QR: " + e.getMessage());
+                }
+            });
 
         } catch (Exception e) {
             Log.e("CreateEvent", "Error creating event: " + e.getMessage(), e);
@@ -300,38 +407,42 @@ public class CreateEventFragment extends Fragment {
     /**
      * Goes back to the previous fragment
      */
-    private void goBack() {
+    public void goBack() {
         NavController navController = NavHostFragment.findNavController(this);
         navController.popBackStack();
     }
 
     /**
      * Creates a QR code
+     *
+     * @param text - the text to be encoded
+     * @return the bitmap of the QR code
      */
     // The following function was made by chaitanyamunje at
     // https://www.geeksforgeeks.org/android/how-to-generate-qr-code-in-android/
-    private void generateQRCode(String text) {
-        if (qr == null) {
-            BarcodeEncoder barcodeEncoder = new BarcodeEncoder();
-//            try {
-//                qr = barcodeEncoder.encodeBitmap(text + binding.createEventInputTime.getText().toString(), BarcodeFormat.QR_CODE, 600, 600);
-//                openQRDialogue();
-//            } catch (WriterException e) {
-//                e.printStackTrace();
-//            }
+    private Bitmap generateQRCodeBitmap(String text) {
+        try {
+            MultiFormatWriter writer = new MultiFormatWriter();
+            BitMatrix bitMatrix = writer.encode(text, BarcodeFormat.QR_CODE, 600, 600);
+
+            BarcodeEncoder encoder = new BarcodeEncoder();
+            return encoder.createBitmap(bitMatrix);
+        } catch (WriterException e) {
+            e.printStackTrace();
         }
+        return null;
     }
 
 
     /**
      * Opens the QR code dialogue, setting the bitmap to be the generated one
      *
+     * @param qrBitmap - the bitmap of the QR code
      */
-
-    private void openQRDialogue(){
+    private void openQRDialogue(Bitmap qrBitmap){
         QRDialogueFragment dialog = new QRDialogueFragment();
-        dialog.setQr(qr);
-        dialog.show(getParentFragmentManager(), "QRDialog");
+        dialog.setQr(qrBitmap);
+        dialog.show(getChildFragmentManager(), "QRDialog");
     }
 
     @Override

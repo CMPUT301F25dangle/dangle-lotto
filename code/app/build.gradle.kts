@@ -59,10 +59,10 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:34.4.0"))
     // Firebase Auth
     implementation("com.google.firebase:firebase-auth:23.0.0")
+    // Firebase functions
+    implementation("com.google.firebase:firebase-functions:22.1.0")
 
-
-    // TODO: Add the dependencies for Firebase products you want to use
-    // When using the BoM, don't specify versions in Firebase dependencies
+    // firebase analytics
     implementation("com.google.firebase:firebase-analytics")
 
     // import dependency to generate QR code
@@ -76,6 +76,9 @@ dependencies {
     // image loading dependency
     implementation("com.github.bumptech.glide:glide:5.0.5")
     annotationProcessor("com.github.bumptech.glide:compiler:5.0.5")
+
+    // qr code scanning
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
 }
 
 

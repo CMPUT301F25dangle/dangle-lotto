@@ -24,7 +24,9 @@ public abstract class User {
     /** Unique identifier for the user (matches Firebase Auth UID). */
     protected final String uid;
 
-    /** Full name of the user. */
+    /** Username of the user. */
+    protected String username;
+    /** Full Name of the user. */
     protected String name;
 
     /** User's email address. */
@@ -49,14 +51,16 @@ public abstract class User {
      * Constructs a new User object with basic identifying information.
      *
      * @param uid             Unique Firebase UID of the user.
-     * @param name            Display name of the user.
+     * @param username        Display name of the user.
+     * @param name            Full name of the user.
      * @param email           Email address of the user.
      * @param phone           Phone number (nullable).
      * @param photo_id        Profile photo identifier (nullable).
      * @param firebaseManager Reference to the FirebaseManager for database updates.
      */
-    public User(String uid, String name, String email, String phone, String photo_id, FirebaseManager firebaseManager) {
+    public User(String uid, String username, String name, String email, String phone, String photo_id, FirebaseManager firebaseManager) {
         this.uid = uid;
+        this.username = username;
         this.name = name;
         this.email = email;
         this.phone = phone;
@@ -78,8 +82,13 @@ public abstract class User {
     /**
      * @return User’s full name.
      */
-    public String getName() {
-        return name;
+    public String getName() { return name; }
+
+    /**
+     * @return User’s display name.
+     */
+    public String getUsername() {
+        return username;
     }
 
     /**
@@ -110,7 +119,17 @@ public abstract class User {
     /**
      * Updates the user's name locally and in Firestore.
      *
-     * @param name New display name.
+     * @param username New display name.
+     */
+    public void setUsername(String username) {
+        this.username = username;
+        firebaseManager.updateUser(this);
+    }
+
+    /**
+     * Updates the user's name locally and in Firestore.
+
+     * @param name New full name.
      */
     public void setName(String name) {
         this.name = name;

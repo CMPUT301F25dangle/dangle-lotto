@@ -25,6 +25,23 @@
         app:layout_constraintTop_toTopOf="parent"
         app:tint="?attr/colorOnBackground" />
 
+    <ImageButton
+        android:id="@+id/event_detail_information_button"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@null"
+        android:elevation="8dp"
+        android:focusable="true"
+        android:padding="8dp"
+        android:src="@drawable/info_icon"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="?attr/colorOnBackground" />
+
     <!-- Scrollable content area -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll"

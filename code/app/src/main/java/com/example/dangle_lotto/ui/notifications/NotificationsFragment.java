@@ -75,7 +75,7 @@ public class NotificationsFragment extends Fragment {
             @Override
             public void onSuccess(ArrayList<String> eventIds) {
                 for (String eid : eventIds) {
-                    eventGrabber(eid, firebaseManager, "Chosen", new FirebaseCallback<Notification>() {
+                    eventGrabber(eid, firebaseManager, "You have won the lottery (Chosen)", new FirebaseCallback<Notification>() {
                         @Override
                         public void onSuccess(Notification notification) {
                             requireActivity().runOnUiThread(() -> {

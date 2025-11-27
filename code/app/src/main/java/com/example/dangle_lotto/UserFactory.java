@@ -17,10 +17,10 @@ public class UserFactory {
 
 
         if (isAdmin != null && isAdmin){
-            return new AdminUser(doc.getId(), username, name, email, phone, pid, firebaseManager);
+            return new AdminUser(doc.getId(), name, username, email, phone, pid, firebaseManager);
         }else{
             Boolean canOrganize = doc.getBoolean("CanOrganize");
-            return new GeneralUser(doc.getId(), username, name, email, phone, pid, firebaseManager, Boolean.TRUE.equals(canOrganize));
+            return new GeneralUser(doc.getId(), name, username, email, phone, pid, firebaseManager, Boolean.TRUE.equals(canOrganize));
         }
 
     }

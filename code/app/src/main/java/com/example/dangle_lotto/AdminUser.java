@@ -23,8 +23,8 @@ public class AdminUser extends User{
      * @param photo_id        Profile photo identifier (nullable).
      * @param firebaseManager Reference to the FirebaseManager for database updates.
      */
-    public AdminUser(String uid, String username, String name, String email, String phone, String photo_id, FirebaseManager firebaseManager) {
-        super(uid, username, name, email, phone, photo_id, firebaseManager);
+    public AdminUser(String uid, String name, String username, String email, String phone, String photo_id, FirebaseManager firebaseManager) {
+        super(uid, name, username, email, phone, photo_id, firebaseManager);
     }
 
     @Override

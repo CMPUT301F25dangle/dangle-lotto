@@ -149,6 +149,7 @@ public class CreateEventFragment extends Fragment {
                     return;
                 }
 
+                binding.createEventRegistrationStartInput.setError(null);
                 SimpleDateFormat fmt = new SimpleDateFormat("MMMM d, yyyy h:mm a", Locale.getDefault());
                 binding.createEventRegistrationStartInput.setText(fmt.format(new Date(utcMillis)));
             });
@@ -165,6 +166,7 @@ public class CreateEventFragment extends Fragment {
                     return;
                 }
 
+                binding.createEventRegistrationEndInput.setError(null);
                 SimpleDateFormat fmt = new SimpleDateFormat("MMMM d, yyyy h:mm a", Locale.getDefault());
                 binding.createEventRegistrationEndInput.setText(fmt.format(new Date(utcMillis)));
             });
@@ -181,6 +183,7 @@ public class CreateEventFragment extends Fragment {
                     return;
                 }
 
+                binding.createEventDateInput.setError(null);
                 SimpleDateFormat fmt = new SimpleDateFormat("MMMM d, yyyy h:mm a", Locale.getDefault());
                 binding.createEventDateInput.setText(fmt.format(new Date(utcMillis)));
             });
@@ -326,15 +329,49 @@ public class CreateEventFragment extends Fragment {
      */
     private void createEvent(String photo_url) {
         try {
-            // Validate required fields
-            String name = binding.createEventNameInput.getText().toString().trim();
-            if (name.isEmpty()) {
+            boolean hasError = false;
+
+            // Validate event name
+            String eventName = binding.createEventNameInput.getText().toString().trim();
+            if (eventName.isEmpty()) {
                 binding.createEventNameInput.setError("Event name is required");
-                return;
+                hasError = true;
             }
 
-            // get event description
+            // Validate description
             String description = binding.createEventInputDescription.getText().toString().trim();
+            if (description.isEmpty()) {
+                binding.createEventInputDescription.setError("Description is required");
+                hasError = true;
+            }
+
+            // Validate event limit
+            String eventLimit = binding.createEventSizeInput.getText().toString().trim();
+            if (eventLimit.isEmpty() || Integer.parseInt(eventLimit) <= 0) {
+                binding.createEventSizeInput.setError("Event limit is required");
+                hasError = true;
+            }
+
+            // Validate dates
+            if (registrationStartDate == null) {
+                binding.createEventRegistrationStartInput.setError("Invalid date");
+                hasError = true;
+            }
+
+            if (registrationEndDate == null) {
+                binding.createEventRegistrationEndInput.setError("Invalid date");
+                hasError = true;
+            }
+
+            if (eventDate == null) {
+                binding.createEventDateInput.setError("Invalid date");
+                hasError = true;
+            }
+
+            // returns if there is an error
+            if (hasError) {
+                return;
+            }
 
             // Creating timestamps for the event
             Timestamp registrationStartDateStamp = new Timestamp(new Date(registrationStartDate));
@@ -355,7 +392,7 @@ public class CreateEventFragment extends Fragment {
             // Create event
             Event event = firebaseManager.createEvent(
                     userViewModel.getUser().getValue().getUid(),
-                    name,
+                    eventName,
                     registrationStartDateStamp,
                     registrationEndDateStamp,
                     eventDateTimeStamp,
@@ -432,7 +469,6 @@ public class CreateEventFragment extends Fragment {
         }
         return null;
     }
-
 
     /**
      * Opens the QR code dialogue, setting the bitmap to be the generated one

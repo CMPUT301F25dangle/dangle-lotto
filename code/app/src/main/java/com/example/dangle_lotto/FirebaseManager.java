@@ -2,7 +2,6 @@ package com.example.dangle_lotto;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
-import android.util.Log;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
@@ -141,7 +140,7 @@ public class FirebaseManager {
      * @param canOrganize  Boolean value indicating whether the user can organize events
      * @param callback  Callback function to call when user is created
      */
-    public void signUp(String email, String password, String username, String name, String phone, String photo_id, boolean canOrganize, FirebaseCallback<String> callback) {
+    public void signUp(String email, String password, String name, String username, String phone, String photo_id, boolean canOrganize, FirebaseCallback<String> callback) {
         // idling resource for testing
         idlingResource.increment();
 
@@ -151,7 +150,7 @@ public class FirebaseManager {
                         FirebaseUser user = mAuth.getCurrentUser();
                         if (user != null){
                             String uid = user.getUid();
-                            this.createNewUser(uid, username, name, email, phone, photo_id, canOrganize);
+                            this.createNewUser(uid, name, username, email, phone, photo_id, canOrganize);
                             callback.onSuccess(uid);
                         }else{
                             callback.onFailure(new Exception("User not found"));
@@ -192,7 +191,7 @@ public class FirebaseManager {
      * @param canOrganize Whether the user can organize events.
      * @return Instantiated {@link GeneralUser} object.
      */
-    public void createNewUser(String uid, String username, String name, String email, String phone, String pid, boolean canOrganize){
+    public void createNewUser(String uid, String name,  String username, String email, String phone, String pid, boolean canOrganize){
         Map<String, Object> data = new HashMap<>();
         data.put("UID", uid);
         data.put("Username", username);
@@ -213,9 +212,9 @@ public class FirebaseManager {
      */
     public void updateUser(User user) {
         users.document(user.getUid()).update(
-                "Username", user.getUsername(),
                 "Name", user.getName(),
                 "Email", user.getEmail(),
+                "Username", user.getUsername(),
                 "Phone", user.getPhone(),
                 "Picture", user.getPhotoID()
         );
@@ -329,7 +328,6 @@ public class FirebaseManager {
         users.document(uid).get().addOnCompleteListener(task -> {
             if (task.isSuccessful()) {
                 DocumentSnapshot doc = task.getResult();
-                Log.d("FirebaseManager", "User retrieved: " + doc.getId());
                 if (doc.exists()) {
                     User user = UserFactory.getUser(doc, this);;
                     callback.onSuccess(user);
@@ -366,12 +364,12 @@ public class FirebaseManager {
                 if (doc.exists()) {
                     Map<String, Object> data = doc.getData();
                     assert data != null;
-                    String username = (String) data.get("Username");
                     String name = (String) data.get("Name");
+                    String username = (String) data.get("Username");
                     String email = (String) data.get("Email");
                     String phone = (String) data.get("Phone");
                     String pid = (String) data.get("Picture");
-                    AdminUser user = new AdminUser(uid, username, name, email, phone, pid, this);
+                    AdminUser user = new AdminUser(uid, name, username, email, phone, pid, this);
                     callback.onSuccess(user);
                 } else {
                     callback.onFailure(new Exception("User not found"));
@@ -432,7 +430,6 @@ public class FirebaseManager {
         data.put("Picture", photo_url);
         data.put("QR", qr_url);
         data.put("Categories", categories);
-
 
         // idling resource for testing
         idlingResource.increment();

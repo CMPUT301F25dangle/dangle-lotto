@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.TimeoutException;
 
 /**
  * FirebaseManager — handles all Firebase-related operations for authentication, users, and events.
@@ -676,6 +677,29 @@ public class FirebaseManager {
             // idling resource for testing
             idlingResource.decrement();
         });
+    }
+
+    /**
+     * Creates a notification document in the database.
+     *
+     * @param uid  User id
+     * @param eid  Event id
+     * @param status  Status of the notification
+     */
+    public void createNotification(String uid, String eid, String status){
+        String nid = users.document(uid).collection("Notifications").document().getId();
+        Notification newnNoti = new Notification(nid, eid, status, Timestamp.now());
+        users.document(uid).collection("Notifications").document(nid).set(newnNoti);
+    }
+
+    /**
+     * Converts a Firestore document snapshot into a {@link Notification} object.
+     *
+     * @param nDoc The Firestore document snapshot.
+     * @return An instantiated Notification object.
+     */
+    public Notification notiDocToNoti(DocumentSnapshot nDoc){
+        return nDoc.toObject(Notification.class);
     }
 
     /**

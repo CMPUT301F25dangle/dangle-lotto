@@ -89,12 +89,13 @@ public class EventFirebaseTest {
                 new Timestamp(date),
                 new Timestamp(date),
                 new Timestamp(date),
+                "House",
+                false,
+                "party for the real ones",
                 null,
-                "A party for diddy kong",
                 null,
-                null,
-                69,
                 -1,
+                10,
                 new ArrayList<>(),
                 firebaseManager
         );

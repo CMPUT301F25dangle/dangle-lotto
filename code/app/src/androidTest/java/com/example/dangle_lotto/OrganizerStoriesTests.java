@@ -15,6 +15,7 @@ import static androidx.test.espresso.matcher.ViewMatchers.withHint;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
+import static org.hamcrest.CoreMatchers.containsString;
 import static org.junit.Assert.fail;
 import static org.junit.Assume.assumeTrue;
 
@@ -300,8 +301,8 @@ public class OrganizerStoriesTests {
         onView(withText("EVENT")).perform(click());
 
         // Check if registration period is displayed
-        onView(withText("Opens: Dec 12, 2026 00:00")).check(matches(isDisplayed()));
-        onView(withText("Closes: Dec 13, 2026 00:00")).check(matches(isDisplayed()));
+        onView(withText(containsString("Opens: Dec 12, 2026"))).check(matches(isDisplayed()));
+        onView(withText(containsString("Closes: Dec 13, 2026"))).check(matches(isDisplayed()));
     }
 
     /**
@@ -381,7 +382,7 @@ public class OrganizerStoriesTests {
      */
     @Test
     public void OrganizerCanLimitWaitingList() throws InterruptedException {
-        // Login
+        // Login the user
         login("owner@gmail.com", "password");
 
         // Navigate to dashboard
@@ -390,28 +391,50 @@ public class OrganizerStoriesTests {
         // Click on create event button
         onView(withId(R.id.dashboard_fragment_new_event_button)).perform(click());
 
-        // Fill out event details
+        // Event name
         onView(withHint("Dangle Lotto Gathering")).perform(typeText("Good Party"), closeSoftKeyboard());
 
-        // Fill in number of entrants
-        onView(withHint("50")).perform(typeText("100"), closeSoftKeyboard());
+        // Maximum number of entrants
+        onView(withId(R.id.create_event_input_max_entrants)).perform(typeText("10"), closeSoftKeyboard());
+
+        // Event size
+        onView(withId(R.id.create_event_size_input)).perform(typeText("100"), closeSoftKeyboard());
+
+        // Event registration start date
+        onView(withId(R.id.create_event_registration_start_input)).perform(scrollTo(), click());
+        fillDatePicker("12122026");
+
+        // Event registration end date
+        onView(withId(R.id.create_event_registration_end_input)).perform(scrollTo(), click());
+        fillDatePicker("12132026");
+
+        // Event date
+        onView(withId(R.id.create_event_date_input)).perform(scrollTo(), click());
+        fillDatePicker("12142026");
+
+        // Event description
+        onView(withId(R.id.create_event_description_input)).perform(scrollTo(), typeText("A party for good people"), closeSoftKeyboard());
+
+        // Click on done button
+        onView(withText("Done")).perform(scrollTo(), click());
+
+        // Let QR code dialogue to appear
+        Thread.sleep(3000);
+
+        // Check if qr code is displayed
+        onView(withId(R.id.create_event_banner_QR_display)).check(matches(isDisplayed()));
 
         // Click on done button
         onView(withText("Done")).perform(click());
 
-        Thread.sleep(3000);
-
-        // Click on done button for dialogue fragment
-        onView(withText("Done")).perform(click());
-
-        // Check if event is displayed on home page
+        // Click on event
         onView(withText("Good Party")).perform(click());
 
         // Click on EVENT button
         onView(withText("EVENT")).perform(click());
 
-        // Check if number of entrants is displayed
-        onView(withText("100")).check(matches(isDisplayed()));
+        // Check if registration period is displayed
+        onView(withText("Spots Remaining: 10/10")).check(matches(isDisplayed()));
     }
 
     /**

@@ -94,8 +94,6 @@ public class CreateEventFragment extends Fragment {
         binding.btnCancel.bringToFront();
         binding.btnDone.bringToFront();
 
-//        registrationStartDate = System.currentTimeMillis() + 1000*60*60; // an hour ahead is default time
-
         // initialize image picker
         pickMedia = registerForActivityResult(new ActivityResultContracts.PickVisualMedia(),
             uri -> {

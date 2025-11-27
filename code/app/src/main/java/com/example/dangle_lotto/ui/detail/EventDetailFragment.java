@@ -107,6 +107,9 @@ public class EventDetailFragment extends Fragment {
         }
 
         // Geolocation
+        if (selectedEvent.isLocationRequired()) {
+            binding.eventDetailGeolocation.setText("Geolocation Is Required For This Event");
+        }
 
         // Display spots remaining
         updateSpotsUI();

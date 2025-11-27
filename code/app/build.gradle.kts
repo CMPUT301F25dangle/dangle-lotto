@@ -49,6 +49,7 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
     //implementation(files("/home/mahdlinux/Android/Sdk/platforms/android-34/android.jar"))
 
     //javadocs

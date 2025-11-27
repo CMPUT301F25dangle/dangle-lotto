@@ -14,11 +14,18 @@ import static androidx.test.espresso.matcher.ViewMatchers.withText;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 
+import android.Manifest;
+import android.content.Context;
+import android.content.pm.PackageManager;
+
+import androidx.core.content.ContextCompat;
+import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.IdlingRegistry;
 import androidx.test.espresso.IdlingResource;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
+import androidx.test.platform.app.InstrumentationRegistry;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
@@ -152,8 +159,8 @@ public class UserStoriesTests {
 
     public void login(String email, String password) {
         // Logs the user in
-        onView(withHint("Email")).perform(typeText(email), closeSoftKeyboard());
-        onView(withHint("Password")).perform(typeText(password), closeSoftKeyboard());
+        onView(withId(R.id.etLoginEmail)).perform(typeText(email), closeSoftKeyboard());
+        onView(withId(R.id.etLoginPassword)).perform(typeText(password), closeSoftKeyboard());
         onView(withText("LOGIN")).perform(click());
     }
 
@@ -236,13 +243,24 @@ public class UserStoriesTests {
      * US 01.02.01 As an entrant, I want to provide my personal information such as name, email and optional phone number in the app
      */
     @Test
-    public void UserCanProvidePersonalInfo() {
+    public void UserCanProvidePersonalInfo() throws InterruptedException {
         // User wants to sign up
         onView(withText("Don’t have an account? Sign Up")).perform(click());
 
-        // Check for optional fields
-        onView(withHint("Email")).check(matches(isDisplayed()));
-        onView(withHint("Phone Number")).check(matches(isDisplayed()));
+        // Fill in all fields
+        onView(withId(R.id.signup_name_input)).perform(typeText("Tester User 2"), closeSoftKeyboard());
+        onView(withId(R.id.signup_username_input)).perform(typeText("Tester User 2"), closeSoftKeyboard());
+        onView(withId(R.id.signup_email_input)).perform(typeText("tester2@gmail.com"), closeSoftKeyboard());
+        onView(withId(R.id.signup_phone_input)).perform(typeText("1234567890"), closeSoftKeyboard());
+        onView(withId(R.id.signup_password_input)).perform(typeText("password"), closeSoftKeyboard());
+
+        // Click on sign up button
+        onView(withText("Sign Up")).perform(click());
+
+        Thread.sleep(1000);
+
+        // Check if sign up worked
+        onView(withText("LOGIN")).check(matches(isDisplayed()));
     }
 
     /**
@@ -262,10 +280,10 @@ public class UserStoriesTests {
         onView(withId(R.id.dashboard_fragment_setting_button)).perform(click());
 
         // User updates email
-        onView(withId(R.id.singup_email_input)).perform(typeText("s"), closeSoftKeyboard());
+        onView(withId(R.id.settings_fragment_email_input)).perform(typeText("s"), closeSoftKeyboard());
 
         // User updates phone number
-        onView(withId(R.id.signup_phone_input)).perform(typeText("000"), closeSoftKeyboard());
+        onView(withId(R.id.settings_fragment_phone_input)).perform(typeText("000"), closeSoftKeyboard());
 
         // User clicks on update button
         onView(withText("Update Profile")).perform(click());
@@ -282,8 +300,29 @@ public class UserStoriesTests {
      */
     @Test
     public void UserCanViewHistoryOfEvents() {
-        // FAIL TEST
-        onView(withId(0)).perform(click());
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Click on event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on attend button
+        onView(withText("Register for Lottery")).perform(click());
+
+        // Check if button says "Withdraw Registration"
+        onView(withText("Withdraw Registration")).check(matches(isDisplayed()));
+
+        // Click on your event buttons
+        onView(withId(R.id.navigation_your_events)).perform(click());
+
+        // Check if event is displayed
+        onView(withText("Good Party")).check(matches(isDisplayed()));
+
+        // Click on event
+        onView(withText("Good Party")).perform(click());
+
+        // Check if buttons says "Withdraw Registration"
+        onView(withText("Withdraw Registration")).check(matches(isDisplayed()));
     }
 
     /**
@@ -514,7 +553,7 @@ public class UserStoriesTests {
      * US 01.06.01 As an entrant I want to view event details within the app by scanning the promotional QR code.
      */
     @Test
-    public void UserCanScanQRCode() {
+    public void UserCanScanQRCode() throws InterruptedException {
         // Fail test
         onView(withId(0)).perform(click());
     }

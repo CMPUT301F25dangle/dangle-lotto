@@ -31,4 +31,3 @@ espresso-idling-resource = { group = "androidx.test.espresso", name = "espresso-
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-

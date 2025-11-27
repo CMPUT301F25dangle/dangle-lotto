@@ -4,6 +4,7 @@ import static androidx.test.espresso.Espresso.onData;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
@@ -83,10 +84,12 @@ public class OrganizerStoriesTests {
 
         System.out.println("✅ Firebase emulator connected once before all tests.");
 
+        // Clear db
+        clearFirestore();
     }
 
     /**
-     *
+     * Sets up the emulator before every test for testing.
      */
     @Before
     public void setup() throws InterruptedException {
@@ -95,7 +98,7 @@ public class OrganizerStoriesTests {
         IdlingRegistry.getInstance().register(firebaseIdlingResource);
 
         // Creates owner user
-        firebaseManager.signUp("owner@gmail.com", "password", "owner", "Owner User", "1234123123", "", true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("owner@gmail.com", "password", "Owner User", "Owner User", "1234123123", "", true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 ownerUid = result;
@@ -108,7 +111,7 @@ public class OrganizerStoriesTests {
         Thread.sleep(1500);
 
         // Create tester AFTER owner is created
-        firebaseManager.signUp("tester@gmail.com", "password", "tester","Tester User", "", "", true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("tester@gmail.com", "password", "Tester User","Tester User", "", "", true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 testerUid = result;
@@ -162,8 +165,8 @@ public class OrganizerStoriesTests {
      */
     public void login(String email, String password) {
         // Logs the user in
-        onView(withHint("Email")).perform(typeText(email), closeSoftKeyboard());
-        onView(withHint("Password")).perform(typeText(password), closeSoftKeyboard());
+        onView(withId(R.id.etLoginEmail)).perform(typeText(email), closeSoftKeyboard());
+        onView(withId(R.id.etLoginPassword)).perform(typeText(password), closeSoftKeyboard());
         onView(withText("LOGIN")).perform(click());
     }
 
@@ -193,10 +196,10 @@ public class OrganizerStoriesTests {
 
         // Fill out event details
         onView(withHint("Dangle Lotto Gathering")).perform(typeText("Good Party"), closeSoftKeyboard());
-        onView(withHint("We will be gathering…")).perform(typeText("A party for good people"), closeSoftKeyboard());
+        onView(withHint("We will be gathering…")).perform(scrollTo(), typeText("A party for good people"), closeSoftKeyboard());
 
         // Click on done button
-        onView(withText("Done")).perform(click());
+        onView(withText("Done")).perform(scrollTo(), click());
 
         // Let QR code dialogue to appear
         Thread.sleep(3000);
@@ -230,7 +233,12 @@ public class OrganizerStoriesTests {
         // Fill out event details
         onView(withHint("Dangle Lotto Gathering")).perform(typeText("Good Party"), closeSoftKeyboard());
 
-        //
+        // Fill out the event size
+        onView(withId(R.id.create_event_size_input)).perform(typeText("100"), closeSoftKeyboard());
+
+        // Fill in start date
+        onView(withId(R.id.create_event_registration_start_input)).perform(scrollTo(), click());
+
 
         // Click on done button
         onView(withText("Done")).perform(click());
@@ -421,7 +429,7 @@ public class OrganizerStoriesTests {
         Event eventOfInterest = createEvent();
 
         // Create another test user
-        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "", "", true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "Tester User 2", "", "", true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 tester2Uid = result;
@@ -486,7 +494,7 @@ public class OrganizerStoriesTests {
         Event eventOfInterest = createEvent();
 
         // Create another test user
-        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "", "", true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "", "", "", true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 tester2Uid = result;
@@ -534,7 +542,7 @@ public class OrganizerStoriesTests {
         Event eventOfInterest = createEvent();
 
         // Create another test user
-        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "", "", true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "", "", "", true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 tester2Uid = result;
@@ -582,7 +590,7 @@ public class OrganizerStoriesTests {
         Event eventOfInterest = createEvent();
 
         // Create another test user
-        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "", "", true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "", "", "", true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 tester2Uid = result;
@@ -671,7 +679,7 @@ public class OrganizerStoriesTests {
         Event eventOfInterest = createEvent();
 
         // Create another test user
-        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "", "", true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "", "", "", true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 tester2Uid = result;

@@ -66,41 +66,47 @@ public class SignupFragment extends Fragment {
      */
 
     private void registerUser() {
+        boolean valid = true;
+
         String name = etSignupName.getText().toString().trim();
         String username = etSignupUsername.getText().toString().trim();
         String email = etSignupEmail.getText().toString().trim();
         String phone = etSignupPhone.getText().toString().trim();
         String password = etSignupPassword.getText().toString().trim();
 
+        // Check if fields are empty or invalid
         if (TextUtils.isEmpty(name)) {
             etSignupName.setError("Name required");
-            return;
+            valid = false;
         }
 
-        if (TextUtils.isEmpty(name)) {
+        if (TextUtils.isEmpty(username)) {
             etSignupUsername.setError("Username required");
-            return;
+            valid = false;
         }
 
         if (TextUtils.isEmpty(email)) {
             etSignupEmail.setError("Email required");
-            return;
+            valid = false;
         }
 
         if (TextUtils.isEmpty(password)) {
             etSignupPassword.setError("Password required");
-            return;
+            valid = false;
         }
 
         if (password.length() < 6) {
             etSignupPassword.setError("Password must be at least 6 characters");
+            valid = false;
+        }
+
+        // If any mistake, return
+        if (!valid) {
             return;
         }
 
         btnSignUp.setEnabled(false);
 
-
-        // NEED TO CHANGE THIS TO HAVE USERNAME
         firebaseManager.signUp(email, password, username, name, phone, "", true, new FirebaseCallback<String>() {
                     @Override
                     public void onComplete() {
@@ -116,6 +122,10 @@ public class SignupFragment extends Fragment {
                                 .beginTransaction()
                                 .replace(R.id.auth_fragment_container, new LoginFragment())
                                 .commit();
+
+                        Toast.makeText(getActivity(),
+                                "Signup successful, please log in",
+                                Toast.LENGTH_LONG).show();
                     }
 
                     @Override

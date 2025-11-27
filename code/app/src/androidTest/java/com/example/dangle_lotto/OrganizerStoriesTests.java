@@ -494,7 +494,7 @@ public class OrganizerStoriesTests {
         Event eventOfInterest = createEvent();
 
         // Create another test user
-        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "", "", "", true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "Tester User 2", "", "", true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 tester2Uid = result;
@@ -542,7 +542,7 @@ public class OrganizerStoriesTests {
         Event eventOfInterest = createEvent();
 
         // Create another test user
-        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "", "", "", true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "Tester User 2", "", "", true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 tester2Uid = result;
@@ -590,7 +590,7 @@ public class OrganizerStoriesTests {
         Event eventOfInterest = createEvent();
 
         // Create another test user
-        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "", "", "", true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "Tester User 2", "", "", true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 tester2Uid = result;
@@ -679,7 +679,7 @@ public class OrganizerStoriesTests {
         Event eventOfInterest = createEvent();
 
         // Create another test user
-        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "", "", "", true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "Tester User 2", "", "", true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 tester2Uid = result;

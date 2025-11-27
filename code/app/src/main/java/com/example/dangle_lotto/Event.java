@@ -1,5 +1,7 @@
 package com.example.dangle_lotto;
 
+import android.util.Log;
+
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.Timestamp;
@@ -585,7 +587,7 @@ public class Event {
         }
 //        if (!chosen.isEmpty()) return; causes problems
 
-        if (registered.size() <= eventSize) {
+        if (registered.size() <= eventSize && chosen.isEmpty() && signUps.isEmpty()) {
             ArrayList<String> temp = new ArrayList<>(registered);
             for (String user : temp) {
                 addChosen(user);
@@ -593,15 +595,16 @@ public class Event {
         } else if (chosen.size() + signUps.size() < eventSize) {
             ArrayList<String> shuffled = new ArrayList<>(registered);
             Collections.shuffle(shuffled);
-            for (int i = 0; i < eventSize - chosen.size() - signUps.size(); i++) {
+            for (int i = 0; i < eventSize - chosen.size() - signUps.size() && i<shuffled.size(); i++) {
                 addChosen(shuffled.get(i));
             }
         } else {
-            ArrayList<String> shuffled = new ArrayList<>(registered);
-            Collections.shuffle(shuffled);
-            for (int i = 0; i < eventSize; i++) {
-                addChosen(shuffled.get(i));
-            }
+//            ArrayList<String> shuffled = new ArrayList<>(registered);
+//            Collections.shuffle(shuffled);
+//            for (int i = 0; i < eventSize; i++) {
+//                addChosen(shuffled.get(i));
+//            }
+            Log.e("Event", "Event is full");
         }
     }
 

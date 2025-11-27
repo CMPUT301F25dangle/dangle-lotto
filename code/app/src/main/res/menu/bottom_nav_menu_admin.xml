@@ -3,7 +3,19 @@
 
     <item
         android:id="@+id/adminViewEventsFragment"
-        android:icon="@drawable/ic_home_black_24dp"
+        android:icon="@drawable/outline_list_24"
         android:title="@string/title_home" />
+    <item
+        android:id="@+id/navigation_admin_users"
+        android:icon="@drawable/outline_account_box_24"
+        android:title="@string/users" />
 
+    <item
+        android:id="@+id/navigation_admin_notifications"
+        android:icon="@drawable/outline_circle_notifications_24"
+        android:title="@string/notifications" />
+    <item
+        android:id="@+id/navigation_admin_images"
+        android:icon="@drawable/outline_broken_image_24"
+        android:title="@string/images_admin" />
 </menu>

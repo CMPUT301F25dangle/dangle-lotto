@@ -85,7 +85,7 @@ public class UserStoriesTests {
         IdlingRegistry.getInstance().register(firebaseIdlingResource);
 
         // Creates owner user
-        firebaseManager.signUp("owner@gmail.com", "password", "Owner User", "ownerusername","1234123123", "", true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("owner@gmail.com", "password", "Owner User", "owner username","1234123123", "", true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 ownerUid = result;
@@ -98,7 +98,7 @@ public class UserStoriesTests {
         Thread.sleep(1500);
 
         // Create tester AFTER owner is created
-        firebaseManager.signUp("tester@gmail.com", "password", "Tester User", "testerusername", "534532", "",true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("tester@gmail.com", "password", "Tester User", "tester username", "534532", "",true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 testerUid = result;
@@ -246,9 +246,34 @@ public class UserStoriesTests {
         // User wants to sign up
         onView(withText("Don’t have an account? Sign Up")).perform(click());
 
-        // Check for optional fields
-        onView(withHint("Email")).check(matches(isDisplayed()));
-        onView(withHint("Phone Number")).check(matches(isDisplayed()));
+        // Sign up using all fields
+        onView(withId(R.id.signup_name_input)).perform(typeText("Tester 2"), closeSoftKeyboard());
+        onView(withId(R.id.signup_username_input)).perform(typeText("tester2"), closeSoftKeyboard());
+        onView(withId(R.id.signup_email_input)).perform(typeText("tester2@gmail.com"), closeSoftKeyboard());
+        onView(withId(R.id.signup_phone_input)).perform(typeText("1234567890"), closeSoftKeyboard());
+        onView(withId(R.id.signup_password_input)).perform(typeText("password"), closeSoftKeyboard());
+        onView(withText("Sign Up")).perform(click());
+
+        // Check if if are on login page
+        onView(withText("LOGIN")).check(matches(isDisplayed()));
+
+        // Login the user
+        login("tester2@gmail.com", "password");
+
+        // Check if user is on home page
+        onView(withText("Home")).check(matches(isDisplayed()));
+
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on settings button
+        onView(withId(R.id.dashboard_fragment_setting_button)).perform(click());
+
+        // Check if user personal info is shown
+        onView(withText("Tester 2")).check(matches(isDisplayed()));
+        onView(withText("tester2")).check(matches(isDisplayed()));
+        onView(withText("tester2@gmail.com")).check(matches(isDisplayed()));
+        onView(withText("1234567890")).check(matches(isDisplayed()));
     }
 
     /**
@@ -279,6 +304,8 @@ public class UserStoriesTests {
 
         // Update button is unclickable
         onView(withId(R.id.user_settings_update_button)).check(matches(not(isEnabled())));
+
+        //
     }
 
     /**
@@ -314,6 +341,28 @@ public class UserStoriesTests {
 
         // Check if back on login page
         onView(withText("LOGIN")).check(matches(isDisplayed()));
+
+        // Check if user can still login
+        login("tester@gmail.com", "password");
+
+        // Login fails
+        onView(withText("LOGIN")).check(matches(isDisplayed()));
+
+        // Check if user can still sign up using that email
+        onView(withText("Don’t have an account? Sign Up")).check(matches(isDisplayed()));
+
+        // Fill out signup information
+        onView(withId(R.id.signup_name_input)).perform(typeText("Tester User"), closeSoftKeyboard());
+        onView(withId(R.id.signup_username_input)).perform(typeText("tester username"));
+        onView(withId(R.id.signup_email_input)).perform(typeText("tester@gmail.com"), closeSoftKeyboard());
+        onView(withId(R.id.signup_password_input)).perform(typeText("password"), closeSoftKeyboard());
+        onView(withText("Sign Up")).perform(click());
+
+        // Check if user can login now
+        login("tester@gmail.com", "password");
+
+        // Login succeeds
+        onView(withText("Home")).check(matches(isDisplayed()));
     }
 
     /**
@@ -546,4 +595,25 @@ public class UserStoriesTests {
         // Fail test
         onView(withId(0)).perform(click());
     }
+
+    /**
+     * This test ensures logging out is functional
+     */
+    public void logout() {
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on settings button
+        onView(withId(R.id.dashboard_fragment_setting_button)).perform(click());
+
+        // Click on logout button
+        onView(withText("LOGOUT")).perform(click());
+
+        // Check if back on login page
+        onView(withText("LOGIN")).check(matches(isDisplayed()));
+    }
+
 }

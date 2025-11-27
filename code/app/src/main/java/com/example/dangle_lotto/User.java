@@ -125,7 +125,6 @@ public abstract class User {
      */
     public void setName(String name) {
         this.name = name;
-        firebaseManager.updateUser(this);
     }
 
     /**
@@ -135,7 +134,6 @@ public abstract class User {
      */
     public void setUsername(String username) {
         this.username = username;
-        firebaseManager.updateUser(this);
 
     }
     /**
@@ -145,7 +143,6 @@ public abstract class User {
      */
     public void setEmail(String email) {
         this.email = email;
-        firebaseManager.updateUser(this);
     }
 
     /**
@@ -155,7 +152,6 @@ public abstract class User {
      */
     public void setPhone(String phone) {
         this.phone = phone;
-        firebaseManager.updateUser(this);
     }
 
     /**
@@ -165,7 +161,6 @@ public abstract class User {
      */
     public void setPhotoID(String photo_id) {
         this.photo_id = photo_id;
-        firebaseManager.updateUser(this);
     }
 
     // ============================================================

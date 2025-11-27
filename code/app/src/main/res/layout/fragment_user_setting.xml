@@ -50,7 +50,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/settings_fragment_name" />
+        app:layout_constraintTop_toBottomOf="@+id/settings_fragment_name_input" />
 
     <EditText
         android:id="@+id/settings_fragment_email_input"
@@ -62,7 +62,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/settings_fragment_username" />
+        app:layout_constraintTop_toBottomOf="@+id/settings_fragment_username_input" />
 
     <EditText
         android:id="@+id/settings_fragment_phone_input"
@@ -76,6 +76,18 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/settings_fragment_email_input" />
 
+    <EditText
+        android:id="@+id/settings_fragment_password_input"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:hint="Password (required)"
+        android:inputType="textPassword"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/settings_fragment_phone_input" />
+
     <Button
         android:id="@+id/user_settings_update_button"
         android:layout_width="0dp"
@@ -84,7 +96,7 @@
         android:text="Update Profile"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/settings_fragment_phone_input" />
+        app:layout_constraintTop_toBottomOf="@+id/settings_fragment_password_input" />
 
 
     <Button

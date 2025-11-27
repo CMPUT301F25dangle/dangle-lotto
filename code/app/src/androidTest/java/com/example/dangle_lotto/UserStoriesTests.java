@@ -41,6 +41,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
@@ -117,9 +119,8 @@ public class UserStoriesTests {
 
         Thread.sleep(1500);
 
-
         // Create an event to test on
-        eventOfInterest = firebaseManager.createEvent(ownerUid, "Good Party", Timestamp.now(), Timestamp.now(), Timestamp.now(), "Da House", "A party for good people", 10, 100, "", "", new ArrayList<String>());
+        eventOfInterest = firebaseManager.createEvent(ownerUid, "Good Party", makeTimestamp(2024, 11, 1), makeTimestamp(2026, 11, 1), makeTimestamp(2026, 11, 2), "Da House", "A party for good people", 10, 100, "", "", new ArrayList<String>());
     }
 
     @After
@@ -131,7 +132,7 @@ public class UserStoriesTests {
     }
 
     /**
-     * Deletes all users and events from the database.
+     * Deletes all users and events from the database. This is a helper method
      */
     public static void clearFirestore() throws InterruptedException {
         try {
@@ -155,12 +156,42 @@ public class UserStoriesTests {
         Thread.sleep(1000);
     }
 
+    /**
+     * Logs the user in. This is a helper method
+     *
+     * @param email String representing the user's email.
+     * @param password String representing the user's password.
+     */
     public void login(String email, String password) {
         // Logs the user in
         onView(withId(R.id.etLoginEmail)).perform(typeText(email), closeSoftKeyboard());
         onView(withId(R.id.etLoginPassword)).perform(typeText(password), closeSoftKeyboard());
         onView(withText("LOGIN")).perform(click());
     }
+
+    /**
+     * Creates a timestamp object. This is a helper method.
+     * @param year The year
+     *
+     * @param month The month
+     * @param day The day
+     * @return Timestamp object
+     */
+    public static Timestamp makeTimestamp(int year, int month, int day) {
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.MONTH, month - 1); // IMPORTANT: January = 0
+        cal.set(Calendar.DAY_OF_MONTH, day);
+
+        // optional: set time to midnight
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+
+        return new Timestamp(cal.getTime());
+    }
+
 
     /**
      * Joins the waiting list for an event. We call it registering.
@@ -674,5 +705,47 @@ public class UserStoriesTests {
 
         // User is on home page
         onView(withId(R.id.home_fragment_title)).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Checks that user can not sign up for an event that has not started yet.
+     */
+    @Test
+    public void UserCannotJoinWaitlistForEventThatHasNotStarted() {
+        // Create event
+        Event event = firebaseManager.createEvent(ownerUid, "Event that has not started yet", makeTimestamp(2026, 11, 1), makeTimestamp(2026, 11, 2), makeTimestamp(2026, 11, 3), "Da House", "A party for good people", 10, 100, "", "", new ArrayList<String>());
+
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Click on the event
+        onView(withText("Event that has not started yet")).perform(click());
+
+        // Click on the join button
+        onView(withText("Registration Opens Soon")).perform(click());
+
+        // Button should still say "Registration Opens Soon"
+        onView(withText("Registration Opens Soon")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Checks that user can not sign up for an event that ended
+     */
+    @Test
+    public void UserCannotJoinWaitlistForEventThatEnded() {
+        // Create event
+        Event event = firebaseManager.createEvent(ownerUid, "Event that not ended", makeTimestamp(2025, 11, 1), makeTimestamp(2025, 11, 2), makeTimestamp(2026, 11, 3), "Da House", "A party for good people", 10, 100, "", "", new ArrayList<String>());
+
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Click on the event
+        onView(withText("Event that not ended")).perform(click());
+
+        // Click on the "Registration Closed" button
+        onView(withText("Registration Closed")).perform(click());
+
+        // Button should still say "Registration Closed"
+        onView(withText("Registration Closed")).check(matches(isDisplayed()));
     }
 }

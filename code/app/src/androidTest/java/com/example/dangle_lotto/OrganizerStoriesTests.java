@@ -327,8 +327,6 @@ public class OrganizerStoriesTests {
 
         // Click on MAP button
         onView(withText("MAP")).perform(click());
-
-
     }
 
     /**

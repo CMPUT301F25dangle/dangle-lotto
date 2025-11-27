@@ -10,9 +10,9 @@ import com.google.firebase.Timestamp;
  * Contains methods to get notification information.
  *
  *
- * @author Annie Ding, Prem Elango
- * @version 1.2
- * @since 2025-11-01
+ * @author Annie Ding, Prem Elango, Mahd Afzal
+ * @version 2.0
+ * @since 2025-11-28
  */
 public class Notification {
     private String status;

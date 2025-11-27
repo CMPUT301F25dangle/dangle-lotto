@@ -79,6 +79,11 @@ dependencies {
 
     // qr code scanning
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
+
+    // For map functionality
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
+
+
 }
 
 

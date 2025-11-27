@@ -1,6 +1,9 @@
 package com.example.dangle_lotto.ui.dashboard;
 
 
+import android.app.Activity;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -8,7 +11,11 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
 
@@ -21,6 +28,10 @@ import com.example.dangle_lotto.UserFactory;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentOrganizerEventDetailsEntrantsBinding;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
 import java.util.ArrayList;
 
 import com.google.android.material.chip.Chip;
@@ -55,8 +66,14 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
     private Button dynamicButton;
     private Button removeButton;
 
+    private  Button exportButton;
+
     private enum Filter { REGISTRANTS, CHOSEN, SIGNUPS, CANCELLED }
     private Filter currentFilter;
+
+    private String tempCsvData = "";
+
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -76,6 +93,7 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
         // button
         dynamicButton = binding.eventDetailsEntrantsButton;
         removeButton = binding.eventDetailsEntrantsRemoveButton;
+        exportButton  = binding.eventDetailsEntrantsExportButton;
 
         // views
         listView  = binding.entrantsListView;
@@ -107,16 +125,19 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
                 currentFilter = Filter.REGISTRANTS;
                 dynamicButton.setText("Choose");
                 removeButton.setVisibility(View.GONE);
+                exportButton.setVisibility(View.GONE);
             } else if (id == chipChosen.getId()) {
                 currentFilter = Filter.CHOSEN;
                 dynamicButton.setText("Notify");
                 removeButton.setVisibility(View.VISIBLE);
+                exportButton.setVisibility(View.VISIBLE);
             } else {
                 if (id == chipSignups.getId()) currentFilter = Filter.SIGNUPS;
                 else if (id == chipCancelled.getId()) currentFilter = Filter.CANCELLED;
 
                 dynamicButton.setText("Notify");
                 removeButton.setVisibility(View.GONE);
+                exportButton.setVisibility(View.GONE);
             }
 
             loadEntrants(currentFilter);
@@ -136,6 +157,13 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
             if (currentFilter == Filter.CHOSEN) {
                 event.cancelAllChosen();
                 loadEntrants(currentFilter);
+            }
+        });
+
+        // Export Button - to get entrants (attendees) of event into csv file
+        exportButton.setOnClickListener(v -> {
+            if (currentFilter == Filter.CHOSEN) {
+                exportEntrantsToCsv();
             }
         });
 
@@ -293,6 +321,104 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
         if (emptyView != null) emptyView.setVisibility(isEmpty ? View.VISIBLE : View.GONE);
         if (listView != null) listView.setVisibility(isEmpty ? View.INVISIBLE : View.VISIBLE);
     }
+
+    // Launcher to let user pick save location
+    private final ActivityResultLauncher<Intent> createDocumentLauncher =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == Activity.RESULT_OK) {
+                    Uri uri = result.getData().getData();
+                    if (uri != null) {
+                        writeCsvToUri(uri, tempCsvData);
+                    }
+                }
+            });
+
+
+    private void exportEntrantsToCsv() {
+        Event event = userViewModel.getSelectedOrganizedEvent().getValue();
+
+        if (event == null) {
+            Toast.makeText(requireContext(), "No event selected", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        List<String> attendees = event.getChosen();
+        if (attendees == null || attendees.isEmpty()) {
+            Toast.makeText(requireContext(), "No entrants to export", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        Toast.makeText(requireContext(), "Preparing CSV…", Toast.LENGTH_SHORT).show();
+
+        // STEP 1 — make a separate list for export
+        ArrayList<String> exportNames = new ArrayList<>();
+
+        resolveUsersToNamesForExport(attendees, exportNames);
+    }
+
+
+    private void writeCsvToUri(Uri uri, String data) {
+        try (OutputStream os = requireContext().getContentResolver().openOutputStream(uri)) {
+            os.write(data.getBytes());
+            os.flush();
+            Toast.makeText(requireContext(), "CSV saved!", Toast.LENGTH_SHORT).show();
+        } catch (Exception e) {
+            Toast.makeText(requireContext(), "Failed to save file", Toast.LENGTH_SHORT).show();
+            e.printStackTrace();
+        }
+    }
+
+    private void resolveUsersToNamesForExport(List<String> uids, ArrayList<String> outputList) {
+        if (uids == null || uids.isEmpty()) {
+            finalizeCsvExport(outputList);
+            return;
+        }
+
+        final int total = uids.size();
+        final int[] done = {0};
+
+        for (String uid : uids) {
+            firebase.getUser(uid, new FirebaseCallback<User>() {
+                @Override
+                public void onSuccess(User user) {
+                    outputList.add(user.getUsername() + " (" + user.getEmail() + ")");
+                    checkFinish();
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    outputList.add(uid);  // fallback
+                    checkFinish();
+                }
+
+                private void checkFinish() {
+                    done[0]++;
+                    if (done[0] == total) {
+                        finalizeCsvExport(outputList);
+                    }
+                }
+            });
+        }
+    }
+
+    private void finalizeCsvExport(List<String> rows) {
+
+        StringBuilder csv = new StringBuilder();
+        for (String line : rows) {
+            csv.append(line).append("\n");
+        }
+
+        tempCsvData = csv.toString();
+
+        Intent intent = new Intent(Intent.ACTION_CREATE_DOCUMENT);
+        intent.setType("text/csv");
+        intent.putExtra(Intent.EXTRA_TITLE, "entrants.csv");
+
+        createDocumentLauncher.launch(intent);
+    }
+
+
+
 
     @Override
     public void onDestroyView() {

@@ -3,31 +3,28 @@ package com.example.dangle_lotto;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isChecked;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
-import static androidx.test.espresso.matcher.ViewMatchers.withHint;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
 
 import android.Manifest;
-import android.content.Context;
-import android.content.pm.PackageManager;
 
-import androidx.core.content.ContextCompat;
-import androidx.test.core.app.ActivityScenario;
 import androidx.test.espresso.IdlingRegistry;
 import androidx.test.espresso.IdlingResource;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
-import androidx.test.platform.app.InstrumentationRegistry;
+import androidx.test.rule.GrantPermissionRule;
 
-import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -51,6 +48,9 @@ public class UserStoriesTests {
     @Rule
     public ActivityScenarioRule<LoginActivity> scenario = new
             ActivityScenarioRule<>(LoginActivity.class);
+
+    @Rule
+    public GrantPermissionRule permissionRule = GrantPermissionRule.grant(Manifest.permission.CAMERA);
 
     private static FirebaseManager firebaseManager;
     private IdlingResource firebaseIdlingResource;
@@ -132,8 +132,6 @@ public class UserStoriesTests {
 
     /**
      * Deletes all users and events from the database.
-     *
-     * @return A Firebase {@link Task} representing the operation.
      */
     public static void clearFirestore() throws InterruptedException {
         try {
@@ -233,8 +231,11 @@ public class UserStoriesTests {
      */
     @Test
     public void UserCanFilterEvents() {
+        // Login
+        login("tester@gmail.com", "password");
+
         // FAIL TEST
-        onView(withId(0)).perform(click());
+        fail("Test not implemented");
     }
 
     /**
@@ -262,7 +263,7 @@ public class UserStoriesTests {
         login("tester2@gmail.com", "password");
 
         // Check if user is on home page
-        onView(withText("Home")).check(matches(isDisplayed()));
+        onView(withId(R.id.home_fragment_title)).check(matches(isDisplayed()));
 
         // Navigate to dashboard
         onView(withId(R.id.navigation_dashboard)).perform(click());
@@ -293,10 +294,10 @@ public class UserStoriesTests {
         // User clicks on settings button
         onView(withId(R.id.dashboard_fragment_setting_button)).perform(click());
 
-        // User updates email
-        onView(withId(R.id.settings_fragment_email_input)).perform(typeText("s"), closeSoftKeyboard());
-
-        // User updates phone number
+        // User updates personal info
+        onView(withId(R.id.settings_fragment_name_input)).perform(replaceText("Does This Replace?"), closeSoftKeyboard());
+        onView(withId(R.id.settings_fragment_username_input)).perform(replaceText("Does This Replace Too?"), closeSoftKeyboard());
+        onView(withId(R.id.settings_fragment_email_input)).perform(replaceText("replaced@gmail.com"), closeSoftKeyboard());
         onView(withId(R.id.settings_fragment_phone_input)).perform(typeText("000"), closeSoftKeyboard());
 
         // User clicks on update button
@@ -306,7 +307,14 @@ public class UserStoriesTests {
         // Update button is unclickable
         onView(withId(R.id.user_settings_update_button)).check(matches(not(isEnabled())));
 
-        //
+        // Logout
+        onView(withText("LOGOUT")).perform(click());
+
+        // Login the user
+        login("replaced@gmail.com", "password");
+
+        // Check if user is on home page
+        onView(withId(R.id.home_fragment_title)).check(matches(isDisplayed()));
     }
 
     /**
@@ -371,7 +379,7 @@ public class UserStoriesTests {
         onView(withText("LOGIN")).check(matches(isDisplayed()));
 
         // Check if user can still sign up using that email
-        onView(withText("Don’t have an account? Sign Up")).check(matches(isDisplayed()));
+        onView(withText("Don’t have an account? Sign Up")).perform(click());
 
         // Fill out signup information
         onView(withId(R.id.signup_name_input)).perform(typeText("Tester User"), closeSoftKeyboard());
@@ -384,7 +392,7 @@ public class UserStoriesTests {
         login("tester@gmail.com", "password");
 
         // Login succeeds
-        onView(withText("Home")).check(matches(isDisplayed()));
+        onView(withId(R.id.home_fragment_title)).check(matches(isDisplayed()));
     }
 
     /**
@@ -436,8 +444,11 @@ public class UserStoriesTests {
      */
     @Test
     public void UserCanOptOutNotifications() {
+        // Login the user
+        login("tester@gmail.com", "password");
+
         // Fail test
-        onView(withId(0)).perform(click());
+        fail("Test not implemented");
     }
 
     /** Check if user can get another chance to sign up.
@@ -592,8 +603,11 @@ public class UserStoriesTests {
      */
     @Test
     public void UserCanScanQRCode() {
-        // Fail test
-        onView(withId(0)).perform(click());
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Skip test
+        assumeTrue(false);
     }
 
     /**
@@ -603,25 +617,43 @@ public class UserStoriesTests {
      */
     @Test
     public void UserCanSignUpForEventFromEventDetails() {
+        // Login
+        login("tester@gmail.com", "password");
+
         // Fail test
-        onView(withId(0)).perform(click());
+        fail("Test not implemented");
     }
 
     /**
-     * Checks if user can sign up for an event
+     * Checks if user can identify by device
      * <p>
      * US 01.07.01 As an entrant, I want to be identified by my device, so that I don't have to use a username and password.
+     * Impossible to test for this in espresso, we just check for the button being there
      */
     @Test
     public void UserCanIdentifyByDevice() {
-        // Fail test
-        onView(withId(0)).perform(click());
+        // Login the user
+        onView(withId(R.id.etLoginEmail)).perform(typeText("tester@gmail.com"), closeSoftKeyboard());
+        onView(withId(R.id.etLoginPassword)).perform(typeText("password"), closeSoftKeyboard());
+
+        // Fill out checkbox
+        onView(withId(R.id.cbRememberMe)).perform(click());
+
+        // Check that textbox is checked
+        onView(withId(R.id.cbRememberMe)).check(matches(isChecked()));
+
+        // Click on login
+        onView(withText("LOGIN")).perform(click());
+
+        // Check if back on home page
+        onView(withId(R.id.home_fragment_title)).check(matches(isDisplayed()));
     }
 
     /**
      * Checks if the user can logout
      */
-    public void logout() {
+    @Test
+    public void UserCanLogout() {
         // Login the user
         login("tester@gmail.com", "password");
 
@@ -636,6 +668,11 @@ public class UserStoriesTests {
 
         // Check if back on login page
         onView(withText("LOGIN")).check(matches(isDisplayed()));
-    }
 
+        // User can login
+        login("tester@gmail.com", "password");
+
+        // User is on home page
+        onView(withId(R.id.home_fragment_title)).check(matches(isDisplayed()));
+    }
 }

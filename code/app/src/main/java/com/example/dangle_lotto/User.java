@@ -1,6 +1,7 @@
 package com.example.dangle_lotto;
 
 import com.google.firebase.firestore.Exclude;
+import com.google.firebase.firestore.GeoPoint;
 
 /**
  * Abstract base class representing a generic user within the Dangle Lotto system.
@@ -31,12 +32,14 @@ public abstract class User {
 
     /** User's email address. */
     protected String email;
+    protected GeoPoint location;
 
     /** Optional phone number associated with the user. */
     protected String phone;
 
     /** Optional photo identifier for the user’s profile picture. */
     protected String photo_id;
+
 
     /**
      * Reference to the {@link FirebaseManager} instance.
@@ -109,6 +112,11 @@ public abstract class User {
     }
 
     /**
+     * @return User’s location.
+     */
+    public GeoPoint getLocation() { return location; }
+
+    /**
      * @return User’s profile photo identifier.
      */
     public String getPhotoID() {
@@ -154,6 +162,16 @@ public abstract class User {
     public void setPhone(String phone) {
         this.phone = phone;
     }
+
+    /**
+     * Updates the user's location locally and in Firestore.
+     *
+     * @param location New location.
+     */
+    public void setLocation(GeoPoint location) {
+        this.location = location;
+    }
+
 
     /**
      * Updates the user's profile photo ID locally and in Firestore.

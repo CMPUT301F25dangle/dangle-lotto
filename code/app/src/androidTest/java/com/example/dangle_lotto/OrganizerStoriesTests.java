@@ -169,7 +169,7 @@ public class OrganizerStoriesTests {
      * Creates a basic event
      */
     public Event createEvent() {
-        return firebaseManager.createEvent(ownerUid, "Good Party", Timestamp.now(), Timestamp.now(), Timestamp.now(), "Da House", "A party for good people", 10, 100, "", "", new ArrayList<String>());
+        return firebaseManager.createEvent(ownerUid, "Good Party", Timestamp.now(), Timestamp.now(), Timestamp.now(), "Da House", false, "A party for good people", 10, 100, "", "", new ArrayList<String>());
     }
 
     /**

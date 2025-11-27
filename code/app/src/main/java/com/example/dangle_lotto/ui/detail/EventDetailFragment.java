@@ -74,9 +74,9 @@ public class EventDetailFragment extends Fragment {
         }
 
         // get organizer and set their name
-        firebaseManager.getUser(selectedEvent.getOrganizerID(), new FirebaseCallback<>() {
+        firebaseManager.getUser(selectedEvent.getOrganizerID(), new FirebaseCallback<User>() {
             @Override
-            public void onSuccess(GeneralUser result) {
+            public void onSuccess(User result) {
                 binding.organizerName.setText("Organizer: " + result.getUsername());
             }
 

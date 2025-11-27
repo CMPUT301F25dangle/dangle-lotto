@@ -22,4 +22,5 @@
     <string name="describe_your_event">We will be gathering…</string>
     <string name="require_geolocation">Require Geolocation</string>
     <string name="enter_categories_separated_by_string">Enter categories separated by string</string>
+    <string name="images">Images</string>
 </resources>

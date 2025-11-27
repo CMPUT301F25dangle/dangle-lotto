@@ -186,6 +186,11 @@ public class EventDetailFragment extends Fragment {
                 performTask(selectedEvent.deleteRegistered(uid));
                 isRegistered = false;
             } else {
+                if (selectedEvent.isLocationRequired() && userViewModel.getUser().getValue().getLocation() == null) {
+                    Toast.makeText(requireContext(), "You must provide a location to register for this event.",
+                            Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 performTask(selectedEvent.addRegistered(uid));
                 isRegistered = true;
             }

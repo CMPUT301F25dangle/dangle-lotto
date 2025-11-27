@@ -32,7 +32,6 @@ public abstract class User {
 
     /** User's email address. */
     protected String email;
-    protected GeoPoint location;
 
     /** Optional phone number associated with the user. */
     protected String phone;
@@ -62,7 +61,8 @@ public abstract class User {
      * @param firebaseManager Reference to the FirebaseManager for database updates.
      */
 
-    public User(String uid, String name, String username, String email, String phone, String photo_id, FirebaseManager firebaseManager) {
+    public User(String uid, String name, String username, String email, String phone,
+                String photo_id, FirebaseManager firebaseManager) {
         this.uid = uid;
         this.name = name;
         this.username = username;
@@ -112,11 +112,6 @@ public abstract class User {
     }
 
     /**
-     * @return User’s location.
-     */
-    public GeoPoint getLocation() { return location; }
-
-    /**
      * @return User’s profile photo identifier.
      */
     public String getPhotoID() {
@@ -161,15 +156,6 @@ public abstract class User {
      */
     public void setPhone(String phone) {
         this.phone = phone;
-    }
-
-    /**
-     * Updates the user's location locally and in Firestore.
-     *
-     * @param location New location.
-     */
-    public void setLocation(GeoPoint location) {
-        this.location = location;
     }
 
 

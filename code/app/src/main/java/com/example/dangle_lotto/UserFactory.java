@@ -3,8 +3,24 @@ package com.example.dangle_lotto;
 import android.util.Log;
 
 import com.google.firebase.firestore.DocumentSnapshot;
-
+/**
+ * UserFactory — generates a User object from a Firestore document.
+ * <p>
+ * This class serves the factory design pattern. It determines if the user is
+ * an admin or not and returns the corresponding object
+ * </p>
+ *
+ * @author Mahd
+ * @version 1.0
+ * @since 2025-11-26
+ */
 public class UserFactory {
+    /**
+     * Generates a User object from a Firestore document.
+     *
+     * @param doc             Firestore document containing user data.
+     * @param firebaseManager Reference to the FirebaseManager for database updates..
+     */
     public static User getUser(DocumentSnapshot doc, FirebaseManager firebaseManager){
         Boolean isAdmin = doc.getBoolean("isAdmin");
 

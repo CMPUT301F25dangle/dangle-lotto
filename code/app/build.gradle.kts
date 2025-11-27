@@ -46,9 +46,11 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.legacy.support.v4)
     implementation(libs.espresso.idling.resource)
+    implementation(libs.rules)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
+
     //implementation(files("/home/mahdlinux/Android/Sdk/platforms/android-34/android.jar"))
 
     //javadocs

@@ -122,7 +122,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:layout_marginTop="12dp"
-                android:text="Limit"
+                android:text="Event Size"
                 android:textColor="@color/black"
                 android:textSize="16sp"
                 app:layout_constraintStart_toStartOf="parent"
@@ -257,7 +257,7 @@
                 app:layout_constraintTop_toBottomOf="@id/create_event_date_input" />
 
             <EditText
-                android:id="@+id/create_event_input_description"
+                android:id="@+id/create_event_description_input"
                 android:layout_width="0dp"
                 android:layout_height="120dp"
                 android:layout_marginHorizontal="16dp"
@@ -280,7 +280,7 @@
                 android:layout_marginTop="8dp"
                 android:text="@string/require_geolocation"
                 app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toBottomOf="@id/create_event_input_description" />
+                app:layout_constraintTop_toBottomOf="@id/create_event_description_input" />
 
             <TextView
                 android:id="@+id/categories_dropdown_label"

@@ -50,11 +50,15 @@ import java.util.ArrayList;
 @LargeTest
 public class OrganizerStoriesTests {
     @Rule
-    public ActivityScenarioRule<LoginActivity> scenario = new
-            ActivityScenarioRule<>(LoginActivity.class);
+    public GrantPermissionRule permissionRule = GrantPermissionRule.grant(
+            Manifest.permission.CAMERA,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+    );
 
     @Rule
-    public GrantPermissionRule permissionRule = GrantPermissionRule.grant(Manifest.permission.CAMERA);
+    public ActivityScenarioRule<LoginActivity> scenario = new
+            ActivityScenarioRule<>(LoginActivity.class);
 
     private static FirebaseManager firebaseManager;
     private IdlingResource firebaseIdlingResource;
@@ -840,6 +844,9 @@ public class OrganizerStoriesTests {
      */
     @Test
     public void OrganizerSendsNotificationsToAllCancelledEntrants() {
+        // Login
+        login("owner@gmail.com", "password");
+
         // Fails test instantly
         fail("Test not implemented");
     }

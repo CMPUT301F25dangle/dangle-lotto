@@ -26,4 +26,8 @@
     <string name="users">Users</string>
     <string name="notifications">Notifications</string>
     <string name="images_admin">Images</string>
+    <string name="can_organize">Can Organize</string>
+    <string name="cancel_admin">Cancel</string>
+    <string name="delete_user">Delete User</string>
+    <string name="delete">Delete</string>
 </resources>

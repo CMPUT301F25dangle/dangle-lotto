@@ -11,7 +11,11 @@ module.exports = {
     "google",
   ],
   rules: {
+    "max-len": "off",
+    "require-jsdoc": "off",
+    "no-unused-vars": ["warn", {"argsIgnorePattern": "^_"}],
     "no-restricted-globals": ["error", "name", "length"],
+    "object-curly-spacing": ["error", "never"],
     "prefer-arrow-callback": "error",
     "quotes": ["error", "double", {"allowTemplateLiterals": true}],
   },

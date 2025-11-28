@@ -29,7 +29,6 @@ import com.google.android.gms.tasks.Task;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
 import java.util.Date;
 import java.util.Locale;
 
@@ -90,11 +89,8 @@ public class EventDetailFragment extends Fragment {
         // Display event information
         binding.eventTitle.setText(selectedEvent.getName());
         binding.eventDescription.setText(selectedEvent.getDescription());
-        binding.eventDetailStartDate.setText("Opens: " + formatTimestamp(selectedEvent.getStartDate()));
-        binding.eventDetailEndDate.setText("Closes: " + formatTimestamp(selectedEvent.getEndDate()));
-        binding.eventDetailEventDate.setText("Event Date: " + formatTimestamp(selectedEvent.getEventDate()));
-
-        // Display event poster (if available")
+        binding.eventDate.setText("Registration Period: " + formatTimestamp(selectedEvent.getStartDate())
+                + " to " + formatTimestamp(selectedEvent.getEndDate()));
         if (!(selectedEvent.getPhotoID().isEmpty() || selectedEvent.getPhotoID() == null))
             Glide.with(requireContext()).load(selectedEvent.getPhotoID()).into(binding.imgPoster);
 
@@ -172,11 +168,6 @@ public class EventDetailFragment extends Fragment {
                 performTask(selectedEvent.deleteRegistered(uid));
                 isRegistered = false;
             } else {
-                if (selectedEvent.isLocationRequired() && userViewModel.getUser().getValue().getLocation() == null) {
-                    Toast.makeText(requireContext(), "You must provide a location to register for this event.",
-                            Toast.LENGTH_SHORT).show();
-                    return;
-                }
                 performTask(selectedEvent.addRegistered(uid));
                 isRegistered = true;
             }
@@ -235,11 +226,6 @@ public class EventDetailFragment extends Fragment {
     private void updateButtonState() {
         Button btn = binding.eventDetailDynamicButton;
 
-        // Get the times we need
-        long now = System.currentTimeMillis();
-        long startTime = selectedEvent.getStartDate().toDate().getTime();
-        long endTime = selectedEvent.getEndDate().toDate().getTime();
-
         if (isCancelled) {
             btn.setText("Cancelled");
             btn.setEnabled(false);
@@ -253,25 +239,8 @@ public class EventDetailFragment extends Fragment {
             btn.setText(isRegistered ? "Leave Waitlist" : "Join Waitlist");
             btn.setEnabled(true);
         } else {
-            if (now < startTime) {
-                btn.setText("Registration Opens Soon");
-                btn.setEnabled(false);
-            }
-
-            if (startTime < now && now < endTime) {
-                btn.setText(isRegistered ? "Withdraw Registration" : "Register for Lottery");
-                btn.setEnabled(true);
-            }
-
-            if (endTime < now) {
-                if (isRegistered) {
-                    btn.setText("Withdraw Registration");
-                    btn.setEnabled(true);
-                } else {
-                    btn.setText("Registration Closed");
-                    btn.setEnabled(false);
-                }
-            }
+            btn.setText(isRegistered ? "Withdraw Registration" : "Register for Lottery");
+            btn.setEnabled(true);
         }
     }
 

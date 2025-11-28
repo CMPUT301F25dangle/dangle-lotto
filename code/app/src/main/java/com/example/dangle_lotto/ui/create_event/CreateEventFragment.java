@@ -152,7 +152,7 @@ public class CreateEventFragment extends Fragment {
                 binding.createEventRegistrationStartInput.setError(null);
                 SimpleDateFormat fmt = new SimpleDateFormat("MMMM d, yyyy h:mm a", Locale.getDefault());
                 binding.createEventRegistrationStartInput.setText(fmt.format(new Date(utcMillis)));
-            }, false);
+            });
         });
 
         // date picker for registration end date
@@ -169,7 +169,7 @@ public class CreateEventFragment extends Fragment {
                 binding.createEventRegistrationEndInput.setError(null);
                 SimpleDateFormat fmt = new SimpleDateFormat("MMMM d, yyyy h:mm a", Locale.getDefault());
                 binding.createEventRegistrationEndInput.setText(fmt.format(new Date(utcMillis)));
-            }, true);
+            });
         });
 
         // date picker for event date
@@ -186,7 +186,7 @@ public class CreateEventFragment extends Fragment {
                 binding.createEventDateInput.setError(null);
                 SimpleDateFormat fmt = new SimpleDateFormat("MMMM d, yyyy h:mm a", Locale.getDefault());
                 binding.createEventDateInput.setText(fmt.format(new Date(utcMillis)));
-            }, true);
+            });
         });
 
         // open category multiple choice dialogue
@@ -215,20 +215,14 @@ public class CreateEventFragment extends Fragment {
         return root;
     }
 
-    /**
-     * Shows a date picker dialog.
-     *
-     * @param onResultUtc Callback to execute when a date is selected.
-     * @param enforceFutureDates Whether to enforce future dates.
-     */
-    private void showDateTimePicker(Consumer<Long> onResultUtc, boolean enforceFutureDates) {
+    private void showDateTimePicker(
+            Consumer<Long> onResultUtc  // callback giving final UTC timestamp
+    ) {
         CalendarConstraints.Builder constraintsBuilder =
                 new CalendarConstraints.Builder();
 
-        if (enforceFutureDates) {
-            constraintsBuilder.setStart(MaterialDatePicker.todayInUtcMilliseconds());
-            constraintsBuilder.setValidator(DateValidatorPointForward.now());
-        }
+        constraintsBuilder.setStart(MaterialDatePicker.todayInUtcMilliseconds());
+        constraintsBuilder.setValidator(DateValidatorPointForward.now());
 
         MaterialDatePicker<Long> datePicker = MaterialDatePicker.Builder.datePicker()
                 .setSelection(MaterialDatePicker.todayInUtcMilliseconds())
@@ -264,12 +258,10 @@ public class CreateEventFragment extends Fragment {
 
                         long pickedLocalMillis = localCal.getTimeInMillis();
 
-                        if (enforceFutureDates) {
-                            if (localCal.getTimeInMillis() < System.currentTimeMillis()) {
-                                Toast.makeText(getActivity(), "Invalid time. Time must be in the future",
-                                        Toast.LENGTH_SHORT).show();
-                                return;
-                            }
+                        if (localCal.getTimeInMillis() < System.currentTimeMillis()) {
+                            Toast.makeText(getActivity(), "Invalid time. Time must be in the future",
+                                    Toast.LENGTH_SHORT).show();
+                            return;
                         }
 
                         // Convert local → UTC
@@ -347,9 +339,9 @@ public class CreateEventFragment extends Fragment {
             }
 
             // Validate description
-            String description = binding.createEventDescriptionInput.getText().toString().trim();
+            String description = binding.createEventInputDescription.getText().toString().trim();
             if (description.isEmpty()) {
-                binding.createEventDescriptionInput.setError("Description is required");
+                binding.createEventInputDescription.setError("Description is required");
                 hasError = true;
             }
 
@@ -387,8 +379,7 @@ public class CreateEventFragment extends Fragment {
             Timestamp eventDateTimeStamp = new Timestamp(new Date(eventDate));
 
             // Checking if geo location is enabled
-            String location = "template";
-            Boolean locationRequired = binding.cbEnableGeolocation.isChecked();
+            String location = String.valueOf(binding.cbEnableGeolocation.isChecked());
 
             // Checking if max entrants is enabled (has text in it)
             String maxEntrantsInput = binding.createEventInputMaxEntrants.getText().toString();
@@ -406,7 +397,6 @@ public class CreateEventFragment extends Fragment {
                     registrationEndDateStamp,
                     eventDateTimeStamp,
                     location,
-                    locationRequired,
                     description,
                     Integer.parseInt(binding.createEventSizeInput.getText().toString()),
                     maxEntrants,

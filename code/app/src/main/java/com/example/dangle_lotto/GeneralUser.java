@@ -2,7 +2,6 @@ package com.example.dangle_lotto;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
@@ -30,9 +29,6 @@ public class GeneralUser extends User {
     /** Indicates whether this user has permissions to organize events. */
     private boolean canOrganize;
 
-    /** User's location. */
-    protected GeoPoint location;
-
     /**
      * Constructs a new GeneralUser object with the given attributes.
      *
@@ -41,16 +37,14 @@ public class GeneralUser extends User {
      * @param username            User's username.
      * @param email           User’s email address.
      * @param phone           User’s phone number (nullable).
-     * @param location        User’s location (nullable).
      * @param pid             Profile photo identifier (nullable).
      * @param firebaseManager Reference to the {@link FirebaseManager} for database operations.
      * @param canOrganize     Whether the user has organizer privileges.
      */
-    public GeneralUser(String uid, String name, String username, String email, String phone, GeoPoint location,
+    public GeneralUser(String uid, String name, String username, String email, String phone,
                        String pid, FirebaseManager firebaseManager, boolean canOrganize) {
         super(uid, name, username, email, phone, pid, firebaseManager);
         this.canOrganize = canOrganize;
-        this.location = location;
     }
 
     // ============================================================
@@ -67,21 +61,6 @@ public class GeneralUser extends User {
      */
     public void delete() {
         firebaseManager.deleteUser(uid);
-    }
-
-    /**
-     * @return User’s location.
-     */
-    public GeoPoint getLocation() { return location; }
-
-    /**
-     * Updates the user's location locally and in Firestore.
-     *
-     * @param location New location.
-     */
-    public void setLocation(GeoPoint location) {
-        this.location = location;
-        firebaseManager.updateUserLocation(this.getUid(), location);
     }
 
     // ============================================================

@@ -46,11 +46,9 @@ dependencies {
     implementation(libs.firebase.firestore)
     implementation(libs.legacy.support.v4)
     implementation(libs.espresso.idling.resource)
-    implementation(libs.rules)
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)
     androidTestImplementation(libs.espresso.core)
-
     //implementation(files("/home/mahdlinux/Android/Sdk/platforms/android-34/android.jar"))
 
     //javadocs
@@ -81,9 +79,6 @@ dependencies {
 
     // qr code scanning
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
-
-    // get location permissions
-    implementation("com.google.android.gms:play-services-location:21.3.0")
 }
 
 

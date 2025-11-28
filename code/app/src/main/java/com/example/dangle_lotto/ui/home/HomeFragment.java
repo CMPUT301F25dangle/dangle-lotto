@@ -28,6 +28,7 @@ import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentHomeBinding;
 import com.example.dangle_lotto.ui.EventCardAdapter;
+import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
 
@@ -52,6 +53,7 @@ public class HomeFragment extends Fragment {
     private boolean isLoading;
     private static final int PAGE_SIZE = 4; // or however many events per page
     private DocumentSnapshot lastVisible = null;
+    private final Timestamp now = Timestamp.now();
 
     @SuppressLint("NotifyDataSetChanged")
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -176,7 +178,6 @@ public class HomeFragment extends Fragment {
 
     }
 
-
     /**
      * Opens the filter dialogue
      *
@@ -208,7 +209,9 @@ public class HomeFragment extends Fragment {
         Query query = firebaseManager.getEventsReference()
                 .orderBy("Event Date", Query.Direction.DESCENDING)
                 .whereNotEqualTo("Organizer", userId)
+                .whereGreaterThan("End Date", now)
                 .limit(PAGE_SIZE);
+
         firebaseManager.getQuery(null, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
@@ -249,8 +252,10 @@ public class HomeFragment extends Fragment {
         Query query = firebaseManager.getEventsReference()
                 .orderBy("Event Date", Query.Direction.DESCENDING)
                 .whereNotEqualTo("Organizer", userId)
+                .whereGreaterThan("End Date", now)
                 .startAfter(lastVisible)
                 .limit(PAGE_SIZE);
+
         firebaseManager.getQuery(lastVisible, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {

@@ -5,6 +5,7 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.action.ViewActions.typeText;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isChecked;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -762,23 +763,17 @@ public class UserStoriesTests {
     }
 
     /**
-     * Checks that user can not sign up for an event that ended
+     * Checks that user can not see an event where the registration period ended
      */
     @Test
     public void UserCannotJoinWaitlistForEventThatEnded() {
         // Create event
-        Event event = firebaseManager.createEvent(ownerUid, "Event that not ended", makeTimestamp(2025, 11, 1), makeTimestamp(2025, 11, 2), makeTimestamp(2026, 11, 3), "Da House", false,"A party for good people", 10, 100, "", "", new ArrayList<String>());
+        Event event = firebaseManager.createEvent(ownerUid, "Event that registration ended", makeTimestamp(2025, 11, 1), makeTimestamp(2025, 11, 2), makeTimestamp(2026, 11, 3), "Da House", false,"A party for good people", 10, 100, "", "", new ArrayList<String>());
 
         // Login the user
         login("tester@gmail.com", "password");
 
-        // Click on the event
-        onView(withText("Event that not ended")).perform(click());
-
-        // Click on the "Registration Closed" button
-        onView(withText("Registration Closed")).perform(click());
-
-        // Button should still say "Registration Closed"
-        onView(withText("Registration Closed")).check(matches(isDisplayed()));
+        // See that event isn't here
+        onView(withText("Event that registration ended")).check(doesNotExist());
     }
 }

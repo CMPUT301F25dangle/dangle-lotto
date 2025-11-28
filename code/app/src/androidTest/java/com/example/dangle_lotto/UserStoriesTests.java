@@ -48,11 +48,15 @@ import java.util.TimeZone;
 @LargeTest
 public class UserStoriesTests {
     @Rule
-    public ActivityScenarioRule<LoginActivity> scenario = new
-            ActivityScenarioRule<>(LoginActivity.class);
+    public GrantPermissionRule permissionRule = GrantPermissionRule.grant(
+            Manifest.permission.CAMERA,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+    );
 
     @Rule
-    public GrantPermissionRule permissionRule = GrantPermissionRule.grant(Manifest.permission.CAMERA);
+    public ActivityScenarioRule<LoginActivity> scenario = new
+            ActivityScenarioRule<>(LoginActivity.class);
 
     private static FirebaseManager firebaseManager;
     private IdlingResource firebaseIdlingResource;

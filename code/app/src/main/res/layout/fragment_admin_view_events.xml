@@ -28,7 +28,6 @@
         android:choiceMode="singleChoice"
         android:clickable="true"
         android:focusable="true"
-        android:paddingTop="60dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"

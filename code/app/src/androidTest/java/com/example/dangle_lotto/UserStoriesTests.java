@@ -44,6 +44,13 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.TimeZone;
 
+/**
+ * User Stories Tests - Unit Tests for User Stories
+ *
+ * @author Aditya Soni
+ * @version 1.0
+ * @since 11/14/2025
+ */
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class UserStoriesTests {
@@ -560,10 +567,10 @@ public class UserStoriesTests {
         onView(withText("You’ve Been Chosen!")).perform(click());
 
         // Click on the attend button to accept
-        onView(withText("Attend")).perform(click());
+        onView(withText("Accept")).perform(click());
 
-        // Check if button says "Attending"
-        onView(withText("Attending")).check(matches(isDisplayed()));
+        // Check if button says "You Have Accepted The Invitation!"
+        onView(withText("You Have Accepted The Invitation!")).check(matches(isDisplayed()));
     }
 
     /**
@@ -656,11 +663,29 @@ public class UserStoriesTests {
      */
     @Test
     public void UserCanSignUpForEventFromEventDetails() {
+        // Add user to chosen list
+        eventOfInterest.addChosen(testerUid);
+
         // Login
         login("tester@gmail.com", "password");
 
-        // Fail test
-        fail("Test not implemented");
+        // Click on the event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on the join button
+        onView(withText("You’ve Been Chosen!")).perform(click());
+
+        // Click accept button
+        onView(withText("Accept")).perform(click());
+
+        // Click on the join button
+        onView(withText("You Have Accepted The Invitation!")).perform(click());
+
+        // Click on the join button
+        onView(withText("Attend")).perform(click());
+
+        // Check if button says "Attending"
+        onView(withText("Attending")).check(matches(isDisplayed()));
     }
 
     /**

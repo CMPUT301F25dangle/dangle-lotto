@@ -89,14 +89,25 @@
                 android:paddingTop="12dp"/>
 
             <TextView
-                android:id="@+id/event_date"
+                android:id="@+id/event_detail_start_date"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Deadline: Nov 24, 11:00 PM"
-                android:textStyle = "bold"
-                >
+                android:text="Opens: Nov 24, 11:00 PM"
+                android:textStyle = "bold" />
 
-            </TextView>
+            <TextView
+                android:id="@+id/event_detail_end_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Closes: Nov 24, 11:00 PM"
+                android:textStyle = "bold" />
+
+            <TextView
+                android:id="@+id/event_detail_event_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Event Date: Nov 24, 11:00 PM"
+                android:textStyle = "bold" />
 
             <!-- Organizer section -->
             <LinearLayout

@@ -15,6 +15,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.GeneralUser;
 import com.example.dangle_lotto.LoginActivity;
@@ -42,7 +43,7 @@ public class UserSettingFragment extends Fragment {
     private EditText usernameEditText;
     private EditText emailEditText;
     private EditText phoneEditText;
-
+    private EditText passwordEditText;
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -92,6 +93,7 @@ public class UserSettingFragment extends Fragment {
         usernameEditText = binding.settingsFragmentUsernameInput;
         emailEditText = binding.settingsFragmentEmailInput;
         phoneEditText = binding.settingsFragmentPhoneInput;
+        passwordEditText = binding.settingsFragmentPasswordInput;
 
         // setting edit text views with user info
         nameEditText.setText(user.getName());
@@ -114,12 +116,15 @@ public class UserSettingFragment extends Fragment {
         emailEditText.addTextChangedListener(watcher);
         phoneEditText.addTextChangedListener(watcher);
 
+
         // clicking button to update user info
         binding.userSettingsUpdateButton.setOnClickListener(v -> {
             String name = nameEditText.getText().toString().trim();
             String username = usernameEditText.getText().toString().trim();
             String email = emailEditText.getText().toString().trim();
             String phone = phoneEditText.getText().toString().trim();
+            String password = passwordEditText.getText().toString().trim();
+
 
             if (TextUtils.isEmpty(name)) {
                 nameEditText.setError("Name required");
@@ -141,19 +146,33 @@ public class UserSettingFragment extends Fragment {
                 return;
             }
 
+            if(TextUtils.isEmpty(password)){
+                passwordEditText.setError("Password required");
+                return;
+            }
 
             // Need to hit the button twice (confirm system used)
             if (!confirmUpdate) {
                 binding.userSettingsUpdateButton.setText("Confirm Update");
                 confirmUpdate = true;
             } else {
-                user.setName(name);
-                user.setUsername(username);
-                user.setEmail(email);
-                user.setPhone(phone);
-
                 // updating user info
-                firebaseManager.updateUser(user);
+                firebaseManager.updateUser(user, name, username, email, phone,
+                        user.getPhotoID(), password, new FirebaseCallback<Boolean>() {
+                            @Override
+                            public void onSuccess(Boolean result) {
+                                Toast toast = Toast.makeText(getActivity(), "User updated", Toast.LENGTH_SHORT);
+                                toast.show();
+                                requireActivity().getSupportFragmentManager().popBackStack();
+                            }
+
+                            @Override
+                            public void onFailure(Exception e) {
+                                Toast toast = Toast.makeText(getActivity(), "Error updating user. Check password.", Toast.LENGTH_SHORT);
+                                toast.show();
+                            }
+                        }
+                );
                 userViewModel.setUser(user);
 
                 // unselecting edit text fields
@@ -161,6 +180,10 @@ public class UserSettingFragment extends Fragment {
                 usernameEditText.clearFocus();
                 emailEditText.clearFocus();
                 phoneEditText.clearFocus();
+                passwordEditText.clearFocus();
+
+                // resetting confirm update
+                confirmUpdate = false;
 
                 // updating button state
                 updateButtonState();

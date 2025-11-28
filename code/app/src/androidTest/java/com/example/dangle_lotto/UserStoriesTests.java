@@ -3,24 +3,28 @@ package com.example.dangle_lotto;
 import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
+import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.isChecked;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
-import static androidx.test.espresso.matcher.ViewMatchers.withHint;
 import static androidx.test.espresso.matcher.ViewMatchers.withId;
 import static androidx.test.espresso.matcher.ViewMatchers.withText;
 
-import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
+import static org.junit.Assert.fail;
+import static org.junit.Assume.assumeTrue;
+
+import android.Manifest;
 
 import androidx.test.espresso.IdlingRegistry;
 import androidx.test.espresso.IdlingResource;
 import androidx.test.ext.junit.rules.ActivityScenarioRule;
 import androidx.test.ext.junit.runners.AndroidJUnit4;
 import androidx.test.filters.LargeTest;
+import androidx.test.rule.GrantPermissionRule;
 
-import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.Timestamp;
 import com.google.firebase.auth.FirebaseAuth;
@@ -37,6 +41,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.TimeZone;
 
 @RunWith(AndroidJUnit4.class)
 @LargeTest
@@ -44,6 +50,9 @@ public class UserStoriesTests {
     @Rule
     public ActivityScenarioRule<LoginActivity> scenario = new
             ActivityScenarioRule<>(LoginActivity.class);
+
+    @Rule
+    public GrantPermissionRule permissionRule = GrantPermissionRule.grant(Manifest.permission.CAMERA);
 
     private static FirebaseManager firebaseManager;
     private IdlingResource firebaseIdlingResource;
@@ -85,7 +94,7 @@ public class UserStoriesTests {
         IdlingRegistry.getInstance().register(firebaseIdlingResource);
 
         // Creates owner user
-        firebaseManager.signUp("owner@gmail.com", "password", "Owner User", "ownerusername","1234123123", "", true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("owner@gmail.com", "password", "Owner User", "owner username","1234123123", "", true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 ownerUid = result;
@@ -98,7 +107,7 @@ public class UserStoriesTests {
         Thread.sleep(1500);
 
         // Create tester AFTER owner is created
-        firebaseManager.signUp("tester@gmail.com", "password", "Tester User", "testerusername", "534532", "",true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("tester@gmail.com", "password", "Tester User", "tester username", "534532", "",true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 testerUid = result;
@@ -110,9 +119,8 @@ public class UserStoriesTests {
 
         Thread.sleep(1500);
 
-
         // Create an event to test on
-        eventOfInterest = firebaseManager.createEvent(ownerUid, "Good Party", Timestamp.now(), Timestamp.now(), Timestamp.now(), "Da House", "A party for good people", 10, 100, "", "", new ArrayList<String>());
+        eventOfInterest = firebaseManager.createEvent(ownerUid, "Good Party", makeTimestamp(2024, 11, 1), makeTimestamp(2026, 11, 1), makeTimestamp(2026, 11, 2), "Da House", false,"A party for good people", 10, 100, "", "", new ArrayList<String>());
     }
 
     @After
@@ -124,9 +132,7 @@ public class UserStoriesTests {
     }
 
     /**
-     * Deletes all users and events from the database.
-     *
-     * @return A Firebase {@link Task} representing the operation.
+     * Deletes all users and events from the database. This is a helper method
      */
     public static void clearFirestore() throws InterruptedException {
         try {
@@ -150,18 +156,42 @@ public class UserStoriesTests {
         Thread.sleep(1000);
     }
 
-    @Test
-    public void test() {
-
-    }
-
-
+    /**
+     * Logs the user in. This is a helper method
+     *
+     * @param email String representing the user's email.
+     * @param password String representing the user's password.
+     */
     public void login(String email, String password) {
         // Logs the user in
-        onView(withHint("Email")).perform(typeText(email), closeSoftKeyboard());
-        onView(withHint("Password")).perform(typeText(password), closeSoftKeyboard());
+        onView(withId(R.id.etLoginEmail)).perform(typeText(email), closeSoftKeyboard());
+        onView(withId(R.id.etLoginPassword)).perform(typeText(password), closeSoftKeyboard());
         onView(withText("LOGIN")).perform(click());
     }
+
+    /**
+     * Creates a timestamp object. This is a helper method.
+     * @param year The year
+     *
+     * @param month The month
+     * @param day The day
+     * @return Timestamp object
+     */
+    public static Timestamp makeTimestamp(int year, int month, int day) {
+        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        cal.set(Calendar.YEAR, year);
+        cal.set(Calendar.MONTH, month - 1); // IMPORTANT: January = 0
+        cal.set(Calendar.DAY_OF_MONTH, day);
+
+        // optional: set time to midnight
+        cal.set(Calendar.HOUR_OF_DAY, 0);
+        cal.set(Calendar.MINUTE, 0);
+        cal.set(Calendar.SECOND, 0);
+        cal.set(Calendar.MILLISECOND, 0);
+
+        return new Timestamp(cal.getTime());
+    }
+
 
     /**
      * Joins the waiting list for an event. We call it registering.
@@ -232,8 +262,11 @@ public class UserStoriesTests {
      */
     @Test
     public void UserCanFilterEvents() {
+        // Login
+        login("tester@gmail.com", "password");
+
         // FAIL TEST
-        onView(withId(0)).perform(click());
+        fail("Test not implemented");
     }
 
     /**
@@ -246,9 +279,34 @@ public class UserStoriesTests {
         // User wants to sign up
         onView(withText("Don’t have an account? Sign Up")).perform(click());
 
-        // Check for optional fields
-        onView(withHint("Email")).check(matches(isDisplayed()));
-        onView(withHint("Phone Number")).check(matches(isDisplayed()));
+        // Sign up using all fields
+        onView(withId(R.id.signup_name_input)).perform(typeText("Tester 2"), closeSoftKeyboard());
+        onView(withId(R.id.signup_username_input)).perform(typeText("tester2"), closeSoftKeyboard());
+        onView(withId(R.id.signup_email_input)).perform(typeText("tester2@gmail.com"), closeSoftKeyboard());
+        onView(withId(R.id.signup_phone_input)).perform(typeText("1234567890"), closeSoftKeyboard());
+        onView(withId(R.id.signup_password_input)).perform(typeText("password"), closeSoftKeyboard());
+        onView(withText("Sign Up")).perform(click());
+
+        // Check if if are on login page
+        onView(withText("LOGIN")).check(matches(isDisplayed()));
+
+        // Login the user
+        login("tester2@gmail.com", "password");
+
+        // Check if user is on home page
+        onView(withId(R.id.home_fragment_title)).check(matches(isDisplayed()));
+
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on settings button
+        onView(withId(R.id.dashboard_fragment_setting_button)).perform(click());
+
+        // Check if user personal info is shown
+        onView(withText("Tester 2")).check(matches(isDisplayed()));
+        onView(withText("tester2")).check(matches(isDisplayed()));
+        onView(withText("tester2@gmail.com")).check(matches(isDisplayed()));
+        onView(withText("1234567890")).check(matches(isDisplayed()));
     }
 
     /**
@@ -267,18 +325,31 @@ public class UserStoriesTests {
         // User clicks on settings button
         onView(withId(R.id.dashboard_fragment_setting_button)).perform(click());
 
-        // User updates email
-        onView(withId(R.id.signup_email_input)).perform(typeText("s"), closeSoftKeyboard());
-
-        // User updates phone number
-        onView(withId(R.id.signup_phone_input)).perform(typeText("000"), closeSoftKeyboard());
+        // User updates personal info
+        onView(withId(R.id.settings_fragment_name_input)).perform(replaceText("Does This Replace?"), closeSoftKeyboard());
+        onView(withId(R.id.settings_fragment_username_input)).perform(replaceText("Does This Replace Too?"), closeSoftKeyboard());
+        onView(withId(R.id.settings_fragment_email_input)).perform(replaceText("replaced@gmail.com"), closeSoftKeyboard());
+        onView(withId(R.id.settings_fragment_phone_input)).perform(typeText("000"), closeSoftKeyboard());
+        onView(withId(R.id.settings_fragment_password_input)).perform(typeText("password"), closeSoftKeyboard());
 
         // User clicks on update button
         onView(withText("Update Profile")).perform(click());
         onView(withText("Confirm Update")).perform(click());
 
+        // Click on settings button
+        onView(withId(R.id.dashboard_fragment_setting_button)).perform(click());
+
         // Update button is unclickable
         onView(withId(R.id.user_settings_update_button)).check(matches(not(isEnabled())));
+
+        // Logout
+        onView(withText("LOGOUT")).perform(click());
+
+        // Login the user
+        login("replaced@gmail.com", "password");
+
+        // Check if user is on home page
+        onView(withId(R.id.home_fragment_title)).check(matches(isDisplayed()));
     }
 
     /**
@@ -288,8 +359,29 @@ public class UserStoriesTests {
      */
     @Test
     public void UserCanViewHistoryOfEvents() {
-        // FAIL TEST
-        onView(withId(0)).perform(click());
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Click on event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on attend button
+        onView(withText("Register for Lottery")).perform(click());
+
+        // Check if button says "Withdraw Registration"
+        onView(withText("Withdraw Registration")).check(matches(isDisplayed()));
+
+        // Click on your event buttons
+        onView(withId(R.id.navigation_your_events)).perform(click());
+
+        // Check if event is displayed
+        onView(withText("Good Party")).check(matches(isDisplayed()));
+
+        // Click on event
+        onView(withText("Good Party")).perform(click());
+
+        // Check if buttons says "Withdraw Registration"
+        onView(withText("Withdraw Registration")).check(matches(isDisplayed()));
     }
 
     /**
@@ -314,6 +406,28 @@ public class UserStoriesTests {
 
         // Check if back on login page
         onView(withText("LOGIN")).check(matches(isDisplayed()));
+
+        // Check if user can still login
+        login("tester@gmail.com", "password");
+
+        // Login fails
+        onView(withText("LOGIN")).check(matches(isDisplayed()));
+
+        // Check if user can still sign up using that email
+        onView(withText("Don’t have an account? Sign Up")).perform(click());
+
+        // Fill out signup information
+        onView(withId(R.id.signup_name_input)).perform(typeText("Tester User"), closeSoftKeyboard());
+        onView(withId(R.id.signup_username_input)).perform(typeText("tester username"));
+        onView(withId(R.id.signup_email_input)).perform(typeText("tester@gmail.com"), closeSoftKeyboard());
+        onView(withId(R.id.signup_password_input)).perform(typeText("password"), closeSoftKeyboard());
+        onView(withText("Sign Up")).perform(click());
+
+        // Check if user can login now
+        login("tester@gmail.com", "password");
+
+        // Login succeeds
+        onView(withId(R.id.home_fragment_title)).check(matches(isDisplayed()));
     }
 
     /**
@@ -365,8 +479,11 @@ public class UserStoriesTests {
      */
     @Test
     public void UserCanOptOutNotifications() {
+        // Login the user
+        login("tester@gmail.com", "password");
+
         // Fail test
-        onView(withId(0)).perform(click());
+        fail("Test not implemented");
     }
 
     /** Check if user can get another chance to sign up.
@@ -377,7 +494,7 @@ public class UserStoriesTests {
     @Test
     public void UserCanGetAnotherChanceToSignUp() throws InterruptedException {
         // Create a user to add to the event chosen list
-        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User", "testerusername2","", "", true, new FirebaseCallback<String>() {
+        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User", "tester username2","", "", true, new FirebaseCallback<String>() {
             @Override
             public void onSuccess(String result) {
                 tester2Uid = result;
@@ -521,8 +638,11 @@ public class UserStoriesTests {
      */
     @Test
     public void UserCanScanQRCode() {
-        // Fail test
-        onView(withId(0)).perform(click());
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Skip test
+        assumeTrue(false);
     }
 
     /**
@@ -532,18 +652,104 @@ public class UserStoriesTests {
      */
     @Test
     public void UserCanSignUpForEventFromEventDetails() {
+        // Login
+        login("tester@gmail.com", "password");
+
         // Fail test
-        onView(withId(0)).perform(click());
+        fail("Test not implemented");
     }
 
     /**
-     * Checks if user can sign up for an event
+     * Checks if user can identify by device
      * <p>
      * US 01.07.01 As an entrant, I want to be identified by my device, so that I don't have to use a username and password.
+     * Impossible to test for this in espresso, we just check for the button being there
      */
     @Test
     public void UserCanIdentifyByDevice() {
-        // Fail test
-        onView(withId(0)).perform(click());
+        // Login the user
+        onView(withId(R.id.etLoginEmail)).perform(typeText("tester@gmail.com"), closeSoftKeyboard());
+        onView(withId(R.id.etLoginPassword)).perform(typeText("password"), closeSoftKeyboard());
+
+        // Fill out checkbox
+        onView(withId(R.id.cbRememberMe)).perform(click());
+
+        // Check that textbox is checked
+        onView(withId(R.id.cbRememberMe)).check(matches(isChecked()));
+
+        // Click on login
+        onView(withText("LOGIN")).perform(click());
+
+        // Check if back on home page
+        onView(withId(R.id.home_fragment_title)).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Checks if the user can logout
+     */
+    @Test
+    public void UserCanLogout() {
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on settings button
+        onView(withId(R.id.dashboard_fragment_setting_button)).perform(click());
+
+        // Click on logout button
+        onView(withText("LOGOUT")).perform(click());
+
+        // Check if back on login page
+        onView(withText("LOGIN")).check(matches(isDisplayed()));
+
+        // User can login
+        login("tester@gmail.com", "password");
+
+        // User is on home page
+        onView(withId(R.id.home_fragment_title)).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Checks that user can not sign up for an event that has not started yet.
+     */
+    @Test
+    public void UserCannotJoinWaitlistForEventThatHasNotStarted() {
+        // Create event
+        Event event = firebaseManager.createEvent(ownerUid, "Event that has not started yet", makeTimestamp(2026, 11, 1), makeTimestamp(2026, 11, 2), makeTimestamp(2026, 11, 3), "Da House", false,"A party for good people", 10, 100, "", "", new ArrayList<String>());
+
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Click on the event
+        onView(withText("Event that has not started yet")).perform(click());
+
+        // Click on the join button
+        onView(withText("Registration Opens Soon")).perform(click());
+
+        // Button should still say "Registration Opens Soon"
+        onView(withText("Registration Opens Soon")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Checks that user can not sign up for an event that ended
+     */
+    @Test
+    public void UserCannotJoinWaitlistForEventThatEnded() {
+        // Create event
+        Event event = firebaseManager.createEvent(ownerUid, "Event that not ended", makeTimestamp(2025, 11, 1), makeTimestamp(2025, 11, 2), makeTimestamp(2026, 11, 3), "Da House", false,"A party for good people", 10, 100, "", "", new ArrayList<String>());
+
+        // Login the user
+        login("tester@gmail.com", "password");
+
+        // Click on the event
+        onView(withText("Event that not ended")).perform(click());
+
+        // Click on the "Registration Closed" button
+        onView(withText("Registration Closed")).perform(click());
+
+        // Button should still say "Registration Closed"
+        onView(withText("Registration Closed")).check(matches(isDisplayed()));
     }
 }

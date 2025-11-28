@@ -1,6 +1,7 @@
 package com.example.dangle_lotto;
 
 import com.google.firebase.firestore.Exclude;
+import com.google.firebase.firestore.GeoPoint;
 
 /**
  * Abstract base class representing a generic user within the Dangle Lotto system.
@@ -38,6 +39,7 @@ public abstract class User {
     /** Optional photo identifier for the user’s profile picture. */
     protected String photo_id;
 
+
     /**
      * Reference to the {@link FirebaseManager} instance.
      * <p>
@@ -59,7 +61,8 @@ public abstract class User {
      * @param firebaseManager Reference to the FirebaseManager for database updates.
      */
 
-    public User(String uid, String name, String username, String email, String phone, String photo_id, FirebaseManager firebaseManager) {
+    public User(String uid, String name, String username, String email, String phone,
+                String photo_id, FirebaseManager firebaseManager) {
         this.uid = uid;
         this.name = name;
         this.username = username;
@@ -126,7 +129,6 @@ public abstract class User {
      */
     public void setName(String name) {
         this.name = name;
-        firebaseManager.updateUser(this);
     }
 
     /**
@@ -136,7 +138,6 @@ public abstract class User {
      */
     public void setUsername(String username) {
         this.username = username;
-        firebaseManager.updateUser(this);
 
     }
     /**
@@ -146,7 +147,6 @@ public abstract class User {
      */
     public void setEmail(String email) {
         this.email = email;
-        firebaseManager.updateUser(this);
     }
 
     /**
@@ -156,8 +156,8 @@ public abstract class User {
      */
     public void setPhone(String phone) {
         this.phone = phone;
-        firebaseManager.updateUser(this);
     }
+
 
     /**
      * Updates the user's profile photo ID locally and in Firestore.
@@ -166,7 +166,6 @@ public abstract class User {
      */
     public void setPhotoID(String photo_id) {
         this.photo_id = photo_id;
-        firebaseManager.updateUser(this);
     }
 
     // ============================================================

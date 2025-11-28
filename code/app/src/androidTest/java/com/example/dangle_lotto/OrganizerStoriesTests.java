@@ -46,6 +46,13 @@ import org.junit.runner.RunWith;
 
 import java.util.ArrayList;
 
+/**
+ * Organizer Stories Tests - Unit Tests for Organizer Stories
+ *
+ * @author Aditya Soni
+ * @version 1.0
+ * @since 11/14/2025
+ */
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class OrganizerStoriesTests {

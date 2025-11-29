@@ -128,7 +128,7 @@ public class  EventCardAdapter extends RecyclerView.Adapter<EventCardAdapter.Vie
             // load default image if no image is provided
             if (event.getPhotoID() == null || event.getPhotoID().isEmpty())
                 imageView.setImageResource(R.drawable.event_card_test_image);
-            else{
+            else {
                 Glide.with(imageView.getContext()).load(event.getPhotoID()).into(imageView);
             }
             itemView.setOnClickListener(v -> listener.onItemClick(getBindingAdapterPosition()));

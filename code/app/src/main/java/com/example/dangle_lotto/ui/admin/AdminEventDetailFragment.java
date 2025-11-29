@@ -16,11 +16,13 @@ import androidx.navigation.Navigation;
 import com.bumptech.glide.Glide;
 import com.example.dangle_lotto.Event;
 import com.example.dangle_lotto.FirebaseManager;
+import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.databinding.FragmentAdminEventDetailBinding;
 import com.google.firebase.Timestamp;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.Locale;
 
@@ -42,44 +44,62 @@ public class AdminEventDetailFragment extends Fragment {
     @SuppressLint("SetTextI18n")
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+
+        // Inflate the layout for this fragment
         binding = FragmentAdminEventDetailBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
+        // Initialize ViewModel
         adminViewModel = new ViewModelProvider(requireActivity()).get(AdminViewModel.class);
         selectedEvent = adminViewModel.getSelectedEvent().getValue();
 
+        // Check if event is null
         if (selectedEvent == null) {
-            Log.e("EventDetaulFragment", "Noe selected event found.");
+            Log.e("EventDetailFragment", "No selected event found.");
             return root;
         }
 
+        // Set event details
         binding.adminEventTitle.setText(selectedEvent.getName());
         binding.adminEventDescription.setText(selectedEvent.getDescription());
         binding.adminEventDate.setText("Registration Period: " + formatTimeStamp(selectedEvent.getStartDate()) + " to " + formatTimeStamp(selectedEvent.getEndDate()));
-        if (!(selectedEvent.getPhotoID().isEmpty()) || selectedEvent.getPhotoID() == null) {
-            Glide.with(requireContext()).load(selectedEvent.getPhotoID()).into(binding.adminImgPoster);
+
+        // Load poster image
+        if (selectedEvent.getPhotoID() == null || selectedEvent.getPhotoID().isEmpty())
+            binding.adminImgPoster.setImageResource(R.drawable.event_card_test_image);
+        else {
+            Glide.with(binding.adminImgPoster.getContext()).load(selectedEvent.getPhotoID()).into(binding.adminImgPoster);
         }
         updateSpotsUI();
 
+        // Set back button
         binding.adminBtnBack.setOnClickListener(v -> {
             adminViewModel.setSelectedEvent(null);
             Navigation.findNavController(v).popBackStack();
         });
 
+        // Set event criteria button
         binding.adminEventDetailInformationButton.setOnClickListener(v -> {
             new AlertDialog.Builder(v.getContext()).setTitle("Event Criteria").setMessage("Everybody is able to register for this event. To register, simply click the 'Register for Lottery' button. The lottery will randomly select registrants, who will be given the option to sign up for the event. If some chosen users decline, then more registrants will be randomly chosen.\nThe maximum size of event: " + selectedEvent.getMaxEntrants())
                     .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                     .show();
         });
 
+        // Set delete event button
         binding.adminDeleteEventButton.setOnClickListener(v->{
-            Bundle result = new Bundle();
-            result.putString("deleted", adminViewModel.getSelectedEvent().getValue().getEid());
-            getParentFragmentManager().setFragmentResult("eventDeleted", result);
+            // Delete event from database
             firebaseManager.deleteEvent(selectedEvent.getEid());
             Log.d("Admin delete event", selectedEvent.getEid());
-            adminViewModel.setSelectedEvent(null);
+
+            // Remove event from view model
+            ArrayList<Event> events = adminViewModel.getEvents().getValue();
+            String removeId = selectedEvent.getEid();
+            events.removeIf(e -> e.getEid().equals(removeId));
+            adminViewModel.setEvents(events);
+
             // TODO: send a notification
+
+            // Return to previous fragment
             Navigation.findNavController(v).popBackStack();
         });
 
@@ -104,9 +124,9 @@ public class AdminEventDetailFragment extends Fragment {
 
 
     /**
-     * format time
+     * Formats the time
      *
-     * @param ts
+     * @param ts Timestamp
      * @return String
      */
     private String formatTimeStamp(Timestamp ts) {

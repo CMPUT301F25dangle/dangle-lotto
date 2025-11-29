@@ -165,8 +165,9 @@ public class NotificationsFragment extends Fragment {
             @Override
             public void onSuccess(Event event) {
                 String eventName = event.getName();
-                Notification notification = new Notification(eventName, eventStatus);
-                callback.onSuccess(notification);
+//                Notification notification = new Notification("PLACEHOLDER", "PLACEHOLDER");
+//                callback.onSuccess(notification);
+                return;
             }
 
             @Override

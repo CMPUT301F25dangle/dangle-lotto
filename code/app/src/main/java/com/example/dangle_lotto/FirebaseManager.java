@@ -51,7 +51,7 @@ public class FirebaseManager {
     private final StorageReference storageRef;
     private final FirebaseFunctions functions;
 
-    private final String[] collections = new String[]{"Register", "Chosen", "SignUps", "Cancelled"};
+    private final String[] collections = new String[]{"Register", "Chosen", "SignUps", "Cancelled", "Organize"};
     private final FirebaseIdlingResource idlingResource = new FirebaseIdlingResource();
     private static FirebaseManager instance;
 

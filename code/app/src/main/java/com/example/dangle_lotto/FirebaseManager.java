@@ -28,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.TimeoutException;
 
 /**
  * FirebaseManager — handles all Firebase-related operations for authentication, users, and events.
@@ -50,7 +51,7 @@ public class FirebaseManager {
     private final StorageReference storageRef;
     private final FirebaseFunctions functions;
 
-    private final String[] collections = new String[]{"Register", "Chosen", "SignUps", "Cancelled"};
+    private final String[] collections = new String[]{"Register", "Chosen", "SignUps", "Cancelled", "Organize", "Notifications"};
     private final FirebaseIdlingResource idlingResource = new FirebaseIdlingResource();
     private static FirebaseManager instance;
 
@@ -679,6 +680,33 @@ public class FirebaseManager {
     }
 
     /**
+     * Creates a notification document in the database.
+     *
+     * @param uid  User id
+     * @param eid  Event id
+     * @param status  Status of the notification
+     */
+    public void createNotification(String uid, String eid, String status){
+        String nid = users.document(uid).collection("Notifications").document().getId();
+        Notification newnNoti = new Notification(nid, eid, status, Timestamp.now());
+        users.document(uid).collection("Notifications").document(nid).set(newnNoti);
+    }
+
+    /**
+     * Converts a Firestore document snapshot into a {@link Notification} object.
+     *
+     * @param nDoc The Firestore document snapshot.
+     * @return An instantiated Notification object.
+     */
+    public Notification notiDocToNoti(DocumentSnapshot nDoc){
+        return nDoc.toObject(Notification.class);
+    }
+
+    public void deleteNotification(String uid, String nid) {
+        users.document(uid).collection("Notifications").document(nid).delete();
+    }
+
+    /**
      * Retrieves a subcollection of an event from the database. Calls the provided callback function when event has been received.
      * <p>
      * Usage: getUserSubcollection(uid, "collection name", new FirebaseCallback&lt;ArrayList&lt;String&gt;&gt;() {
@@ -981,12 +1009,22 @@ public class FirebaseManager {
      * @param callback callback function to call when event is retrieved
      */
     public void deletePic(String imageUrl, FirebaseCallback<Void> callback){
-        // idling resource for testing
         idlingResource.increment();
 
         StorageReference imgRef = storage.getReferenceFromUrl(imageUrl);
         imgRef.delete()
-                .addOnSuccessListener(callback::onSuccess)
-                .addOnFailureListener(callback::onFailure);
+                .addOnSuccessListener(Void -> {
+                    callback.onSuccess(Void);
+
+                    // idling resource for testing
+                    idlingResource.decrement();
+                })
+                .addOnFailureListener(e -> {
+                    callback.onFailure(e);
+
+                    // idling resource for testing
+                    idlingResource.decrement();
+                });
     }
+
 }

@@ -131,6 +131,8 @@ public class  EventCardAdapter extends RecyclerView.Adapter<EventCardAdapter.Vie
             else {
                 Glide.with(imageView.getContext()).load(event.getPhotoID()).into(imageView);
             }
+
+            // Set up click listener for the item
             itemView.setOnClickListener(v -> listener.onItemClick(getBindingAdapterPosition()));
         }
     }

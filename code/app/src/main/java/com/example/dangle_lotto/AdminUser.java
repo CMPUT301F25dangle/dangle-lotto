@@ -12,7 +12,7 @@ import java.util.ArrayList;
  * @version 1.0
  * @since 2025-11-20
  */
-public class AdminUser extends User{
+public class AdminUser extends User {
     /**
      * Constructs a new User object with basic identifying information.
      *

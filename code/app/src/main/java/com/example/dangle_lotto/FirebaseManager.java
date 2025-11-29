@@ -269,6 +269,38 @@ public class FirebaseManager {
                 }).addOnFailureListener(callback::onFailure);
     }
 
+    /**
+     * Makes the specified user an admin by setting isAdmin = true.
+     *
+     * @param uid      UID of the user to update.
+     * @param callback Callback for success/failure.
+     */
+    public void makeUserAdmin(String uid, FirebaseCallback<Boolean> callback) {
+        // idling resource for testing
+        idlingResource.increment();
+
+        users.document(uid)
+                .update("isAdmin", true)
+                .addOnSuccessListener(unused -> {
+                    callback.onSuccess(true);
+
+                    // idling resource for testing
+                    idlingResource.decrement();
+                })
+                .addOnFailureListener(e -> {
+                    callback.onFailure(e);
+
+                    // idling resource for testing
+                    idlingResource.decrement();
+                });
+    }
+
+    /**
+     * Updates a user's location in Firestore.
+     *
+     * @param uid User ID
+     * @param location Location to update to
+     */
     public void updateUserLocation(String uid, GeoPoint location) {
         users.document(uid).update("Location", location)
                 .addOnSuccessListener(unused -> {

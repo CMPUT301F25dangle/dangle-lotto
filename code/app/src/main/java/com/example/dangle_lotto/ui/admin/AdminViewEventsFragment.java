@@ -52,36 +52,37 @@ public class AdminViewEventsFragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
         binding = FragmentAdminViewEventsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+
+        // Initialize ViewModel
         adminViewModel = new ViewModelProvider(requireActivity()).get(AdminViewModel.class);
+
+        // Initialize RecyclerView and its components
         recyclerView = binding.adminEventsList;
         manager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(manager);
-        events = new ArrayList<>();
 
+        // initializing events list
+        if (adminViewModel.getEvents().getValue() != null) {
+            events = adminViewModel.getEvents().getValue();
+        } else {
+            events = new ArrayList<>();
+        }
+
+        // initializing and attaching adapter
         adapter = new EventCardAdapter(events, position -> {
-            firebaseManager.getEvent(events.get(position).getEid(), new FirebaseCallback<Event>() {
-                @Override
-                public void onSuccess(Event result) {
-                    adminViewModel.setSelectedEvent(result);
-                }
+            // update view model
+            adminViewModel.setSelectedEvent(events.get(position));
 
-                @Override
-                public void onFailure(Exception e) {
-                    Log.e("Firebase", "failed to fetch selected event", e);
-                }
-            });
+            // open event details fragment
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.navigate(R.id.action_adminViewEventsFragment_to_admin_eventdetails_fragment);
         });
         recyclerView.setAdapter(adapter);
 
-        adminViewModel.getSelectedEvent().observe(getViewLifecycleOwner(), event -> {
-            if (event != null) {
-                NavController navController = NavHostFragment.findNavController(this);
-                navController.navigate(R.id.action_adminViewEventsFragment_to_admin_eventdetails_fragment);
-            }
-        });
-
+        // detects when user reaches end
         isLoading = false;
         recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
             @Override
@@ -99,18 +100,13 @@ public class AdminViewEventsFragment extends Fragment {
                 }
             }
         });
-        getParentFragmentManager().setFragmentResultListener("eventDeleted", this, (requestKey, result) -> {
-            String deleted= result.getString("deletedPosition");
-            for (Event event: events){
-                if (Objects.equals(event.getEid(), deleted)){
-                    events.remove(event);
-                    break;
-                }
-            }
-        });
-        loadFirstPage();
-        return root;
 
+        // if data is not cached, load first page
+        if (events.isEmpty()) {
+            loadFirstPage();
+        }
+
+        return root;
     }
 
     /**
@@ -118,7 +114,9 @@ public class AdminViewEventsFragment extends Fragment {
      */
     private void loadFirstPage() {
         isLoading = true;
+
         Query query = firebaseManager.getEventsReference().orderBy("Event Date", Query.Direction.DESCENDING).limit(PAGE_SIZE);
+
         firebaseManager.getQuery(null, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
@@ -126,12 +124,12 @@ public class AdminViewEventsFragment extends Fragment {
                 for (DocumentSnapshot doc : result) {
                     events.add(firebaseManager.documentToEvent(doc));
                 }
-                adapter.notifyDataSetChanged();
+
+                adapter.notifyItemRangeInserted(startPos, result.size());
                 isLoading = false;
                 if (!result.isEmpty()) {
                     lastVisible = result.get(result.size() - 1);
                 } else {
-                    Log.e("Firebase", "Noe more pages");
                     lastVisible = null;
                 }
             }
@@ -148,12 +146,13 @@ public class AdminViewEventsFragment extends Fragment {
      * loads next page by querying
      */
     private void loadNextPage() {
-        if (isLoading || lastVisible == null) {
-            return;
-        }
+        if (isLoading || lastVisible == null) return;
         isLoading = true;
+
         Toast.makeText(getContext(), "Loading more events...", Toast.LENGTH_SHORT).show();
+
         Query query = firebaseManager.getEventsReference().orderBy("Event Date", Query.Direction.DESCENDING).limit(PAGE_SIZE);
+
         firebaseManager.getQuery(lastVisible, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
@@ -187,5 +186,7 @@ public class AdminViewEventsFragment extends Fragment {
         super.onDestroyView();
         binding = null;
 
+        // Save events to view model
+        adminViewModel.setEvents(events);
     }
 }

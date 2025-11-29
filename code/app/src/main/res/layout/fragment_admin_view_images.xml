@@ -25,16 +25,9 @@
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/admin_images_recycler_view"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="0dp"
         android:padding="5dp"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/admin_images_title">
-
-        <com.example.dangle_lotto.ui.admin.SquareImage
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:adjustViewBounds="true"
-            android:scaleType="centerCrop" />
-    </androidx.recyclerview.widget.RecyclerView>
+        app:layout_constraintTop_toBottomOf="@id/admin_images_title"/>
 </androidx.constraintlayout.widget.ConstraintLayout>

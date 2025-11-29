@@ -702,6 +702,10 @@ public class FirebaseManager {
         return nDoc.toObject(Notification.class);
     }
 
+    public void deleteNotification(String uid, String nid) {
+        users.document(uid).collection("Notifications").document(nid).delete();
+    }
+
     /**
      * Retrieves a subcollection of an event from the database. Calls the provided callback function when event has been received.
      * <p>

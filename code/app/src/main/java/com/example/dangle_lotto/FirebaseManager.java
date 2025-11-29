@@ -51,7 +51,7 @@ public class FirebaseManager {
     private final StorageReference storageRef;
     private final FirebaseFunctions functions;
 
-    private final String[] collections = new String[]{"Register", "Chosen", "SignUps", "Cancelled", "Organize"};
+    private final String[] collections = new String[]{"Register", "Chosen", "SignUps", "Cancelled", "Organize", "Notifications"};
     private final FirebaseIdlingResource idlingResource = new FirebaseIdlingResource();
     private static FirebaseManager instance;
 
@@ -1009,12 +1009,22 @@ public class FirebaseManager {
      * @param callback callback function to call when event is retrieved
      */
     public void deletePic(String imageUrl, FirebaseCallback<Void> callback){
-        // idling resource for testing
         idlingResource.increment();
 
         StorageReference imgRef = storage.getReferenceFromUrl(imageUrl);
         imgRef.delete()
-                .addOnSuccessListener(callback::onSuccess)
-                .addOnFailureListener(callback::onFailure);
+                .addOnSuccessListener(Void -> {
+                    callback.onSuccess(Void);
+
+                    // idling resource for testing
+                    idlingResource.decrement();
+                })
+                .addOnFailureListener(e -> {
+                    callback.onFailure(e);
+
+                    // idling resource for testing
+                    idlingResource.decrement();
+                });
     }
+
 }

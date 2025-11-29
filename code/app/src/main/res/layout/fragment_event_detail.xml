@@ -58,7 +58,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Event title -->
             <TextView
                 android:id="@+id/event_title"
                 android:layout_width="match_parent"
@@ -69,7 +68,6 @@
                 android:textAlignment="center"
                 android:layout_marginBottom="8dp" />
 
-            <!-- Event Poster -->
             <ImageView
                 android:id="@+id/img_poster"
                 android:layout_width="match_parent"
@@ -83,33 +81,34 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Registrants: 10 / 20"
-                android:textStyle="bold"
-                android:textSize="16sp"
-                android:layout_marginBottom="12dp"
-                android:paddingTop="12dp"/>
+                android:textColor="@color/black"
+                android:textSize="18sp"
+                android:layout_marginVertical="12dp" />
 
             <TextView
                 android:id="@+id/event_detail_start_date"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Opens: Nov 24, 11:00 PM"
-                android:textStyle = "bold" />
+                android:textColor="@color/black"
+                android:textSize="18sp" />
 
             <TextView
                 android:id="@+id/event_detail_end_date"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Closes: Nov 24, 11:00 PM"
-                android:textStyle = "bold" />
+                android:textColor="@color/black"
+                android:textSize="18sp" />
 
             <TextView
                 android:id="@+id/event_detail_event_date"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Event Date: Nov 24, 11:00 PM"
-                android:textStyle = "bold" />
+                android:textColor="@color/black"
+                android:textSize="18sp" />
 
-            <!-- Organizer section -->
             <LinearLayout
                 android:id="@+id/organizer_row"
                 android:layout_width="match_parent"
@@ -119,7 +118,6 @@
                 android:layout_marginTop="12dp"
                 android:layout_marginBottom="8dp">
 
-                <!-- Profile picture (circular) -->
                 <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/img_organizer"
                     android:layout_width="48dp"
@@ -127,10 +125,8 @@
                     android:scaleType="centerCrop"
                     android:contentDescription="@null"
                     android:src="@drawable/default_profile_picture"
-                    app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Material3.Corner.Right"
-                    />
+                    app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.Material3.Corner.Right" />
 
-                <!-- Name + link -->
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -145,7 +141,8 @@
                         android:layout_height="wrap_content"
                         android:text="Organizer: Alice Johnson"
                         android:textStyle="bold"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:textColor="@color/black" />
 
                     <TextView
                         android:id="@+id/organizer_profile_link"
@@ -162,16 +159,40 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- Description  -->
+            <TextView
+                android:id="@+id/event_details_categories_title"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Categories"
+                android:textSize="18sp"
+                android:textColor="@color/black"/>
+            <TextView
+                android:id="@+id/event_details_categories_input"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Example categories"
+                android:textSize="16sp"
+                android:textColor="@color/black"/>
+
             <TextView
                 android:id="@+id/event_description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:text="Event Description:\nEvent description goes here...">
-
-
+                android:text="Event Description:\nEvent description goes here..."
+                android:textColor="@color/black"
+                android:textSize="18sp">
             </TextView>
+
+            <TextView
+                android:id="@+id/event_detail_geolocation"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:text="Geolocation Is Not Required For This Event"
+                android:textColor="@color/black"
+                android:textSize="18sp" />
 
             <View
                 android:layout_width="match_parent"
@@ -191,8 +212,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        android:visibility="visible"
-        />
+        android:visibility="visible" />
 
     <LinearLayout
         android:id="@+id/lottery_response"
@@ -222,8 +242,6 @@
             android:layout_height="48dp"
             android:layout_weight="1"
             android:text="Decline"/>
-
-
     </LinearLayout>
 
     <TextView

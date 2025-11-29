@@ -5,6 +5,7 @@ import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.replaceText;
 import static androidx.test.espresso.action.ViewActions.typeText;
+import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
 import static androidx.test.espresso.matcher.ViewMatchers.isChecked;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
@@ -44,15 +45,26 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.TimeZone;
 
+/**
+ * User Stories Tests - Unit Tests for User Stories
+ *
+ * @author Aditya Soni
+ * @version 1.0
+ * @since 11/14/2025
+ */
 @RunWith(AndroidJUnit4.class)
 @LargeTest
 public class UserStoriesTests {
     @Rule
-    public ActivityScenarioRule<LoginActivity> scenario = new
-            ActivityScenarioRule<>(LoginActivity.class);
+    public GrantPermissionRule permissionRule = GrantPermissionRule.grant(
+            Manifest.permission.CAMERA,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+            Manifest.permission.ACCESS_COARSE_LOCATION
+    );
 
     @Rule
-    public GrantPermissionRule permissionRule = GrantPermissionRule.grant(Manifest.permission.CAMERA);
+    public ActivityScenarioRule<LoginActivity> scenario = new
+            ActivityScenarioRule<>(LoginActivity.class);
 
     private static FirebaseManager firebaseManager;
     private IdlingResource firebaseIdlingResource;
@@ -556,10 +568,10 @@ public class UserStoriesTests {
         onView(withText("You’ve Been Chosen!")).perform(click());
 
         // Click on the attend button to accept
-        onView(withText("Attend")).perform(click());
+        onView(withText("Accept")).perform(click());
 
-        // Check if button says "Attending"
-        onView(withText("Attending")).check(matches(isDisplayed()));
+        // Check if button says "You Have Accepted The Invitation!"
+        onView(withText("You Have Accepted The Invitation!")).check(matches(isDisplayed()));
     }
 
     /**
@@ -652,11 +664,29 @@ public class UserStoriesTests {
      */
     @Test
     public void UserCanSignUpForEventFromEventDetails() {
+        // Add user to chosen list
+        eventOfInterest.addChosen(testerUid);
+
         // Login
         login("tester@gmail.com", "password");
 
-        // Fail test
-        fail("Test not implemented");
+        // Click on the event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on the join button
+        onView(withText("You’ve Been Chosen!")).perform(click());
+
+        // Click accept button
+        onView(withText("Accept")).perform(click());
+
+        // Click on the join button
+        onView(withText("You Have Accepted The Invitation!")).perform(click());
+
+        // Click on the join button
+        onView(withText("Attend")).perform(click());
+
+        // Check if button says "Attending"
+        onView(withText("Attending")).check(matches(isDisplayed()));
     }
 
     /**
@@ -733,23 +763,17 @@ public class UserStoriesTests {
     }
 
     /**
-     * Checks that user can not sign up for an event that ended
+     * Checks that user can not see an event where the registration period ended
      */
     @Test
     public void UserCannotJoinWaitlistForEventThatEnded() {
         // Create event
-        Event event = firebaseManager.createEvent(ownerUid, "Event that not ended", makeTimestamp(2025, 11, 1), makeTimestamp(2025, 11, 2), makeTimestamp(2026, 11, 3), "Da House", false,"A party for good people", 10, 100, "", "", new ArrayList<String>());
+        Event event = firebaseManager.createEvent(ownerUid, "Event that registration ended", makeTimestamp(2025, 11, 1), makeTimestamp(2025, 11, 2), makeTimestamp(2026, 11, 3), "Da House", false,"A party for good people", 10, 100, "", "", new ArrayList<String>());
 
         // Login the user
         login("tester@gmail.com", "password");
 
-        // Click on the event
-        onView(withText("Event that not ended")).perform(click());
-
-        // Click on the "Registration Closed" button
-        onView(withText("Registration Closed")).perform(click());
-
-        // Button should still say "Registration Closed"
-        onView(withText("Registration Closed")).check(matches(isDisplayed()));
+        // See that event isn't here
+        onView(withText("Event that registration ended")).check(doesNotExist());
     }
 }

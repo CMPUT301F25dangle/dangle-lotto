@@ -54,7 +54,9 @@ public class EventDetailFragment extends Fragment {
     private boolean isChosen = false;
     private boolean isSignedUp = false;
     private boolean isCancelled = false;
+
     private boolean postDraw = false;
+    private boolean acceptedInvite = false;
 
     @SuppressLint("SetTextI18n")
     @Nullable
@@ -98,12 +100,28 @@ public class EventDetailFragment extends Fragment {
         if (!(selectedEvent.getPhotoID().isEmpty() || selectedEvent.getPhotoID() == null))
             Glide.with(requireContext()).load(selectedEvent.getPhotoID()).into(binding.imgPoster);
 
+        // Display categories if available
+        if (!selectedEvent.getCategories().isEmpty()) {
+            binding.eventDetailsCategoriesInput.setText(String.join(", ", selectedEvent.getCategories()));
+        } else {
+            binding.eventDetailsCategoriesTitle.setVisibility(View.GONE);
+            binding.eventDetailsCategoriesInput.setVisibility(View.GONE);
+        }
+
+        // Geolocation
+        if (selectedEvent.isLocationRequired()) {
+            binding.eventDetailGeolocation.setText("Geolocation Is Required For This Event");
+        }
+
+        // Display spots remaining
         updateSpotsUI();
 
+        // Back button
         binding.btnBack.setOnClickListener(
                 v -> Navigation.findNavController(v).popBackStack()
         );
 
+        // Display event criteria
         binding.eventDetailInformationButton.setOnClickListener(v -> {
             new AlertDialog.Builder(v.getContext())
                     .setTitle("Event Criteria")
@@ -149,7 +167,7 @@ public class EventDetailFragment extends Fragment {
      * Updates the number of spots remaining in the event.
      */
     private void updateSpotsUI() {
-        Integer registrantsLimit = selectedEvent.getMaxEntrants();
+        int registrantsLimit = selectedEvent.getMaxEntrants();
         int registrantsCount = selectedEvent.getSignUps().size() + selectedEvent.getCancelled().size() + selectedEvent.getChosen().size() + selectedEvent.getRegistered().size();
 
         if (registrantsLimit != -1) {
@@ -186,8 +204,13 @@ public class EventDetailFragment extends Fragment {
         } else {
             // AFTER LOTTERY
             if (isChosen && !isSignedUp && !isCancelled) {
-                // User was chosen — ask to confirm or cancel
-                showChosenDialog(uid);
+                // If invite has not been accepted after being chosen, ask to accept or decline
+                // Or if they have accepted the invite, then show the chosen dialog
+                if (!acceptedInvite) {
+                    showInvitationDialog(uid);
+                } else {
+                    showChosenDialog(uid);
+                }
                 return;
             }
 
@@ -214,12 +237,33 @@ public class EventDetailFragment extends Fragment {
      */
     private void showChosenDialog(String uid) {
         new AlertDialog.Builder(requireContext())
-                .setTitle("You’ve Been Chosen!")
+                .setTitle("Invitation Accepted")
                 .setMessage("Would you like to attend this event?")
                 .setPositiveButton("Attend", (dialog, which) -> {
                     performTask(selectedEvent.addSignUp(uid));
                     isSignedUp = true;
                     isCancelled = false;
+                })
+                .setNegativeButton("Decline", (dialog, which) -> {
+                    performTask(selectedEvent.addCancelled(uid));
+                    isCancelled = true;
+                    isSignedUp = false;
+                })
+                .show();
+    }
+
+    /**
+     * Displays dialog for chosen users to accept invite or decline invite
+     *
+     * @param uid User ID of the chosen user.
+     */
+    private void showInvitationDialog(String uid) {
+        new AlertDialog.Builder(requireContext())
+                .setTitle("Invited")
+                .setMessage("Would you like to accept this invitation?")
+                .setPositiveButton("Accept", (dialog, which) -> {
+                    acceptedInvite = true;
+                    binding.eventDetailDynamicButton.setText("You Have Accepted The Invitation!");
                 })
                 .setNegativeButton("Decline", (dialog, which) -> {
                     performTask(selectedEvent.addCancelled(uid));

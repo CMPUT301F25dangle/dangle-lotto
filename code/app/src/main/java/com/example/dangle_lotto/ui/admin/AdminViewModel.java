@@ -22,7 +22,8 @@ public class AdminViewModel extends ViewModel {
     private final MutableLiveData<ArrayList<Event>> events = new MutableLiveData<>();
     private final MutableLiveData<Event> selectedEvent = new MutableLiveData<>();
 
-    private final MutableLiveData<ArrayList<GeneralUser>> users = new MutableLiveData<>();
+    private final MutableLiveData<ArrayList<GeneralUser>> users =
+            new MutableLiveData<>(new ArrayList<>());
     private final MutableLiveData<GeneralUser> selectedUser = new MutableLiveData<>();
 
     /**

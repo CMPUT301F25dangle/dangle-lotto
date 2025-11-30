@@ -1,5 +1,6 @@
 package com.example.dangle_lotto;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,6 +12,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.dangle_lotto.databinding.ActivityAdminBinding;
 import com.example.dangle_lotto.databinding.ActivityMainBinding;
+import com.google.firebase.auth.FirebaseAuth;
 
 public class AdminActivity extends AppCompatActivity {
     private ActivityAdminBinding binding;
@@ -41,6 +43,13 @@ public class AdminActivity extends AppCompatActivity {
             navController.popBackStack(navController.getGraph().getStartDestinationId(), false);
             NavigationUI.onNavDestinationSelected(item, navController);
             return true;
+        });
+
+        binding.adminLogoutBtn.setOnClickListener(v -> {
+            FirebaseAuth.getInstance().signOut();
+            Intent intent = new Intent(this, LoginActivity.class);
+            startActivity(intent);
+            this.finish();
         });
     }
 }

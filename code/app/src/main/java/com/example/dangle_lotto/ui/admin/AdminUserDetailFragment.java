@@ -61,25 +61,24 @@ public class AdminUserDetailFragment extends Fragment {
         recyclerView = binding.adminDashboardList;
         manager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(manager);
-        adapter = new EventCardAdapter(events, position -> {
-            Event event = events.get(position);
-            adminViewModel.setSelectedEvent(event);
-        });
-        recyclerView.setAdapter(adapter);
-        if (events != null) {
-            events.clear();
-        } else {
-            events = new ArrayList<>();
-        }
-
         // Check if user is null
         if (selectedUser == null) {
             Log.e("UserDetailFragment", "No selected user found.");
             return root;
         }
+        if (events == null) {
+            events = new ArrayList<>();
+        } else {
+            events.clear();
+        }
 
+        adapter = new EventCardAdapter(events, position -> {
+            Event event = events.get(position);
+            adminViewModel.setSelectedEvent(event);
+        });
+        recyclerView.setAdapter(adapter);
         // get all events user organized
-        Query query = firebaseManager.getEventsReference().whereEqualTo("Organizer", selectedUser.getUid());
+        Query query = firebaseManager.getEventsReference().whereEqualTo("Organizer", selectedUser.getUid()).orderBy("Event Date", Query.Direction.DESCENDING);
         firebaseManager.getQuery(null, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
@@ -136,14 +135,18 @@ public class AdminUserDetailFragment extends Fragment {
         });
 
 
+        // Set delete user button
         binding.adminDeleteUserButton.setOnClickListener(view -> {
+            // Delete user from database
             firebaseManager.deleteUser(selectedUser.getUid());
             Log.d("Admin delete user", selectedUser.getUid());
 
+            // Remove user from view model
             ArrayList<GeneralUser> users = adminViewModel.getUsers().getValue();
             String removeId = selectedUser.getUid();
             users.removeIf(u -> u.getUid().equals(removeId));
-            adminViewModel.setUsers(users);
+            // reset users in view model to refresh
+            adminViewModel.setEvents(null);
 
             //TODO: send a notification to any users who were registered to event user organized
             Navigation.findNavController(view).popBackStack();

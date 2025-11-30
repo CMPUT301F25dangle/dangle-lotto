@@ -57,8 +57,6 @@ public class AdminViewUsersFragment extends Fragment {
         adminViewModel = new ViewModelProvider(requireActivity()).get(AdminViewModel.class);
         manager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(manager);
-        users = new ArrayList<>();
-
         if (adminViewModel.getUsers().getValue() != null) {
             users = adminViewModel.getUsers().getValue();
         } else {
@@ -134,11 +132,6 @@ public class AdminViewUsersFragment extends Fragment {
                         }
                     });
                 }
-
-                // Handle case where there are no users
-                if (result.isEmpty()) {
-                    adapter.notifyDataSetChanged();
-                }
             }
 
             @Override
@@ -153,5 +146,7 @@ public class AdminViewUsersFragment extends Fragment {
     public void onDestroyView() {
         super.onDestroyView();
         binding = null;
+        // Save users to view model
+        adminViewModel.setUsers(users);
     }
 }

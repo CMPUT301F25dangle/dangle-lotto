@@ -4,9 +4,11 @@ import static androidx.test.espresso.Espresso.onView;
 import static androidx.test.espresso.action.ViewActions.click;
 import static androidx.test.espresso.action.ViewActions.closeSoftKeyboard;
 import static androidx.test.espresso.action.ViewActions.replaceText;
+import static androidx.test.espresso.action.ViewActions.scrollTo;
 import static androidx.test.espresso.action.ViewActions.typeText;
 import static androidx.test.espresso.assertion.ViewAssertions.doesNotExist;
 import static androidx.test.espresso.assertion.ViewAssertions.matches;
+import static androidx.test.espresso.matcher.ViewMatchers.hasDescendant;
 import static androidx.test.espresso.matcher.ViewMatchers.isChecked;
 import static androidx.test.espresso.matcher.ViewMatchers.isDisplayed;
 import static androidx.test.espresso.matcher.ViewMatchers.isEnabled;
@@ -68,7 +70,7 @@ public class AdminStoriesTests {
     private static String testerUid;
     private String tester2Uid;
 
-    private Event eventOfInterest;
+    private ArrayList<Event> events;
 
     /**
      * Sets up the Firebase emulator for testing.
@@ -122,7 +124,7 @@ public class AdminStoriesTests {
             public void onFailure(Exception e) { }
         });
 
-        Thread.sleep(1000);
+        Thread.sleep(1500);
 
         // Creates owner user
         firebaseManager.signUp("owner@gmail.com", "password", "Owner User", "owner username","1234123123", "", true, new FirebaseCallback<String>() {
@@ -150,8 +152,10 @@ public class AdminStoriesTests {
 
         Thread.sleep(1500);
 
-        // Create an event to test on
-        eventOfInterest = firebaseManager.createEvent(ownerUid, "Good Party", makeTimestamp(2024, 11, 1), makeTimestamp(2026, 11, 1), makeTimestamp(2026, 11, 2), "Da House", false,"A party for good people", 10, 100, "", "", new ArrayList<String>());
+        // Create events to test on
+        firebaseManager.createEvent(ownerUid, "Good Party", makeTimestamp(2024, 11, 1), makeTimestamp(2026, 11, 1), makeTimestamp(2026, 11, 2), "Da House", false,"A party for good people", 10, 100, "", "", new ArrayList<String>());
+        firebaseManager.createEvent(ownerUid, "Best Party", makeTimestamp(2024, 11, 1), makeTimestamp(2026, 11, 1), makeTimestamp(2026, 11, 2), "Da House", false,"A party for good people", 10, 100, "", "", new ArrayList<String>());
+        firebaseManager.createEvent(ownerUid, "Worst Party", makeTimestamp(2024, 11, 1), makeTimestamp(2026, 11, 1), makeTimestamp(2026, 11, 2), "Da House", false,"A party for good people", 10, 100, "", "", new ArrayList<String>());
     }
 
     @After
@@ -233,8 +237,14 @@ public class AdminStoriesTests {
         // Login
         login("admin@gmail.com", "password");
 
-        // Fail test
-        fail("Test not implemented");
+        // Click on event
+        onView(withText("Good Party")).perform(scrollTo(), click());
+
+        // Click on delete button
+        onView(withText("Delete")).perform(click());
+
+        // Event does not exist any longer
+        onView(withText("Good Party")).check(doesNotExist());
     }
 
     /**
@@ -243,12 +253,21 @@ public class AdminStoriesTests {
      * US 03.02.01 As an administrator, I want to be able to remove profiles.
      */
     @Test
-    public void AdminCanRemoveProfiles() {
+    public void AdminCanRemoveProfiles() throws InterruptedException {
         // Login
         login("admin@gmail.com", "password");
 
-        // Fail test
-        fail("Test not implemented");
+        // Navigate to users page
+        onView(withId(R.id.navigation_admin_users)).perform(click());
+
+        // Click on user
+        onView(withText("Owner User")).perform(scrollTo(), click());
+
+        // Click on delete button
+        onView(withText("Delete user")).perform(click());
+
+        // User does not exist any longer
+        onView(withText("Owner User")).check(doesNotExist());
     }
 
     /**
@@ -275,8 +294,10 @@ public class AdminStoriesTests {
         // Login
         login("admin@gmail.com", "password");
 
-        // Fail test
-        fail("Test not implemented");
+        // Check if events exist
+        onView(withText("Good Party")).perform(scrollTo()).check(matches(isDisplayed()));
+        onView(withText("Best Party")).perform(scrollTo()).check(matches(isDisplayed()));
+        onView(withText("Worst Party")).perform(scrollTo()).check(matches(isDisplayed()));
     }
 
     /**
@@ -289,8 +310,12 @@ public class AdminStoriesTests {
         // Login
         login("admin@gmail.com", "password");
 
-        // Fail test
-        fail("Test not implemented");
+        // Navigate to users page
+        onView(withId(R.id.navigation_admin_users)).perform(click());
+
+        // Check if users exist
+        onView(withText("Owner User")).perform(scrollTo()).check(matches(isDisplayed()));
+        onView(withText("Tester User")).perform(scrollTo()).check(matches(isDisplayed()));
     }
 
     /**
@@ -317,8 +342,18 @@ public class AdminStoriesTests {
         // Login
         login("admin@gmail.com", "password");
 
-        // Fail test
-        fail("Test not implemented");
+        // Navigate to users page
+        onView(withId(R.id.navigation_admin_users)).perform(click());
+
+        // Click on user
+        onView(withText("Owner User")).perform(scrollTo(), click());
+
+        // Click on Remove organizer button
+        onView(withText("Remove organizer")).perform(click());
+
+        // Check that remove organizer option is no longer available
+        onView(withText("Owner User")).perform(scrollTo(), click());
+        onView(withText("Remove organizer")).check(doesNotExist());
     }
 
     /**

@@ -75,7 +75,7 @@ public class AdminViewUsersFragment extends Fragment {
             }
 
             // User button button
-            builder.setNegativeButton("Delete user ", (dialogInterface, i) -> {
+            builder.setNegativeButton("Delete user", (dialogInterface, i) -> {
                 Toast.makeText(getContext(), "Removed user " + user.getName(), Toast.LENGTH_SHORT).show();
                 firebaseManager.deleteUser(user.getUid());
 

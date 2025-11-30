@@ -416,10 +416,6 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
 
         createDocumentLauncher.launch(intent);
     }
-
-
-
-
     @Override
     public void onDestroyView() {
         super.onDestroyView();

@@ -29,7 +29,12 @@ import java.util.Set;
 
 
 /**
- * This fragment opens inside of the OrganizerEventDetails fragment to display the map of users
+ * This fragment opens inside of the OrganizerEventDetailsMao fragment to
+ * display the map of users
+ *
+ * @author Cainan Kousol-Graham
+ * @version 1.0
+ * @since 2025-11-30
  */
 public class OrganizerEventDetailsMapFragment extends Fragment {
     private FragmentOrganizerEventDetailsMapBinding binding;
@@ -83,8 +88,15 @@ public class OrganizerEventDetailsMapFragment extends Fragment {
 
     private void loadUserMarkers(){
 
-        if (event == null || map_view == null || event.isLocationRequired() == false){
+        if (event == null || map_view == null){
+            return;
+        }
+
+        if (event.isLocationRequired() == false){
             binding.mapOverlayText.setText("Geolocation for event is turned off.");
+            binding.mapOverlayText.setVisibility(View.VISIBLE);
+            map_view.getOverlays().clear();
+            map_view.invalidate();
             return;
         }
 
@@ -94,32 +106,43 @@ public class OrganizerEventDetailsMapFragment extends Fragment {
 
         // Collect all unique user IDs you want to show
         Set<String> userIds = new HashSet<>();
+
+        // Get people from the registered list
         if (event.getRegistered() != null) {
             userIds.addAll(event.getRegistered());
         }
-        // need people from chosen list
+        // need people from chosen list - people chosen from lottery
         if (event.getChosen() != null){
             userIds.addAll(event.getChosen());
         }
 
+        // need people from Sign up list - people that accepted
+        if (event.getSignUps() != null){
+            userIds.addAll(event.getSignUps());
+        }
+
+        // if users id is empty we output message to screen
         if (userIds.isEmpty()) {
             binding.mapOverlayText.setText("No entrants with map locations yet.");
+            map_view.getOverlays().clear();
+            map_view.invalidate();
             return;
         }
 
         // Clear previous markers
         map_view.getOverlays().clear();
 
-        final int total = userIds.size();
-        final int[] done = {0};
-        final boolean[] firstMarkerCentered = {false};
+        // Track which users are still being processed
+        final Set<String> remainingUserIds = new HashSet<>(userIds);
+        final boolean[] hasAnyMarker = { false }; // at least one user had a location
+        final boolean[] firstCentered = { false }; // only center on first
 
         for (String uid : userIds) {
             firebaseManager.getUser(uid, new FirebaseCallback<User>() {
                 @Override
                 public void onSuccess(User user) {
                     if (binding == null || map_view == null) {
-                        return; // fragment destroyed
+                        return; // fragment destroyed, bail out
                     }
 
                     if (user instanceof GeneralUser) {
@@ -130,36 +153,57 @@ public class OrganizerEventDetailsMapFragment extends Fragment {
                                     gu.getLocation().getLongitude()
                             );
                             addMarkerForUser(gu, p);
+                            hasAnyMarker[0] = true;
 
                             // Center map on the first valid user location
-                            if (!firstMarkerCentered[0]) {
+                            if (!firstCentered[0]) {
                                 map_view.getController().setCenter(p);
-                                firstMarkerCentered[0] = true;
+                                firstCentered[0] = true;
                             }
                         }
                     }
-                    checkFinished();
+                    checkFinished(uid, remainingUserIds,hasAnyMarker[0]);
                 }
 
                 @Override
                 public void onFailure(Exception e) {
-                    checkFinished();
+
+                    checkFinished(uid, remainingUserIds,hasAnyMarker[0]);
                 }
 
-                private void checkFinished() {
-                    done[0]++;
-                    if (done[0] == total && binding != null && map_view != null) {
+                /**
+                 * Tracks completion of asynchronous users-location fetch and updates map overlay
+                 *
+                 * @param process_id The user ID whose fetch operation has just completed
+                 * @param remaining  A set if user IDs still waiting for results. When empty
+                 *                   all async user fetches are done.
+                 * @param hasMarkerSoFar if at least one user has a valid geolocation and was
+                 *                       successfully added to map
+                 */
+                private void checkFinished(String process_id, Set<String> remaining, boolean hasMarkerSoFar)
+                {
+                    // only bail if views are GONE
+                    if (binding == null || map_view == null) {
+                        return;
+                    }
 
-                        if (!firstMarkerCentered[0]){
-                            // Did not find user with valid location
-                            binding.mapOverlayText.setText("No users have location data yet");
+                    // Remove this user from the remaining list
+                    remaining.remove(process_id);
+
+                    if (remaining.isEmpty()) {
+                        // All async calls finished
+                        if (hasMarkerSoFar) {
+                            // At least one user had a valid location and hide overlay
+                            binding.mapOverlayText.setVisibility(View.GONE);
+
+                        } else {
+                            // No one had a location
+                            binding.mapOverlayText.setText("No entrants with map locations yet.");
                             binding.mapOverlayText.setVisibility(View.VISIBLE);
                         }
-                        else {
-                            // At least one marker added and centered, then hide overlay
-                            binding.mapOverlayText.setVisibility(View.GONE);
-                        }
+
                         map_view.invalidate();
+
                     }
                 }
             });
@@ -167,8 +211,12 @@ public class OrganizerEventDetailsMapFragment extends Fragment {
 
     }
 
+
     /**
      * Adds a marker for a given GeneralUser at the given GeoPoint.
+     *
+     * @param user
+     * @param point
      */
     private void addMarkerForUser(GeneralUser user, GeoPoint point) {
         if (map_view == null || user == null || point == null) return;

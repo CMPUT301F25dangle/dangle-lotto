@@ -84,15 +84,14 @@
         android:text="Choose"
         android:textSize="18sp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toStartOf="@id/event_details_entrants_remove_button"
-        app:layout_constraintHorizontal_chainStyle="packed"
         app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/event_details_entrants_remove_button"
+        app:layout_constraintHorizontal_chainStyle= "spread_inside"
         android:layout_marginEnd="8dp" />
-
 
     <Button
         android:id="@+id/event_details_entrants_remove_button"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Remove"
         android:textSize="18sp"
@@ -104,10 +103,9 @@
         app:layout_constraintStart_toEndOf="@id/event_details_entrants_button"
         app:layout_constraintEnd_toStartOf="@id/event_details_entrants_export_button" />
 
-
     <Button
         android:id="@+id/event_details_entrants_export_button"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Export"
         android:textSize="18sp"

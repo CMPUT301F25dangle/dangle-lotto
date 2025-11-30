@@ -47,7 +47,7 @@ public class NotificationAdapter extends ArrayAdapter<Notification> {
         TextView status = convertView.findViewById(R.id.notification_status);
 
         if (notification != null) {
-            name.setText(notification.getName());
+            name.setText(notification.getEid());
             status.setText(notification.getStatus());
         }
 

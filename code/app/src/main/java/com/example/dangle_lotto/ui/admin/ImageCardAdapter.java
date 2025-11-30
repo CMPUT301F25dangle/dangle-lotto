@@ -11,13 +11,25 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.R;
 
 import java.util.ArrayList;
 
+/**
+ * ImageCardAdapter - Custom card adapter to display images
+ * <p>
+ *     Admins can see all images and click on the image to select it
+ * </p>
+ *
+ * @author Annie Ding
+ * @version 1.0
+ * @since 2025-11-29
+ */
 public class ImageCardAdapter extends RecyclerView.Adapter<ImageCardAdapter.ViewHolder> {
     private ArrayList<String> images = new ArrayList<>();
     private final OnItemClickListener listener;
+    private static final FirebaseManager firebaseManager = FirebaseManager.getInstance();
 
     public interface OnItemClickListener {
         void onItemClick(int position);
@@ -54,6 +66,8 @@ public class ImageCardAdapter extends RecyclerView.Adapter<ImageCardAdapter.View
         }
         public void bind(String image, OnItemClickListener listener){
             Glide.with(imageView.getContext()).load(image).into(imageView);
+            itemView.setOnClickListener(v -> listener.onItemClick(getBindingAdapterPosition()));
+
         }
     }
 }

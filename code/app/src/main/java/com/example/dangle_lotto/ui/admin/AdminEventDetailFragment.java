@@ -7,6 +7,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -15,8 +16,10 @@ import androidx.navigation.Navigation;
 
 import com.bumptech.glide.Glide;
 import com.example.dangle_lotto.Event;
+import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.R;
+import com.example.dangle_lotto.User;
 import com.example.dangle_lotto.databinding.FragmentAdminEventDetailBinding;
 import com.google.firebase.Timestamp;
 
@@ -58,18 +61,41 @@ public class AdminEventDetailFragment extends Fragment {
             Log.e("EventDetailFragment", "No selected event found.");
             return root;
         }
+        // get organizer and set their name
+        firebaseManager.getUser(selectedEvent.getOrganizerID(), new FirebaseCallback<User>() {
+            @Override
+            public void onSuccess(User result) {
+                binding.adminOrganizerName.setText("Organizer: " + result.getUsername());
+            }
 
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
         // Set event details
         binding.adminEventTitle.setText(selectedEvent.getName());
         binding.adminEventDescription.setText(selectedEvent.getDescription());
-        binding.adminEventDate.setText("Registration Period: " + formatTimeStamp(selectedEvent.getStartDate()) + " to " + formatTimeStamp(selectedEvent.getEndDate()));
+        binding.adminEventStartDate.setText("Opens: " + formatTimeStamp(selectedEvent.getStartDate()));
+        binding.adminEventEndDate.setText("Closes: " + formatTimeStamp(selectedEvent.getEndDate()));
 
-        // Load poster image
-        if (selectedEvent.getPhotoID() == null || selectedEvent.getPhotoID().isEmpty())
-            binding.adminImgPoster.setImageResource(R.drawable.event_card_test_image);
-        else {
-            Glide.with(binding.adminImgPoster.getContext()).load(selectedEvent.getPhotoID()).into(binding.adminImgPoster);
+        // Display event poster (if available")
+        if (!(selectedEvent.getPhotoID().isEmpty() || selectedEvent.getPhotoID() == null))
+            Glide.with(requireContext()).load(selectedEvent.getPhotoID()).into(binding.adminImgPoster);
+
+        // Display categories if available
+        if (!selectedEvent.getCategories().isEmpty()) {
+            binding.adminEventDetailsCategoriesInput.setText(String.join(", ", selectedEvent.getCategories()));
+        } else {
+            binding.adminEventDetailsCategoriesTitle.setVisibility(View.GONE);
+            binding.adminEventDetailsCategoriesInput.setVisibility(View.GONE);
         }
+
+        // Geolocation
+        if (selectedEvent.isLocationRequired()) {
+            binding.adminEventDetailGeolocation.setText("Geolocation Is Required For This Event");
+        }
+
         updateSpotsUI();
 
         // Set back button
@@ -78,15 +104,17 @@ public class AdminEventDetailFragment extends Fragment {
             Navigation.findNavController(v).popBackStack();
         });
 
-        // Set event criteria button
+        // Display event criteria
         binding.adminEventDetailInformationButton.setOnClickListener(v -> {
-            new AlertDialog.Builder(v.getContext()).setTitle("Event Criteria").setMessage("Everybody is able to register for this event. To register, simply click the 'Register for Lottery' button. The lottery will randomly select registrants, who will be given the option to sign up for the event. If some chosen users decline, then more registrants will be randomly chosen.\nThe maximum size of event: " + selectedEvent.getMaxEntrants())
+            new AlertDialog.Builder(v.getContext())
+                    .setTitle("Event Criteria")
+                    .setMessage("Everybody is able to register for this event. To register, simply click the 'Register for Lottery' button. The lottery will randomly select registrants, who will be given the option to sign up for the event. If some chosen users decline, then more registrants will be randomly chosen.\nThe maximum size of event: " + selectedEvent.getMaxEntrants())
                     .setPositiveButton("OK", (dialog, which) -> dialog.dismiss())
                     .show();
         });
 
         // Set delete event button
-        binding.adminDeleteEventButton.setOnClickListener(v->{
+        binding.adminDeleteEventButton.setOnClickListener(v -> {
             // Delete event from database
             firebaseManager.deleteEvent(selectedEvent.getEid());
             Log.d("Admin delete event", selectedEvent.getEid());

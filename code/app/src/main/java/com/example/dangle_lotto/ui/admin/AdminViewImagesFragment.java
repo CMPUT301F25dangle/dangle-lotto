@@ -47,14 +47,19 @@ public class AdminViewImagesFragment extends Fragment {
     private LinearLayoutManager manager;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
         binding = FragmentAdminViewImagesBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+
+        // Setup recycler view
         recyclerView = binding.adminImagesRecyclerView;
         manager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(manager);
         images = new ArrayList<>();
         events = new ArrayList<>();
-        adminViewModel = new ViewModelProvider(this).get(AdminViewModel.class);
+
+        // Setup view model
+        adminViewModel = new ViewModelProvider(requireActivity()).get(AdminViewModel.class);
 
         // Setup an adapter and attach it to the recycler view
         adapter = new ImageCardAdapter(images, position -> {
@@ -77,6 +82,16 @@ public class AdminViewImagesFragment extends Fragment {
                         images.remove(image);
                         adapter.notifyItemRemoved(i);
                         adapter.notifyItemRangeChanged(i, images.size() - i);
+
+                        // Remove image from event
+                        for (Event event : events) {
+                            if (event.getPhotoID().equals(image)) {
+                                event.setPhotoID(null);
+
+                                // resets the event in the view model, so it refetches
+                                adminViewModel.setEvents(null);
+                            }
+                        }
                     }
 
                     @Override
@@ -85,9 +100,9 @@ public class AdminViewImagesFragment extends Fragment {
                     }
                 });
             });
+
             builder.setNegativeButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss());
             builder.show();
-
         });
         recyclerView.setAdapter(adapter);
 
@@ -104,7 +119,6 @@ public class AdminViewImagesFragment extends Fragment {
                             images.add(event.getPhotoID());
                             events.add(event);
                             adapter.notifyDataSetChanged();
-
                         }
 
                         @Override

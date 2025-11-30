@@ -2,16 +2,20 @@ package com.example.dangle_lotto;
 
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.util.Log;
 
 import com.google.android.gms.tasks.Task;
 import com.google.android.gms.tasks.TaskCompletionSource;
 import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.Timestamp;
+import com.google.firebase.auth.AuthCredential;
+import com.google.firebase.auth.EmailAuthProvider;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.functions.FirebaseFunctions;
 import com.google.firebase.storage.FirebaseStorage;
@@ -24,6 +28,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
+import java.util.concurrent.TimeoutException;
 
 /**
  * FirebaseManager — handles all Firebase-related operations for authentication, users, and events.
@@ -44,8 +49,9 @@ public class FirebaseManager {
     private final CollectionReference events;
     private final FirebaseStorage storage;
     private final StorageReference storageRef;
+    private final FirebaseFunctions functions;
 
-    private final String[] collections = new String[]{"Register", "Chosen", "SignUps", "Cancelled"};
+    private final String[] collections = new String[]{"Register", "Chosen", "SignUps", "Cancelled", "Organize", "Notifications"};
     private final FirebaseIdlingResource idlingResource = new FirebaseIdlingResource();
     private static FirebaseManager instance;
 
@@ -56,6 +62,7 @@ public class FirebaseManager {
         events = db.collection("events");
         storage = FirebaseStorage.getInstance();
         storageRef = storage.getReference();
+        functions = FirebaseFunctions.getInstance();
     }
 
     public static FirebaseManager getInstance(){
@@ -107,7 +114,7 @@ public class FirebaseManager {
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
-                        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+                        FirebaseUser user = mAuth.getCurrentUser();
                         String uid;
                         if (user != null) {
                             uid = user.getUid();
@@ -191,7 +198,7 @@ public class FirebaseManager {
      * @param canOrganize Whether the user can organize events.
      * @return Instantiated {@link GeneralUser} object.
      */
-    public void createNewUser(String uid, String name,  String username, String email, String phone, String pid, boolean canOrganize){
+    public void createNewUser(String uid, String name, String username, String email, String phone, String pid, boolean canOrganize){
         Map<String, Object> data = new HashMap<>();
         data.put("UID", uid);
         data.put("Username", username);
@@ -200,6 +207,7 @@ public class FirebaseManager {
         data.put("Phone", phone);
         data.put("Picture", pid);
         data.put("CanOrganize", canOrganize);
+        data.put("Location", null);
         data.put("isAdmin", false); // no admin creation interface in app but can add later
 
         users.document(uid).set(data);
@@ -208,16 +216,68 @@ public class FirebaseManager {
     /**
      * Updates an existing user’s data in Firestore.
      *
-     * @param user {@link User} object containing updated fields.
+     * @param userObj {@link User} object containing updated fields.
+     * @param name    New name.
+     * @param username New username.
+     * @param newEmail New email.
+     * @param phone    New phone number.
+     * @param photo_id New profile photo ID.
+     * @param password New password.
      */
-    public void updateUser(User user) {
-        users.document(user.getUid()).update(
-                "Name", user.getName(),
-                "Email", user.getEmail(),
-                "Username", user.getUsername(),
-                "Phone", user.getPhone(),
-                "Picture", user.getPhotoID()
-        );
+    public void updateUser(User userObj, String name, String username, String newEmail,
+                           String phone, String photo_id, String password,
+                            FirebaseCallback<Boolean> callback) {
+        FirebaseUser user = mAuth.getCurrentUser();
+        if (user == null) return;
+        AuthCredential credential = EmailAuthProvider.getCredential(Objects.requireNonNull(user.getEmail()), password);
+        user.reauthenticate(credential)
+                .addOnSuccessListener(unused -> {
+                    if (!Objects.equals(newEmail, user.getEmail())) {
+                        Map<String, Object> data = new HashMap<>();
+                        data.put("uid", user.getUid());
+                        data.put("newEmail", newEmail);
+                        functions.getHttpsCallable("updateUserEmail").call(data)
+                                .addOnSuccessListener(s -> {
+                                    userObj.setEmail(newEmail);
+                                    users.document(userObj.getUid())
+                                            .update("Email", userObj.getEmail());
+                                    Log.d("Update User", "User email address updated.");
+                                }).addOnFailureListener(e -> {
+                            Log.w("Update User", "User email address update failed with exception " + e);
+                        });
+                    }
+                    if (!Objects.equals(photo_id, userObj.getPhotoID())) {
+                        userObj.setPhotoID(photo_id);
+                    }
+                    if (!Objects.equals(phone, userObj.getPhone())) {
+                        userObj.setPhone(phone);
+                    }
+                    if (!Objects.equals(name, userObj.getName())) {
+                        userObj.setName(name);
+                    }
+                    if (!Objects.equals(username, userObj.getUsername())) {
+                        userObj.setUsername(username);
+                    }
+
+                    users.document(userObj.getUid()).update(
+                            "Name", userObj.getName(),
+                            "Username", userObj.getUsername(),
+                            "Phone", userObj.getPhone(),
+                            "Picture", userObj.getPhotoID()
+                    );
+
+                    callback.onSuccess(true);
+                }).addOnFailureListener(callback::onFailure);
+    }
+
+    public void updateUserLocation(String uid, GeoPoint location) {
+        users.document(uid).update("Location", location)
+                .addOnSuccessListener(unused -> {
+                    Log.d("Update User", "User location updated.");
+                })
+                .addOnFailureListener(e -> {
+                    Log.w("Update User", "User location update failed with exception " + e);
+                });
     }
 
     /**
@@ -298,7 +358,7 @@ public class FirebaseManager {
                     Map<String, Object> data = new HashMap<>();
                     data.put("uid", uid);
                     // cloud function: delete auth user
-                    return FirebaseFunctions.getInstance()
+                    return functions
                             .getHttpsCallable("deleteUserAuth")
                             .call(data);
                 })
@@ -403,6 +463,7 @@ public class FirebaseManager {
      * @param end_date     Event end date.
      * @param event_date   Event timestamp.
      * @param location     Event location.
+     * @param location_required  Whether the location is required to sign up for event.
      * @param description  Event description.
      * @param eventSize    Event size limit.
      * @param maxEntrants  Maximum number of registrants.
@@ -412,7 +473,7 @@ public class FirebaseManager {
      */
     public Event createEvent(
             String oid, String name, Timestamp start_date, Timestamp end_date,
-            Timestamp event_date, String location,
+            Timestamp event_date, String location, Boolean location_required,
             String description, int eventSize, int maxEntrants,
             String photo_url, String qr_url, ArrayList<String> categories
     ) {
@@ -424,6 +485,7 @@ public class FirebaseManager {
         data.put("End Date", end_date);
         data.put("Event Date", event_date);
         data.put("Location", location);
+        data.put("Location Required", location_required);
         data.put("Description", description);
         data.put("Event Size", eventSize);
         data.put("Max Entrants", maxEntrants);
@@ -449,8 +511,8 @@ public class FirebaseManager {
             idlingResource.decrement();
         });
 
-        return new Event(eid, oid, name, start_date, end_date, event_date, location, description,
-                photo_url, qr_url, eventSize, maxEntrants, categories, this);
+        return new Event(eid, oid, name, start_date, end_date, event_date, location, location_required,
+                description, photo_url, qr_url, eventSize, maxEntrants, categories, this);
     }
 
     /**
@@ -466,6 +528,7 @@ public class FirebaseManager {
                 "Event Date", event.getEventDate(),
                 "Organizer", event.getOrganizerID(),
                 "Location", event.getLocation(),
+                "Location Required", event.isLocationRequired(),
                 "Description", event.getDescription(),
                 "Event Size", event.getEventSize(),
                 "Max Entrants", event.getMaxEntrants(),
@@ -566,6 +629,7 @@ public class FirebaseManager {
                 doc.getTimestamp("End Date"),
                 doc.getTimestamp("Event Date"),
                 doc.getString("Location"),
+                doc.getBoolean("Location Required"),
                 doc.getString("Description"),
 
                 // Default empty strings instead of null
@@ -613,6 +677,33 @@ public class FirebaseManager {
             // idling resource for testing
             idlingResource.decrement();
         });
+    }
+
+    /**
+     * Creates a notification document in the database.
+     *
+     * @param uid  User id
+     * @param eid  Event id
+     * @param status  Status of the notification
+     */
+    public void createNotification(String uid, String eid, String status){
+        String nid = users.document(uid).collection("Notifications").document().getId();
+        Notification newnNoti = new Notification(nid, eid, status, Timestamp.now());
+        users.document(uid).collection("Notifications").document(nid).set(newnNoti);
+    }
+
+    /**
+     * Converts a Firestore document snapshot into a {@link Notification} object.
+     *
+     * @param nDoc The Firestore document snapshot.
+     * @return An instantiated Notification object.
+     */
+    public Notification notiDocToNoti(DocumentSnapshot nDoc){
+        return nDoc.toObject(Notification.class);
+    }
+
+    public void deleteNotification(String uid, String nid) {
+        users.document(uid).collection("Notifications").document(nid).delete();
     }
 
     /**
@@ -918,12 +1009,22 @@ public class FirebaseManager {
      * @param callback callback function to call when event is retrieved
      */
     public void deletePic(String imageUrl, FirebaseCallback<Void> callback){
-        // idling resource for testing
         idlingResource.increment();
 
         StorageReference imgRef = storage.getReferenceFromUrl(imageUrl);
         imgRef.delete()
-                .addOnSuccessListener(callback::onSuccess)
-                .addOnFailureListener(callback::onFailure);
+                .addOnSuccessListener(Void -> {
+                    callback.onSuccess(Void);
+
+                    // idling resource for testing
+                    idlingResource.decrement();
+                })
+                .addOnFailureListener(e -> {
+                    callback.onFailure(e);
+
+                    // idling resource for testing
+                    idlingResource.decrement();
+                });
     }
+
 }

@@ -65,6 +65,7 @@ public class OrganizerEventDetailsMapFragment extends Fragment {
 
         GeoPoint default_point = new GeoPoint(53.5461, -113.4938);
 
+        // Start map with with a focus on the center of Edmonton
         map_view.getController().setZoom(11.0);
         map_view.getController().setCenter(default_point);
 
@@ -75,19 +76,6 @@ public class OrganizerEventDetailsMapFragment extends Fragment {
     }
 
 
-    private void addTestMarker(GeoPoint point) {
-        if (map_view == null) return;
-
-        Marker marker = new Marker(map_view);
-        marker.setPosition(point);
-        marker.setTitle("Event location / test marker");
-        map_view.getOverlays().add(marker);
-        map_view.invalidate();
-
-        // Hide loading overlay
-        binding.mapOverlayText.setVisibility(View.GONE);
-    }
-
     /**
      *  Load location for all users in Registered list for event
      *  Then adds a location marker
@@ -95,7 +83,10 @@ public class OrganizerEventDetailsMapFragment extends Fragment {
 
     private void loadUserMarkers(){
 
-        if (event == null || map_view == null){return;}
+        if (event == null || map_view == null || event.isLocationRequired() == false){
+            binding.mapOverlayText.setText("Geolocation for event is turned off.");
+            return;
+        }
 
         // Show loading text
         binding.mapOverlayText.setText("Loading entrants on map...");
@@ -173,8 +164,6 @@ public class OrganizerEventDetailsMapFragment extends Fragment {
                 }
             });
         }
-
-
 
     }
 

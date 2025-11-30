@@ -85,6 +85,7 @@ public class HomeFragment extends Fragment {
             NavController navController = NavHostFragment.findNavController(this);
             navController.navigate(R.id.action_home_to_eventDetail);
         });
+
         recyclerView.setAdapter(adapter);
 
         // detects when user reaches end
@@ -147,6 +148,9 @@ public class HomeFragment extends Fragment {
         userViewModel.setHomeEvents(events);
     }
 
+    /**
+     * Launches the camera permission dialog
+     */
     private final ActivityResultLauncher<String> cameraPermissionLauncher =
             registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
                 if (isGranted) {
@@ -156,6 +160,9 @@ public class HomeFragment extends Fragment {
                 }
             });
 
+    /**
+     * Opens the QR scanner dialog
+     */
     private void openScannerDialog() {
         QRScannerDialogFragment dialog = new QRScannerDialogFragment();
         dialog.setListener(qr -> {
@@ -248,7 +255,9 @@ public class HomeFragment extends Fragment {
 
         if (isLoading || lastVisible == null) return;
         isLoading = true;
+
         Toast.makeText(getContext(), "Loading more events...", Toast.LENGTH_SHORT).show();
+
         Query query = firebaseManager.getEventsReference()
                 .orderBy("Event Date", Query.Direction.DESCENDING)
                 .whereNotEqualTo("Organizer", userId)
@@ -270,8 +279,6 @@ public class HomeFragment extends Fragment {
                 if (!result.isEmpty()) {
                     lastVisible = result.get(result.size() - 1);
                 } else {
-                    // THIS MAY NEED FIXING, DOES NOT WORK IF NEW EVENTS ARE ADDED DURING RUNTIME SHOULD PROLLY IMPLEMENT A REFRESH
-                    // ADD REFRESH THROUGH BUTTON
                     // No more pages
                     lastVisible = null;
                 }

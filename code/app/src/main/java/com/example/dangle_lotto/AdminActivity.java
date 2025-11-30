@@ -38,7 +38,7 @@ public class AdminActivity extends AppCompatActivity {
 
         // Clicking bottom nav button opens that fragment and pops fragments off of it
         binding.navView.setOnItemSelectedListener(item -> {
-            navController.popBackStack(item.getItemId(), false);
+            navController.popBackStack(navController.getGraph().getStartDestinationId(), false);
             NavigationUI.onNavDestinationSelected(item, navController);
             return true;
         });

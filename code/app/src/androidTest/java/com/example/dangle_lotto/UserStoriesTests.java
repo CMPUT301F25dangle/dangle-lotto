@@ -90,8 +90,6 @@ public class UserStoriesTests {
 
         firebaseManager = FirebaseManager.getInstance();
 
-        System.out.println("✅ Firebase emulator connected once before all tests.");
-
         // Clear db
         clearFirestore();
     }

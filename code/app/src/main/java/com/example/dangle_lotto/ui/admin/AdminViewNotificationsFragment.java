@@ -8,6 +8,7 @@ import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.Notification;
@@ -29,7 +30,7 @@ import java.util.List;
 public class AdminViewNotificationsFragment extends Fragment {
     private final FirebaseManager firebaseManager = FirebaseManager.getInstance();
     private FragmentAdminViewNotificationsBinding binding;
-    private ListView notificationListView;
+    private RecyclerView notificationListView;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceBundle) {
         binding = FragmentAdminViewNotificationsBinding.inflate(inflater, container, false);
@@ -37,7 +38,7 @@ public class AdminViewNotificationsFragment extends Fragment {
         notificationListView = root.findViewById(R.id.admin_notifications_list);
         List<Notification> totalNotifications = new ArrayList<>();
         NotificationAdapter adapter = new NotificationAdapter(requireContext(), totalNotifications);
-        notificationListView.setAdapter(adapter);
+//        notificationListView.setAdapter(adapter);
 
         return root;
     }

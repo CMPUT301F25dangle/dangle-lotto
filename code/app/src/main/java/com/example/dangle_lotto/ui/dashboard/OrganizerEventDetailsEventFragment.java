@@ -106,23 +106,43 @@ public class OrganizerEventDetailsEventFragment extends Fragment {
                         .build());
             } else {
                 binding.organizerEventDetailsEventPosterButton.setEnabled(false);
-                firebaseManager.editPic(selectedUri, event.getPhotoID(), new FirebaseCallback<String>() {
-                    @Override
-                    public void onSuccess(String result) {
-                        event.setPhotoID(result);
-                        binding.organizerEventDetailsEventPosterButton.setEnabled(true);
-                        binding.organizerEventDetailsEventPosterButton.setText("Update Poster");
-                        confirm = false;
-                    }
+                if (event.getPhotoID() == null) {
+                    firebaseManager.editPic(selectedUri, event.getPhotoID(), new FirebaseCallback<String>() {
+                        @Override
+                        public void onSuccess(String result) {
+                            event.setPhotoID(result);
+                            binding.organizerEventDetailsEventPosterButton.setEnabled(true);
+                            binding.organizerEventDetailsEventPosterButton.setText("Update Poster");
+                            confirm = false;
+                        }
 
-                    @Override
-                    public void onFailure(Exception e) {
-                        binding.organizerEventDetailsEventPosterButton.setEnabled(true);
-                        confirm = false;
-                        binding.organizerEventDetailsEventPosterButton.setText("Update Poster");
-                        Toast.makeText(getContext(), "Unable to upload image", Toast.LENGTH_SHORT).show();
-                    }
-                });
+                        @Override
+                        public void onFailure(Exception e) {
+                            binding.organizerEventDetailsEventPosterButton.setEnabled(true);
+                            confirm = false;
+                            binding.organizerEventDetailsEventPosterButton.setText("Update Poster");
+                            Toast.makeText(getContext(), "Unable to upload image", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                } else {
+                    firebaseManager.uploadBannerPic(selectedUri, new FirebaseCallback<String>() {
+                        @Override
+                        public void onSuccess(String result) {
+                            event.setPhotoID(result);
+                            binding.organizerEventDetailsEventPosterButton.setEnabled(true);
+                            binding.organizerEventDetailsEventPosterButton.setText("Update Poster");
+                            confirm = false;
+                        }
+
+                        @Override
+                        public void onFailure(Exception e) {
+                            binding.organizerEventDetailsEventPosterButton.setEnabled(true);
+                            confirm = false;
+                            binding.organizerEventDetailsEventPosterButton.setText("Update Poster");
+                            Toast.makeText(getContext(), "Unable to upload image", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
             }
         });
 

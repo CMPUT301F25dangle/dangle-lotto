@@ -1,15 +1,33 @@
 package com.example.dangle_lotto.ui.admin;
 
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.NavHostController;
+import androidx.navigation.fragment.NavHostFragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.dangle_lotto.Event;
+import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.FirebaseManager;
+import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.databinding.FragmentAdminViewEventsBinding;
+import com.example.dangle_lotto.ui.EventCardAdapter;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.Query;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * AdminViewEventsFragment - This fragment is displayed when an admin user wants
@@ -23,14 +41,152 @@ import com.example.dangle_lotto.databinding.FragmentAdminViewEventsBinding;
 public class AdminViewEventsFragment extends Fragment {
     private FragmentAdminViewEventsBinding binding;
     private final FirebaseManager firebaseManager = FirebaseManager.getInstance();
-    private int selectedEventIdx = -1;
+    private ArrayList<Event> events;
+    private RecyclerView recyclerView;
+    private EventCardAdapter adapter;
+    private AdminViewModel adminViewModel;
+    private LinearLayoutManager manager;
+    private static final int PAGE_SIZE = 4;
+    private boolean isLoading;
+    private DocumentSnapshot lastVisible = null;
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState){
+    public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
         binding = FragmentAdminViewEventsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
 
-        return root;
+        // Initialize ViewModel
+        adminViewModel = new ViewModelProvider(requireActivity()).get(AdminViewModel.class);
 
+        // Initialize RecyclerView and its components
+        recyclerView = binding.adminEventsList;
+        manager = new LinearLayoutManager(getContext());
+        recyclerView.setLayoutManager(manager);
+
+        // initializing events list
+        if (adminViewModel.getEvents().getValue() != null) {
+            events = adminViewModel.getEvents().getValue();
+        } else {
+            events = new ArrayList<>();
+        }
+
+        // initializing and attaching adapter
+        adapter = new EventCardAdapter(events, position -> {
+            // update view model
+            adminViewModel.setSelectedEvent(events.get(position));
+
+            // open event details fragment
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.navigate(R.id.action_adminViewEventsFragment_to_admin_eventdetails_fragment);
+        });
+        recyclerView.setAdapter(adapter);
+
+        // detects when user reaches end
+        isLoading = false;
+        recyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
+            @Override
+            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
+                super.onScrolled(recyclerView, dx, dy);
+                // only check when scrolling down
+                if (dy <= 0) return;
+
+                int visibleItemCount = manager.getChildCount();
+                int totalItemCount = manager.getItemCount();
+                int firstVisibleItemPosition = manager.findFirstVisibleItemPosition();
+                if (!isLoading && (visibleItemCount + firstVisibleItemPosition) >= totalItemCount - 3
+                        && firstVisibleItemPosition >= 0) {
+                    loadNextPage();
+                }
+            }
+        });
+
+        // if data is not cached, load first page
+        if (events.isEmpty()) {
+            loadFirstPage();
+        }
+
+        return root;
+    }
+
+    /**
+     * loads first page of events querying firebase
+     */
+    private void loadFirstPage() {
+        isLoading = true;
+
+        Query query = firebaseManager.getEventsReference().orderBy("Event Date", Query.Direction.DESCENDING).limit(PAGE_SIZE);
+
+        firebaseManager.getQuery(null, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
+            @Override
+            public void onSuccess(ArrayList<DocumentSnapshot> result) {
+                int startPos = events.size();
+                for (DocumentSnapshot doc : result) {
+                    events.add(firebaseManager.documentToEvent(doc));
+                }
+
+                adapter.notifyItemRangeInserted(startPos, result.size());
+                isLoading = false;
+                if (!result.isEmpty()) {
+                    lastVisible = result.get(result.size() - 1);
+                } else {
+                    lastVisible = null;
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.d("Firebase", "Failed to load first page", e);
+                isLoading = false;
+            }
+        });
+    }
+
+    /**
+     * loads next page by querying
+     */
+    private void loadNextPage() {
+        if (isLoading || lastVisible == null) return;
+        isLoading = true;
+
+        Toast.makeText(getContext(), "Loading more events...", Toast.LENGTH_SHORT).show();
+
+        Query query = firebaseManager.getEventsReference().orderBy("Event Date", Query.Direction.DESCENDING).limit(PAGE_SIZE);
+
+        firebaseManager.getQuery(lastVisible, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
+            @Override
+            public void onSuccess(ArrayList<DocumentSnapshot> result) {
+                Log.d("Firebase", "Loaded " + result.size() + " events");
+                int startPos = events.size();
+                for (DocumentSnapshot doc : result) {
+                    events.add(firebaseManager.documentToEvent(doc));
+                }
+
+                adapter.notifyItemRangeInserted(startPos, result.size());
+                isLoading = false;
+                if (!result.isEmpty()) {
+                    lastVisible = result.get(result.size() - 1);
+                } else {
+                    // No more pages
+                    lastVisible = null;
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.d("Firebase", "Failed to load next page", e);
+                isLoading = false;
+
+            }
+        });
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        binding = null;
+
+        // Save events to view model
+        adminViewModel.setEvents(events);
     }
 }

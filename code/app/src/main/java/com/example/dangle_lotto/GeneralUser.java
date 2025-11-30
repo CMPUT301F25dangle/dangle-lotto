@@ -180,6 +180,14 @@ public class GeneralUser extends User {
     }
 
     /**
+     * Sets whether this user can organize events.
+     */
+    public void setCanNotOrganize() {
+        canOrganize = false;
+        firebaseManager.revokeOrganizer(uid);
+    }
+
+    /**
      * Checks if this user is an admin.
      * <p>
      * For GeneralUser, this always returns {@code false}.

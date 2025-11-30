@@ -117,6 +117,10 @@ public class AdminUserDetailFragment extends Fragment {
             Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         });
 
+        /**
+         * Set organizer switch
+         *
+         */
         binding.adminSwitchOrganizer.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 firebaseManager.grantOrganizer(selectedUser.getUid());

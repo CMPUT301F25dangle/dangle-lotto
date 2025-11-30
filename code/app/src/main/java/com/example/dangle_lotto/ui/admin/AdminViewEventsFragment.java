@@ -181,6 +181,10 @@ public class AdminViewEventsFragment extends Fragment {
         });
     }
 
+    /**
+     * Called when the fragment's view is being destroyed.
+     * This method is called after {@link #onDestroy()} and
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

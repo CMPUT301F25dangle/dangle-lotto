@@ -106,6 +106,7 @@ public class AdminViewImagesFragment extends Fragment {
         });
         recyclerView.setAdapter(adapter);
 
+        // Fetch all events and images
         firebaseManager.getAllEvents(new FirebaseCallback<ArrayList<String>>() {
             @Override
             public void onSuccess(ArrayList<String> result) {
@@ -140,6 +141,10 @@ public class AdminViewImagesFragment extends Fragment {
         return root;
     }
 
+    /**
+     * Called when the fragment's view is being destroyed.
+     * This method is called after {@link #onDestroy()} and
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

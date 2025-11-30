@@ -142,6 +142,12 @@ public class AdminViewUsersFragment extends Fragment {
         return root;
     }
 
+    /**
+     * Called when the fragment's view is being destroyed.
+     * This method is called after {@link #onDestroy()} and
+     * before {@link #onDetach()}.
+     *
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

@@ -14,6 +14,15 @@ import com.example.dangle_lotto.databinding.ActivityAdminBinding;
 import com.example.dangle_lotto.databinding.ActivityMainBinding;
 import com.google.firebase.auth.FirebaseAuth;
 
+/**
+ * AdminAcitivty — Activity for admin users.
+ *<p>
+ *     Binds the logout and navigation
+ *</p>
+ * @author Annie Ding, Mahd Afzal
+ * @version 1.0
+ * @since 2025-11-01
+ */
 public class AdminActivity extends AppCompatActivity {
     private ActivityAdminBinding binding;
     private UserViewModel userViewModel;
@@ -45,6 +54,7 @@ public class AdminActivity extends AppCompatActivity {
             return true;
         });
 
+        // Logout button
         binding.adminLogoutBtn.setOnClickListener(v -> {
             FirebaseAuth.getInstance().signOut();
             Intent intent = new Intent(this, LoginActivity.class);

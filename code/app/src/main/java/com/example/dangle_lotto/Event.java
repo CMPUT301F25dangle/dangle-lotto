@@ -613,7 +613,6 @@ public class Event {
         if (registered.isEmpty()) {
             throw new IllegalArgumentException("Event has no registered users");
         }
-//        if (!chosen.isEmpty()) return; causes problems
 
         if (registered.size() <= eventSize && chosen.isEmpty() && signUps.isEmpty()) {
             ArrayList<String> temp = new ArrayList<>(registered);
@@ -623,15 +622,14 @@ public class Event {
         } else if (chosen.size() + signUps.size() < eventSize) {
             ArrayList<String> shuffled = new ArrayList<>(registered);
             Collections.shuffle(shuffled);
-            for (int i = 0; i < eventSize - chosen.size() - signUps.size() && i<shuffled.size(); i++) {
+            int end = eventSize - chosen.size() - signUps.size();
+            for (int i = 0; i < end && i < shuffled.size(); i++) {
                 addChosen(shuffled.get(i));
             }
+            for (int i = end; i < shuffled.size(); i++) {
+                firebaseManager.createNotification(eid, shuffled.get(i), "You were not chosen for " + name, false);
+            }
         } else {
-//            ArrayList<String> shuffled = new ArrayList<>(registered);
-//            Collections.shuffle(shuffled);
-//            for (int i = 0; i < eventSize; i++) {
-//                addChosen(shuffled.get(i));
-//            }
             Log.e("Event", "Event is full");
         }
     }

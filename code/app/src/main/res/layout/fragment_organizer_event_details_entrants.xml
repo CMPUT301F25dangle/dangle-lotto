@@ -98,8 +98,7 @@
         android:visibility="gone"
         android:layout_marginHorizontal="8dp"
         android:backgroundTint="@color/red"
-        app:layout_constraintTop_toTopOf="@id/event_details_entrants_button"
-        app:layout_constraintBottom_toBottomOf="@id/event_details_entrants_button"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@id/event_details_entrants_button"
         app:layout_constraintEnd_toStartOf="@id/event_details_entrants_export_button" />
 
@@ -112,8 +111,7 @@
         android:visibility="gone"
         android:layout_marginStart="8dp"
         android:backgroundTint="@color/dark_blue"
-        app:layout_constraintTop_toTopOf="@id/event_details_entrants_button"
-        app:layout_constraintBottom_toBottomOf="@id/event_details_entrants_button"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toEndOf="@id/event_details_entrants_remove_button"
         app:layout_constraintEnd_toEndOf="parent" />
 

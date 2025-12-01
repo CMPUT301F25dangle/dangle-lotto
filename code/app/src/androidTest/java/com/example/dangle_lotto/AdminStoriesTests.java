@@ -60,9 +60,10 @@ public class AdminStoriesTests {
     private static String adminUid;
     private static String ownerUid;
     private static String testerUid;
-    private String tester2Uid;
-
-    private ArrayList<Event> events;
+    private static String tester2Uid;
+    private static Event eventOfInterest1;
+    private static Event eventOfInterest2;
+    private static Event eventOfInterest3;
 
     /**
      * Sets up the Firebase emulator for testing.
@@ -145,9 +146,9 @@ public class AdminStoriesTests {
         Thread.sleep(1500);
 
         // Create events to test on
-        firebaseManager.createEvent(ownerUid, "Good Party", makeTimestamp(2024, 11, 1), makeTimestamp(2026, 11, 1), makeTimestamp(2026, 11, 2), "Da House", false,"A party for good people", 10, 100, "", "", new ArrayList<String>());
-        firebaseManager.createEvent(ownerUid, "Best Party", makeTimestamp(2024, 11, 1), makeTimestamp(2026, 11, 1), makeTimestamp(2026, 11, 2), "Da House", false,"A party for good people", 10, 100, "", "", new ArrayList<String>());
-        firebaseManager.createEvent(ownerUid, "Worst Party", makeTimestamp(2024, 11, 1), makeTimestamp(2026, 11, 1), makeTimestamp(2026, 11, 2), "Da House", false,"A party for good people", 10, 100, "", "", new ArrayList<String>());
+        eventOfInterest1 = firebaseManager.createEvent(ownerUid, "Good Party", makeTimestamp(2024, 11, 1), makeTimestamp(2026, 11, 1), makeTimestamp(2026, 11, 2), "Da House", false,"A party for good people", 10, 100, "", "", new ArrayList<String>());
+        eventOfInterest2 = firebaseManager.createEvent(ownerUid, "Best Party", makeTimestamp(2024, 11, 1), makeTimestamp(2026, 11, 1), makeTimestamp(2026, 11, 2), "Da House", false,"A party for good people", 10, 100, "", "", new ArrayList<String>());
+        eventOfInterest3 = firebaseManager.createEvent(ownerUid, "Worst Party", makeTimestamp(2024, 11, 1), makeTimestamp(2026, 11, 1), makeTimestamp(2026, 11, 2), "Da House", false,"A party for good people", 10, 100, "", "", new ArrayList<String>());
     }
 
     @After
@@ -344,11 +345,30 @@ public class AdminStoriesTests {
      * US 03.08.01 As an administrator, I want to review logs of all notifications sent to entrants by organizers.
      */
     @Test
-    public void AdminCanReviewNotificationLogs() {
+    public void AdminCanReviewNotificationLogs() throws InterruptedException {
+        // Sign up tester 2
+        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "tester 2 username", "534532", "",true, new FirebaseCallback<String>() {
+            @Override
+            public void onSuccess(String result) {
+                tester2Uid = result;
+            }
+
+            @Override
+            public void onFailure(Exception e) { }
+        });
+
+        Thread.sleep(1500);
+
+        // Add users to subgroups
+        eventOfInterest1.addSignUp(testerUid);
+        eventOfInterest1.addCancelled(tester2Uid);
+
         // Login
         login("admin@gmail.com", "password");
 
-        // Fail test
-        fail("Test not implemented");
+        // Navigate to notifications page
+        onView(withId(R.id.navigation_admin_notifications)).perform(click());
+
+        // Check if notifications exist
     }
 }

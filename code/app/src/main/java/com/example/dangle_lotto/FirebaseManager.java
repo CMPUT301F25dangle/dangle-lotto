@@ -191,23 +191,29 @@ public class FirebaseManager {
                 .addOnFailureListener(callback::onFailure);
     }
 
-
     /**
      * Fetches the UIDs of all users in the database.
      *
      * @param callback Callback returning a list of user IDs on success
      */
-    public void getAllUsers(FirebaseCallback<ArrayList<String>> callback){
+    public void getAllUsers(FirebaseCallback<ArrayList<String>> callback) {
+        // idling resource for testing
+        idlingResource.increment();
+
         users.get().addOnCompleteListener(task -> {
             ArrayList<String> userList = new ArrayList<>();
+
             if (task.isSuccessful()) {
                 for (DocumentSnapshot doc : task.getResult()) {
                     userList.add(doc.getId());
                 }
                 callback.onSuccess(userList);
-            }else{
+            } else {
                 callback.onFailure(task.getException());
             }
+
+            // Always decrement
+            idlingResource.decrement();
         });
     }
 

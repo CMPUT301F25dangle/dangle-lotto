@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.ContextCompat;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
@@ -63,6 +64,7 @@ public class MainActivity extends AppCompatActivity {
         // initialize and view model
         userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
 
+        AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
         // Get user from firebase and save in view model
         String uid = getIntent().getStringExtra("UID");
         userViewModel.loadUser(uid);

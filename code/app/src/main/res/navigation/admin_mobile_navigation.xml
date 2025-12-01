@@ -21,8 +21,7 @@
         android:id="@+id/admin_eventdetails_fragment"
         android:name="com.example.dangle_lotto.ui.admin.AdminEventDetailFragment"
         android:label="AdminEventDetail"
-        tools:layout="@layout/fragment_admin_event_detail"/>
-
+        tools:layout="@layout/fragment_admin_event_detail" />
 
 
     <fragment
@@ -35,7 +34,17 @@
         android:id="@+id/navigation_admin_users"
         android:name="com.example.dangle_lotto.ui.admin.AdminViewUsersFragment"
         android:label="AdminViewUsers"
-        tools:layout="@layout/fragment_admin_view_users" />
+        tools:layout="@layout/fragment_admin_view_users">
+        <action
+            android:id="@+id/action_adminviewUsers_to_userdetailfragment"
+            app:destination="@id/admin_user_detail_fragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/admin_user_detail_fragment"
+        android:name="com.example.dangle_lotto.ui.admin.AdminUserDetailFragment"
+        android:label="AdminUserDetail"
+        tools:layout="@layout/fragment_admin_user_detail"/>
+
     <fragment
         android:id="@+id/navigation_admin_images"
         android:name="com.example.dangle_lotto.ui.admin.AdminViewImagesFragment"

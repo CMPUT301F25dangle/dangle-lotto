@@ -1,6 +1,7 @@
 package com.example.dangle_lotto.ui.admin;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.health.connect.GetMedicalDataSourcesRequest;
 import android.os.Bundle;
 import android.util.Log;
@@ -11,14 +12,20 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.navigation.NavController;
+import androidx.navigation.fragment.NavHostFragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.GeneralUser;
+import com.example.dangle_lotto.LoginActivity;
+import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.User;
 import com.example.dangle_lotto.databinding.FragmentAdminViewUsersBinding;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -41,6 +48,7 @@ public class AdminViewUsersFragment extends Fragment {
     private RecyclerView recyclerView;
     private UserCardAdapter adapter;
     private LinearLayoutManager manager;
+    private AdminViewModel adminViewModel;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceBundle) {
         // Inflate the layout for this fragment
@@ -49,45 +57,28 @@ public class AdminViewUsersFragment extends Fragment {
 
         // Set up recycler view
         recyclerView = binding.adminUsersList;
+        adminViewModel = new ViewModelProvider(requireActivity()).get(AdminViewModel.class);
         manager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(manager);
-        users = new ArrayList<>();
+        if (adminViewModel.getUsers().getValue() != null) {
+            users = adminViewModel.getUsers().getValue();
+        } else {
+            users = new ArrayList<>();
+        }
+        // Logout button
+        binding.adminLogoutBtnUser.setOnClickListener(v -> {
+            FirebaseAuth.getInstance().signOut();
+            Intent intent = new Intent(getActivity(), LoginActivity.class);
+            startActivity(intent);
+            requireActivity().finish();
+        });
 
         // Set up adapter and attach it to the recycler view
         adapter = new UserCardAdapter(users, position -> {
-            GeneralUser user = users.get(position);
 
-            // Show dialog to confirm action
-            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-
-            // Title
-            builder.setTitle("Manage " + user.getName());
-
-            // Organizer button
-            if (user.canOrganize()) {
-                builder.setPositiveButton("Remove organizer", (dialogInterface, i) -> {
-                    Toast.makeText(getContext(), "Removed organization rights from" + user.getName(), Toast.LENGTH_SHORT).show();
-                    // TODO: Notify user
-
-                    // Remove organizer privilege
-                    user.setCanNotOrganize();
-                });
-            }
-
-            // User button button
-            builder.setNegativeButton("Delete user", (dialogInterface, i) -> {
-                Toast.makeText(getContext(), "Removed user " + user.getName(), Toast.LENGTH_SHORT).show();
-                firebaseManager.deleteUser(user.getUid());
-
-                // Remove user from list
-                users.remove(user);
-                adapter.notifyItemRemoved(i);
-                adapter.notifyItemRangeChanged(i, users.size() - i);
-            });
-
-            // Cancel button
-            builder.setNeutralButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss());
-            builder.show();
+            adminViewModel.setSelectedUser(users.get(position));
+            NavController navController = NavHostFragment.findNavController(this);
+            navController.navigate(R.id.action_adminviewUsers_to_userdetailfragment);
         });
         recyclerView.setAdapter(adapter);
 
@@ -117,11 +108,6 @@ public class AdminViewUsersFragment extends Fragment {
                         }
                     });
                 }
-
-                // Handle case where there are no users
-                if (result.isEmpty()) {
-                    adapter.notifyDataSetChanged();
-                }
             }
 
             @Override
@@ -131,9 +117,18 @@ public class AdminViewUsersFragment extends Fragment {
         });
         return root;
     }
+
+    /**
+     * Called when the fragment's view is being destroyed.
+     * This method is called after {@link #onDestroy()} and
+     * before {@link #onDetach()}.
+     *
+     */
     @Override
-    public void onDestroyView(){
+    public void onDestroyView() {
         super.onDestroyView();
-        binding= null;
+        binding = null;
+        // Save users to view model
+        adminViewModel.setUsers(users);
     }
 }

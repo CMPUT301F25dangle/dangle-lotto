@@ -62,6 +62,7 @@ public class UserSettingFragment extends Fragment {
         user = userViewModel.getUser().getValue();
 
         binding.logoutBtn.setOnClickListener(v -> {
+
             String uid = null;
 
             // Try getting UID from view model

@@ -1,6 +1,9 @@
 package com.example.dangle_lotto;
 
+import android.content.SharedPreferences;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -11,7 +14,17 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.dangle_lotto.databinding.ActivityAdminBinding;
 import com.example.dangle_lotto.databinding.ActivityMainBinding;
+import com.google.firebase.auth.FirebaseAuth;
 
+/**
+ * AdminAcitivty — Activity for admin users.
+ *<p>
+ *     Binds the logout and navigation
+ *</p>
+ * @author Annie Ding, Mahd Afzal
+ * @version 1.0
+ * @since 2025-11-01
+ */
 public class AdminActivity extends AppCompatActivity {
     private ActivityAdminBinding binding;
     private UserViewModel userViewModel;
@@ -42,5 +55,18 @@ public class AdminActivity extends AppCompatActivity {
             NavigationUI.onNavDestinationSelected(item, navController);
             return true;
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        SharedPreferences prefs = getSharedPreferences("prefs", MODE_PRIVATE);
+        boolean remember = prefs.getBoolean("rememberMe", true);
+        Log.d("onDestroy", "rememberMe: " + remember);
+        if (!remember) {
+            FirebaseManager firebaseManager = FirebaseManager.getInstance();
+            firebaseManager.getAuth().signOut();
+        }
+
+        super.onDestroy();
     }
 }

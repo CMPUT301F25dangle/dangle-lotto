@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     tools:context=".ui.admin.AdminEventDetailFragment">
 
-    <!-- Back Button -->
     <ImageButton
         android:id="@+id/admin_btn_back"
         android:layout_width="48dp"
@@ -23,8 +22,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
         app:tint="?attr/colorOnBackground" />
-
-    <!-- Info Button -->
     <ImageButton
         android:id="@+id/admin_event_detail_information_button"
         android:layout_width="48dp"
@@ -42,7 +39,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:tint="?attr/colorOnBackground" />
 
-    <!-- Scroll Content -->
+
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scroll"
         android:layout_width="0dp"
@@ -60,7 +57,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Title -->
             <TextView
                 android:id="@+id/admin_event_title"
                 android:layout_width="match_parent"
@@ -71,7 +67,6 @@
                 android:layout_marginBottom="8dp"
                 android:textColor="@color/black" />
 
-            <!-- Poster -->
             <ImageView
                 android:id="@+id/admin_img_poster"
                 android:layout_width="match_parent"
@@ -80,7 +75,6 @@
                 android:src="@drawable/event_poster"
                 android:contentDescription="@null" />
 
-            <!-- Spots -->
             <TextView
                 android:id="@+id/admin_event_spots"
                 android:layout_width="match_parent"
@@ -91,7 +85,6 @@
                 android:layout_marginVertical="12dp"
                 android:textColor="@color/black" />
 
-            <!-- Start Date -->
             <TextView
                 android:id="@+id/admin_event_start_date"
                 android:layout_width="match_parent"
@@ -100,7 +93,6 @@
                 android:textColor="@color/black"
                 android:textSize="18sp" />
 
-            <!-- End Date -->
             <TextView
                 android:id="@+id/admin_event_end_date"
                 android:layout_width="match_parent"
@@ -109,7 +101,6 @@
                 android:textColor="@color/black"
                 android:textSize="18sp" />
 
-            <!-- Event Date -->
             <TextView
                 android:id="@+id/admin_event_event_date"
                 android:layout_width="match_parent"
@@ -118,7 +109,6 @@
                 android:textColor="@color/black"
                 android:textSize="18sp" />
 
-            <!-- Organizer Row -->
             <LinearLayout
                 android:id="@+id/admin_organizer_row"
                 android:layout_width="match_parent"
@@ -155,7 +145,6 @@
                 </LinearLayout>
             </LinearLayout>
 
-            <!-- Categories Title -->
             <TextView
                 android:id="@+id/admin_event_details_categories_title"
                 android:layout_width="match_parent"
@@ -165,7 +154,6 @@
                 android:textSize="18sp"
                 android:textColor="@color/black" />
 
-            <!-- Categories Input -->
             <TextView
                 android:id="@+id/admin_event_details_categories_input"
                 android:layout_width="match_parent"
@@ -174,7 +162,6 @@
                 android:textSize="16sp"
                 android:textColor="@color/black" />
 
-            <!-- Description -->
             <TextView
                 android:id="@+id/admin_event_description"
                 android:layout_width="match_parent"
@@ -184,7 +171,6 @@
                 android:textColor="@color/black"
                 android:textSize="18sp" />
 
-            <!-- Geolocation -->
             <TextView
                 android:id="@+id/admin_event_detail_geolocation"
                 android:layout_width="match_parent"
@@ -201,7 +187,6 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Admin Delete Button -->
     <Button
         android:id="@+id/admin_delete_event_button"
         style="@style/Widget.MaterialComponents.Button"
@@ -218,7 +203,6 @@
         app:layout_constraintStart_toStartOf="parent"
         android:visibility="visible" />
 
-    <!-- Bottom Message -->
     <TextView
         android:id="@+id/admin_bottom_message"
         android:layout_width="0dp"

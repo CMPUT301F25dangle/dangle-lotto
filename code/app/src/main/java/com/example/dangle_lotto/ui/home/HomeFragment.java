@@ -33,6 +33,7 @@ import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 /**
  * HomeFragment - Fragment shows events that user can click for more info. Allows allows user to open a filter.
@@ -118,13 +119,12 @@ public class HomeFragment extends Fragment {
         // initialize button for opening filter dialogue
         binding.filterButton.setOnClickListener(v -> openFilterDialogue());
 
-        // initialize button for refreshing events
+
+
         binding.refreshButton.setOnClickListener(v -> {
-           userViewModel.setHomeEvents(null);
-           events.clear();
-           adapter.notifyDataSetChanged();
-           loadFirstPage();
+            applyFiltersAndReload();
         });
+
 
         // initialize button for qr code scanning
         binding.openQrFragmentButton.setOnClickListener(v -> {
@@ -190,98 +190,124 @@ public class HomeFragment extends Fragment {
      *
      * <p>Sets filters in the dialogue, and apply listener</p>
      */
+    /**
+     * Opens the filter dialogue and applies selected category filters to events.
+     */
     private void openFilterDialogue() {
         FilterDialogueFragment dialog = new FilterDialogueFragment();
 
-        // set the selected filter on the dialogue
+        // pre-select filters in the dialog
         dialog.setPreselectedCategories(selectedFilters);
 
-        // set listener on dialogue to use filters
+        // listen for filter selections
         dialog.setOnFilterSelectedListener(filters -> {
             selectedFilters = new ArrayList<>(filters);
 
-            // update UI based on filters
+            // apply filters and reload events
+            applyFiltersAndReload();
         });
 
         dialog.show(getParentFragmentManager(), "FilterDialog");
     }
 
+
     /**
-     * Loads the first page of events by querying firebase
+     * Builds the Firestore query for events with pagination and selected filters.
+     *
+     * @param startAfter The last DocumentSnapshot from previous page for pagination, or null for first page.
+     * @return Firestore Query ready to execute.
      */
+    private Query buildEventQuery(DocumentSnapshot startAfter) {
+        String userId = userViewModel.getUser().getValue().getUid();
+
+        Query query = firebaseManager.getEventsReference()
+                .orderBy("Event Date", Query.Direction.DESCENDING)
+                .whereGreaterThan("End Date", now);
+
+        // Exclude user's own events
+        if (userId != null && !userId.isEmpty()) {
+            query = query.whereNotEqualTo("Organizer", userId);
+        }
+
+        // Apply category filters only if they exist and <= 10
+        if (!selectedFilters.isEmpty() && selectedFilters.size() <= 10) {
+            query = query.whereArrayContainsAny("Categories", selectedFilters);
+        }
+
+        // Pagination
+        if (startAfter != null) {
+            query = query.startAfter(startAfter);
+        }
+
+        // Limit results per page
+        query = query.limit(PAGE_SIZE);
+
+        return query;
+    }
+
+
     private void loadFirstPage() {
         isLoading = true;
         String userId = userViewModel.getUser().getValue().getUid();
 
         Query query = firebaseManager.getEventsReference()
                 .orderBy("Event Date", Query.Direction.DESCENDING)
-                .whereNotEqualTo("Organizer", userId)
                 .whereGreaterThan("End Date", now)
+                .whereNotEqualTo("Organizer", userId)
                 .limit(PAGE_SIZE);
 
         firebaseManager.getQuery(null, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
                 int startPos = events.size();
+
                 for (DocumentSnapshot doc : result) {
-                    events.add(firebaseManager.documentToEvent(doc));
+                    Event event = firebaseManager.documentToEvent(doc);
+                    if (selectedFilters.isEmpty() || !Collections.disjoint(event.getCategories(), selectedFilters)) {
+                        events.add(event);
+                    }
                 }
 
-                adapter.notifyItemRangeInserted(startPos, result.size());
+                adapter.notifyItemRangeInserted(startPos, events.size() - startPos);
                 isLoading = false;
-                if (!result.isEmpty()) {
-                    lastVisible = result.get(result.size() - 1);
-
-                } else {
-                    // No more pages
-                    lastVisible = null;
-                }
+                lastVisible = result.isEmpty() ? null : result.get(result.size() - 1);
             }
 
             @Override
             public void onFailure(Exception e) {
                 Log.d("Firebase", "Failed to load first page", e);
                 isLoading = false;
-
             }
         });
     }
 
-    /**
-     * Loads the next page of events by querying firebase
-     */
     private void loadNextPage() {
-        String userId = userViewModel.getUser().getValue().getUid();
-
         if (isLoading || lastVisible == null) return;
         isLoading = true;
-
-        Toast.makeText(getContext(), "Loading more events...", Toast.LENGTH_SHORT).show();
+        String userId = userViewModel.getUser().getValue().getUid();
 
         Query query = firebaseManager.getEventsReference()
                 .orderBy("Event Date", Query.Direction.DESCENDING)
-                .whereNotEqualTo("Organizer", userId)
                 .whereGreaterThan("End Date", now)
+                .whereNotEqualTo("Organizer", userId)
                 .startAfter(lastVisible)
                 .limit(PAGE_SIZE);
 
         firebaseManager.getQuery(lastVisible, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {
-                Log.d("Firebase", "Loaded " + result.size() + " events");
                 int startPos = events.size();
+
                 for (DocumentSnapshot doc : result) {
-                    events.add(firebaseManager.documentToEvent(doc));
+                    Event event = firebaseManager.documentToEvent(doc);
+                    if (selectedFilters.isEmpty() || !Collections.disjoint(event.getCategories(), selectedFilters)) {
+                        events.add(event);
+                    }
                 }
 
-                adapter.notifyItemRangeInserted(startPos, result.size());
+                adapter.notifyItemRangeInserted(startPos, events.size() - startPos);
                 isLoading = false;
-                if (!result.isEmpty()) {
-                    lastVisible = result.get(result.size() - 1);
-                } else {
-                    // No more pages
-                    lastVisible = null;
-                }
+                lastVisible = result.isEmpty() ? null : result.get(result.size() - 1);
             }
 
             @Override
@@ -291,4 +317,74 @@ public class HomeFragment extends Fragment {
             }
         });
     }
+
+
+    /**
+     * Builds and executes a query to Firestore with pagination and filters.
+     *
+     * @param startAfter DocumentSnapshot to start after (for pagination), null for first page
+     */
+    private void executeEventQuery(DocumentSnapshot startAfter) {
+        String userId = userViewModel.getUser().getValue().getUid();
+
+        Query query = firebaseManager.getEventsReference()
+                .orderBy("Event Date", Query.Direction.DESCENDING)
+                .whereGreaterThan("End Date", now);
+
+        if (userId != null && !userId.isEmpty()) {
+            query = query.whereNotEqualTo("Organizer", userId);
+        }
+
+        if (!selectedFilters.isEmpty() && selectedFilters.size() <= 10) {
+            query = query.whereArrayContainsAny("Categories", selectedFilters);
+        }
+
+        if (startAfter != null) {
+            query = query.startAfter(startAfter);
+        }
+
+        query = query.limit(PAGE_SIZE);
+
+        firebaseManager.getQuery(startAfter, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
+            @Override
+            public void onSuccess(ArrayList<DocumentSnapshot> result) {
+                Log.d("Firebase", "Fetched " + result.size() + " documents with filters: " + selectedFilters);
+
+                int startPos = events.size();
+                for (DocumentSnapshot doc : result) {
+                    events.add(firebaseManager.documentToEvent(doc));
+                }
+
+                adapter.notifyItemRangeInserted(startPos, result.size());
+                isLoading = false;
+
+                if (!result.isEmpty()) {
+                    lastVisible = result.get(result.size() - 1);
+                } else {
+                    lastVisible = null; // no more pages
+                }
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e("Firebase", "Failed to fetch events", e);
+                isLoading = false;
+            }
+        });
+    }
+
+    /**
+     * Applies currently selected category filters and reloads events from Firestore.
+     * Clears previous events and resets pagination.
+     */
+    private void applyFiltersAndReload() {
+        events.clear();
+        adapter.notifyDataSetChanged();
+        lastVisible = null;
+        loadFirstPage();
+    }
+
+
+
+
 }

@@ -1,6 +1,7 @@
 package com.example.dangle_lotto.ui.login;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
@@ -49,6 +50,8 @@ public class LoginFragment extends Fragment {
     private Button btnDeviceSignIn;
     private FirebaseAuth auth;
 
+    private SharedPreferences prefs;
+
 
     public LoginFragment() {
         // Required empty public constructor
@@ -68,6 +71,9 @@ public class LoginFragment extends Fragment {
         tvToSignUp = view.findViewById(R.id.tvGoToSignup);
 
         firebaseManager = FirebaseManager.getInstance();
+
+        prefs = requireActivity().getSharedPreferences("prefs", 0);
+
 
         btnLogin.setOnClickListener(v -> loginUser());
         tvToSignUp.setOnClickListener(v -> switchToSignUp());
@@ -135,6 +141,7 @@ public class LoginFragment extends Fragment {
                 if (cbRememberMe.isChecked()) {
                     saveDeviceIdToUser(result);
                 }
+                prefs.edit().putBoolean("rememberMe", cbRememberMe.isChecked()).apply();
                 loadUser(result);
             }
 

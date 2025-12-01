@@ -73,11 +73,16 @@ public class DashboardFragment extends Fragment {
             navController.navigate(R.id.action_navigation_dashboard_to_userSettingFragment);
         });
 
-        // new event button on click
-        binding.dashboardFragmentNewEventButton.setOnClickListener(v -> {
-            NavController navController = NavHostFragment.findNavController(this);
-            navController.navigate(R.id.action_navigation_dashboard_to_createEventFragment);
-        });
+        binding.dashboardFragmentNewEventButton.setVisibility(View.GONE);
+
+        if (user != null && user.canOrganize()) {
+            binding.dashboardFragmentNewEventButton.setVisibility(View.VISIBLE);
+
+            binding.dashboardFragmentNewEventButton.setOnClickListener(v -> {
+                NavController navController = NavHostFragment.findNavController(this);
+                navController.navigate(R.id.action_navigation_dashboard_to_createEventFragment);
+            });
+        }
 
         // initializing recycler view
         recyclerView = binding.dashboardFragmentRecyclerView;

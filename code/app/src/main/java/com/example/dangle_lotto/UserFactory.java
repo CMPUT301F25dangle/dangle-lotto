@@ -40,9 +40,9 @@ public class UserFactory {
             return new AdminUser(doc.getId(), name, username, email, phone, pid, firebaseManager);
         }else{
             Boolean canOrganize = doc.getBoolean("CanOrganize");
+            Boolean notis = doc.getBoolean("notiStatus");
             return new GeneralUser(doc.getId(), name, username, email, phone, location, pid, did,
-                    firebaseManager, Boolean.TRUE.equals(canOrganize));
+                    firebaseManager, Boolean.TRUE.equals(canOrganize),  Boolean.TRUE.equals(notis));
         }
-
     }
 }

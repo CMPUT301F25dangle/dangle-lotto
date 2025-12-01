@@ -10,12 +10,12 @@
         android:id="@+id/dashboard_fragment_setting_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="36dp"
+        android:layout_marginEnd="24dp"
+        android:background="@android:color/transparent"
         android:src="@drawable/outline_settings_24"
-        android:background="@android:color/transparent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <com.google.android.material.imageview.ShapeableImageView
         android:id="@+id/dashboard_fragment_user_picture"

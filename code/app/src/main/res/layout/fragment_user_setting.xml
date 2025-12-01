@@ -140,6 +140,14 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 
+    <CheckBox
+        android:id="@+id/cbNotiOptOut"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Opt out of all notifications"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/user_settings_update_button" />
+
     <Button
         android:id="@+id/user_settings_update_button"
         android:layout_width="0dp"
@@ -155,10 +163,10 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:text="Logout"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toBottomOf="@+id/user_settings_update_button"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/cbNotiOptOut" />
 
     <Button
         android:id="@+id/user_settings_delete_button"

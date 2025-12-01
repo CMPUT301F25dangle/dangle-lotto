@@ -13,6 +13,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -20,6 +21,7 @@ import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.GeneralUser;
 import com.example.dangle_lotto.LoginActivity;
+import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentUserSettingBinding;
 import com.example.dangle_lotto.ui.login.SimpleTextWatcher;
@@ -44,6 +46,8 @@ public class UserSettingFragment extends Fragment {
     private EditText emailEditText;
     private EditText phoneEditText;
     private EditText passwordEditText;
+    private CheckBox cbNotiOptOut;
+
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -60,6 +64,31 @@ public class UserSettingFragment extends Fragment {
 
         // getting user from view model
         user = userViewModel.getUser().getValue();
+
+        cbNotiOptOut = root.findViewById(R.id.cbNotiOptOut);
+        cbNotiOptOut.setChecked(!user.getNotiStatus()); // invert initial status if needed
+
+        cbNotiOptOut.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            // isChecked = user wants to opt out, so notifications should be false
+            boolean notiEnabled = !isChecked;
+            user.setNotiStatus(notiEnabled);
+
+            // Optionally update Firebase
+            firebaseManager.updateUserNotificationStatus(user.getUid(), notiEnabled, new FirebaseCallback<Void>() {
+                @Override
+                public void onSuccess(Void result) {
+                    Log.d("NotificationsFragment", "Notification status updated: " + notiEnabled);
+                }
+
+                @Override
+                public void onFailure(Exception e) {
+                    Log.e("NotificationsFragment", "Failed to update notification status", e);
+                }
+
+                @Override
+                public void onComplete() { }
+            });
+        });
 
         binding.logoutBtn.setOnClickListener(v -> {
 

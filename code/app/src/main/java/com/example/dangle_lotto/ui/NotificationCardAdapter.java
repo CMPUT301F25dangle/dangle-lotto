@@ -81,13 +81,13 @@ public class NotificationCardAdapter extends RecyclerView.Adapter<NotificationCa
             if (Objects.equals(tag, "AdminView")) {
                 // Set the sender text
                 if (notification.getIsFromAdmin()) {
-                    sender.setText("Admin");
+                    sender.setText("From: Admin");
                 } else {
                     Log.d("AdminViewNotificationsFragment", "Notification: " + notification.getSenderName());
-                    sender.setText(notification.getSenderName());
+                    sender.setText("From: " + notification.getSenderName());
                 }
                 // Set the receiver text
-                receiver.setText(notification.getReceiverName());
+                receiver.setText("To: " + notification.getReceiverName());
             }
 
             // User view notification

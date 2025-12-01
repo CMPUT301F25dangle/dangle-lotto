@@ -1,5 +1,6 @@
 package com.example.dangle_lotto.ui.admin;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -19,9 +20,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.dangle_lotto.Event;
 import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.FirebaseManager;
+import com.example.dangle_lotto.LoginActivity;
 import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.databinding.FragmentAdminViewEventsBinding;
 import com.example.dangle_lotto.ui.EventCardAdapter;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
 
@@ -105,6 +108,13 @@ public class AdminViewEventsFragment extends Fragment {
         if (events.isEmpty()) {
             loadFirstPage();
         }
+        // Logout button
+        binding.adminLogoutBtnEvent.setOnClickListener(v -> {
+            FirebaseAuth.getInstance().signOut();
+            Intent intent = new Intent(getActivity(), LoginActivity.class);
+            startActivity(intent);
+            requireActivity().finish();
+        });
 
         return root;
     }
@@ -181,6 +191,10 @@ public class AdminViewEventsFragment extends Fragment {
         });
     }
 
+    /**
+     * Called when the fragment's view is being destroyed.
+     * This method is called after {@link #onDestroy()} and
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

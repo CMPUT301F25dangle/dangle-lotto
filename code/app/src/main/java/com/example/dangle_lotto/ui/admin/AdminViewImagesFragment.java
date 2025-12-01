@@ -1,5 +1,6 @@
 package com.example.dangle_lotto.ui.admin;
 
+import android.content.Intent;
 import android.media.Image;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,7 +19,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.dangle_lotto.Event;
 import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.FirebaseManager;
+import com.example.dangle_lotto.LoginActivity;
 import com.example.dangle_lotto.databinding.FragmentAdminViewImagesBinding;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.Query;
 
@@ -106,6 +109,7 @@ public class AdminViewImagesFragment extends Fragment {
         });
         recyclerView.setAdapter(adapter);
 
+        // Fetch all events and images
         firebaseManager.getAllEvents(new FirebaseCallback<ArrayList<String>>() {
             @Override
             public void onSuccess(ArrayList<String> result) {
@@ -137,9 +141,21 @@ public class AdminViewImagesFragment extends Fragment {
                 Log.e("Firebase", "failed to fetch all events", e);
             }
         });
+        // Logout button
+        binding.adminLogoutBtnImage.setOnClickListener(v -> {
+            FirebaseAuth.getInstance().signOut();
+            Intent intent = new Intent(getActivity(), LoginActivity.class);
+            startActivity(intent);
+            requireActivity().finish();
+        });
+
         return root;
     }
 
+    /**
+     * Called when the fragment's view is being destroyed.
+     * This method is called after {@link #onDestroy()} and
+     */
     @Override
     public void onDestroyView() {
         super.onDestroyView();

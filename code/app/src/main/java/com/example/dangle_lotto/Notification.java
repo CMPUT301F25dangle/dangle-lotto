@@ -15,49 +15,47 @@ import com.google.firebase.Timestamp;
  * @since 2025-11-28
  */
 public class Notification {
-    private String status;
-
-    private String eid;
-
+    private String senderId;
+    private String receiverId;
+    private String message;
+    private boolean isFromAdmin;
     private String nid;
-    private Timestamp receipt_time;
-    private String eventName;
+    private Timestamp receiptTime;
 
 
     // An empty constructor for easy firestore loading
     public Notification() {}
 
-    public Notification(String nid, String eid, String status, Timestamp receipt_time) {
-        this.eid = eid;
-        this.status = status;
+    public Notification(String senderId, String receiverId, String nid, Timestamp receiptTime, String message, Boolean isFromAdmin) {
+        this.senderId = senderId;
+        this.receiverId = receiverId;
+        this.isFromAdmin = isFromAdmin;
         this.nid = nid;
-        this.receipt_time = receipt_time;
+        this.message = message;
+        this.receiptTime = receiptTime;
     }
 
-    public void setEventName(String eventName) {
-        this.eventName = eventName;
+    public String getSenderId() {
+        return senderId;
     }
 
-    public String getEventName() {
-        return eventName != null ? eventName : eid; // fallback to eid if name not set
+    public String getReceiverId() {
+        return receiverId;
     }
 
-
-    public String getEid() {
-        return eid;
-    }
 
     public String getNid() {
         return nid;
     }
 
     public Timestamp getReceiptTime() {
-        return receipt_time;
+        return receiptTime;
     }
 
-    public String getStatus() { return status; }
+    public String getMessage() {return message; }
 
-    public com.google.firebase.Timestamp getReceipt_time() {
-        return receipt_time;
-    }
+    public Boolean getIsFromAdmin() { return isFromAdmin; }
+
+
+
 }

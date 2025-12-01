@@ -25,6 +25,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -824,9 +825,9 @@ public class FirebaseManager {
      * @param eid  Event id
      * @param status  Status of the notification
      */
-    public void createNotification(String uid, String eid, String status){
+    public void createNotification(String eid, String uid, String message, Boolean isFromAdmin){
         String nid = users.document(uid).collection("Notifications").document().getId();
-        Notification newnNoti = new Notification(nid, eid, status, Timestamp.now());
+        Notification newnNoti = new Notification(eid, uid, nid, Timestamp.now(), message, isFromAdmin);
         users.document(uid).collection("Notifications").document(nid).set(newnNoti);
     }
 

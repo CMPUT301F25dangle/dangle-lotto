@@ -57,7 +57,7 @@ public class AdminViewNotificationsFragment extends Fragment {
 
         // Fetch all notifications
         FirebaseFirestore db = FirebaseFirestore.getInstance();
-        Query query = db.collectionGroup("Notifications").whereEqualTo("isFromAdmin", false);
+        Query query = db.collectionGroup("Notifications");
         firebaseManager.getQuery(null, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
             @Override
             public void onSuccess(ArrayList<DocumentSnapshot> result) {

@@ -53,10 +53,10 @@ public class NotificationAdapter extends ArrayAdapter<Notification> {
             name.setText(notification.getEid());
             status.setText(notification.getStatus());
 
-            if (notification.getReceipt_time() != null) {
+            if (notification.getReceiptTime() != null) {
                 String formattedTime = android.text.format.DateFormat.format(
                         "dd/MM/yyyy hh:mm a",
-                        notification.getReceipt_time().toDate()
+                        notification.getReceiptTime().toDate()
                 ).toString();
                 time.setText(formattedTime);
             } else {

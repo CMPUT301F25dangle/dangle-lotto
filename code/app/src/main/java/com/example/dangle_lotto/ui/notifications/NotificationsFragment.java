@@ -123,7 +123,9 @@ public class NotificationsFragment extends Fragment {
                                     nid,
                                     event.getName(), // use event name here
                                     status,
-                                    receiptTime
+                                    receiptTime,
+                                    null,
+                                    false
                             );
 
                             requireActivity().runOnUiThread(() -> {
@@ -165,7 +167,9 @@ public class NotificationsFragment extends Fragment {
                         null, // nid can be null if not used here
                         event.getName(), // use event name instead of eid
                         status,
-                        receiptTime
+                        receiptTime,
+                        null,
+                        false
                 );
                 callback.onSuccess(notification);
             }

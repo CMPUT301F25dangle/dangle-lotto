@@ -82,58 +82,8 @@ public class NotificationCardAdapter extends RecyclerView.Adapter<NotificationCa
         }
 
         public void bind(Notification notification) {
-            // USe firebase to get the sender and receiver
-            FirebaseFirestore db = FirebaseFirestore.getInstance();
-            Query query = db.collectionGroup("Notifications").whereEqualTo("nid", notification.getNid());
-            firebaseManager.getQuery(null, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
-                @Override
-                public void onSuccess(ArrayList<DocumentSnapshot> result) {
-                    if (result.isEmpty()) {
-                        Log.d("NotificationCardAdapter", "Failed to get receiver");
-                        return;
-                    }
-                    DocumentSnapshot doc = result.get(0);
-                    firebaseManager.getUser(doc.getReference().getParent().getParent().getId(), new FirebaseCallback<User>() {
-                        @Override
-                        public void onSuccess(User result) {
-                            receiver.setText("To: " + result.getName());
-                        }
 
-                        @Override
-                        public void onFailure(Exception e) {
-                            Log.d("NotificationCardAdapter", "Failed to get receiver");
-                        }
-                    });
 
-                }
-
-                @Override
-                public void onFailure(Exception e) {
-                    Log.d("NotificationCardAdapter", "Failed to get sender");
-                }
-            });
-//            firebaseManager.getEvent(notification.getEid(), new FirebaseCallback<Event>() {
-//                @Override
-//                public void onSuccess(Event result) {
-//                    firebaseManager.getUser(result.getOrganizerID(), new FirebaseCallback<User>() {
-//                        @Override
-//                        public void onSuccess(User result) {
-//                            sender.setText("From: " + result.getName());
-//                        }
-//
-//                        @Override
-//                        public void onFailure(Exception e) {
-//                            Log.d("NotificationCardAdapter", "Failed to get sender");
-//                        }
-//                    });
-//                }
-//
-//                @Override
-//                public void onFailure(Exception e) {
-//                    Log.d("NotificationCardAdapter", "Failed to get event");
-//                }
-//            });
-//            sender.setText(notification.getSenderName());
             content.setText(notification.getMessage());
             time.setText(formatTimeStamp(notification.getReceiptTime()));
         }

@@ -54,7 +54,7 @@ dependencies {
     //implementation(files("/home/mahdlinux/Android/Sdk/platforms/android-34/android.jar"))
 
     //javadocs
-    implementation(files("C:/Users/afzal/AppData/Local/Android/Sdk/platforms/android-36/android.jar"))
+//    implementation(files("C:/Users/afzal/AppData/Local/Android/Sdk/platforms/android-36/android.jar"))
     //implementation(files("/home/mahdlinux/Android/Sdk/platforms/android-34/android.jar"))
 
     // Import the Firebase BoM

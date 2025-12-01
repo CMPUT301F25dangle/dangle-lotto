@@ -1,8 +1,10 @@
 package com.example.dangle_lotto;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -32,6 +34,12 @@ public class LoginActivity extends AppCompatActivity {
 
         FirebaseApp.initializeApp(this);
         firebaseManager = FirebaseManager.getInstance();
+        SharedPreferences prefs = getSharedPreferences("prefs", MODE_PRIVATE);
+        boolean remember = prefs.getBoolean("rememberMe", true);
+
+        if (firebaseManager.getAuth().getCurrentUser() != null && remember) {
+            loadUser(firebaseManager.getAuth().getCurrentUser().getUid());
+        }
 
         setContentView(R.layout.activity_login);
 
@@ -40,6 +48,29 @@ public class LoginActivity extends AppCompatActivity {
 
         // attempt device-based auto login
         checkDeviceLogin(savedInstanceState);
+    }
+
+    private void loadUser(String uid){
+        firebaseManager.getUser(uid, new FirebaseCallback<User>() {
+
+            @Override
+            public void onSuccess(User result) {
+                Intent intent = null;
+                if (result.isAdmin())
+                    intent = new Intent(LoginActivity.this, AdminActivity.class);
+                else
+                    intent = new Intent(LoginActivity.this, MainActivity.class);
+                intent.putExtra("UID", uid);
+                startActivity(intent);
+                Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e("LoginFragment", "Error loading user: " + e.getMessage());
+            }
+        });
     }
 
     /**

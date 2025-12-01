@@ -21,15 +21,27 @@ public class Notification {
 
     private String nid;
     private Timestamp receipt_time;
+    private String eventName;
+
 
     // An empty constructor for easy firestore loading
     public Notification() {}
+
     public Notification(String nid, String eid, String status, Timestamp receipt_time) {
         this.eid = eid;
         this.status = status;
         this.nid = nid;
         this.receipt_time = receipt_time;
     }
+
+    public void setEventName(String eventName) {
+        this.eventName = eventName;
+    }
+
+    public String getEventName() {
+        return eventName != null ? eventName : eid; // fallback to eid if name not set
+    }
+
 
     public String getEid() {
         return eid;
@@ -44,4 +56,8 @@ public class Notification {
     }
 
     public String getStatus() { return status; }
+
+    public com.google.firebase.Timestamp getReceipt_time() {
+        return receipt_time;
+    }
 }

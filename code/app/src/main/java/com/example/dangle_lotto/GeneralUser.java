@@ -1,9 +1,6 @@
 package com.example.dangle_lotto;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.GeoPoint;
-import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 
@@ -37,6 +34,10 @@ public class GeneralUser extends User {
 
     protected String did;
 
+    /** Whether the user has notifications enabled */
+
+    protected boolean notis;
+
 
     /**
      * Constructs a new GeneralUser object with the given attributes.
@@ -51,13 +52,15 @@ public class GeneralUser extends User {
      * @param did             User device identifier (nullable).
      * @param firebaseManager Reference to the {@link FirebaseManager} for database operations.
      * @param canOrganize     Whether the user has organizer privileges.
+     * @param notis         Whether the user has notifications enabled.
      */
     public GeneralUser(String uid, String name, String username, String email, String phone, GeoPoint location,
-                       String pid, String did, FirebaseManager firebaseManager, boolean canOrganize) {
+                       String pid, String did, FirebaseManager firebaseManager, boolean canOrganize, boolean notis) {
         super(uid, name, username, email, phone, pid, firebaseManager);
         this.canOrganize = canOrganize;
         this.location = location;
         this.did = did;
+        this.notis = notis;
     }
 
     // ============================================================
@@ -98,6 +101,22 @@ public class GeneralUser extends User {
         return did;
     }
 
+    /**
+     * Updates the user's notification status locally and in Firestore.
+     *
+     * @param notiStatus New notification status.
+     */
+    public void setNotiStatus(Boolean notiStatus) {
+        this.notis = notiStatus;
+        firebaseManager.updateUserLocation(this.getUid(), location);
+    }
+
+    /**
+     * @return User’s notification status.
+     */
+    public boolean getNotiStatus() {
+        return notis;
+    }
 
     /**
      * Updates the user's device ID locally and in Firestore.

@@ -30,6 +30,8 @@ import java.util.List;
  */
 
 public class NotificationAdapter extends ArrayAdapter<Notification> {
+
+
     public NotificationAdapter(@NonNull Context context, @NonNull List<Notification> notifications) {
         super(context, 0, notifications);
     }
@@ -45,13 +47,27 @@ public class NotificationAdapter extends ArrayAdapter<Notification> {
         Notification notification = getItem(position);
         TextView name = convertView.findViewById(R.id.notification_name);
         TextView status = convertView.findViewById(R.id.notification_status);
+        TextView time = convertView.findViewById(R.id.notification_time);
 
         if (notification != null) {
             name.setText(notification.getEid());
             status.setText(notification.getStatus());
-        }
 
+            if (notification.getReceipt_time() != null) {
+                String formattedTime = android.text.format.DateFormat.format(
+                        "dd/MM/yyyy hh:mm a",
+                        notification.getReceipt_time().toDate()
+                ).toString();
+                time.setText(formattedTime);
+            } else {
+                time.setText("");
+            }
+        }
 
         return convertView;
     }
+
+
+
+
 }

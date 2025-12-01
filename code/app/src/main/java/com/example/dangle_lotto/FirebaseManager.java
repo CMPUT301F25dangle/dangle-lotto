@@ -176,6 +176,15 @@ public class FirebaseManager {
                 });
     }
 
+    public void getNotificationsForUser(String uid, FirebaseCallback<List<DocumentSnapshot>> callback) {
+        users.document(uid).collection("Notifications")
+                .orderBy("receiptTime", Query.Direction.DESCENDING)
+                .get()
+                .addOnSuccessListener(query -> callback.onSuccess(query.getDocuments()))
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
     public void getAllUsers(FirebaseCallback<ArrayList<String>> callback){
         users.get().addOnCompleteListener(task -> {
             ArrayList<String> userList = new ArrayList<>();
@@ -260,6 +269,34 @@ public class FirebaseManager {
                     if (callback != null) callback.onComplete();
                 });
     }
+
+    /**
+     * Sets or updates the notification status for a given user in Firestore.
+     * <p>
+     * Used to enable or disable notifications for the user.
+     *
+     * @param uid       UID of the user to update.
+     * @param enabled   True if notifications should be enabled, false otherwise.
+     * @param callback  Callback to handle success, failure, and completion events.
+     */
+    public void updateUserNotificationStatus(String uid, boolean enabled, FirebaseCallback<Void> callback) {
+        Log.d("updateNotiStatus", "Setting notifications to: " + enabled + " for UID: " + uid);
+
+        users.document(uid)
+                .update("notiStatus", enabled)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("updateNotiStatus", "Notification status successfully updated");
+                    if (callback != null) callback.onSuccess(null);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("updateNotiStatus", "Failed to update notification status", e);
+                    if (callback != null) callback.onFailure(e);
+                })
+                .addOnCompleteListener(task -> {
+                    if (callback != null) callback.onComplete();
+                });
+    }
+
 
     /**
      * Retrieves the UID of a user associated with a given device ID.

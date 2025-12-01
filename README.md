@@ -21,6 +21,12 @@ You can also view our Scrum board [here](https://github.com/orgs/CMPUT301F25dang
 
 ---
 
+## App Summary
+
+This app allows organizers to host lottery-style selection events and lets users register to participate in them. Users can create accounts, browse upcoming events, register for them, and receive notifications about their status. Events can require geolocation check-ins, QR code verification, or image submissions. Organizers can track entrants, view sign-up locations on a map, and manage event details. The app supports device-based login for convenience, user profile customization, and secure role-based permissions for administrators and regular users.
+
+---
+
 ## Features  
 
 - Secure User Authentication — Sign up and log in using email and password.

@@ -1,7 +1,10 @@
 package com.example.dangle_lotto;
 
+import android.annotation.SuppressLint;
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.net.Uri;
+import android.provider.Settings;
 import android.util.Log;
 
 import com.google.android.gms.tasks.Task;
@@ -149,6 +152,7 @@ public class FirebaseManager {
      */
     public void signUp(String email, String password, String name, String username, String phone, String photo_id, boolean canOrganize, FirebaseCallback<String> callback) {
         // idling resource for testing
+        // Note: you don't need String did as a parameter as it is automatically set to null by createNewUser()
         idlingResource.increment();
 
         mAuth.createUserWithEmailAndPassword(email, password)
@@ -206,12 +210,59 @@ public class FirebaseManager {
         data.put("Email", email);
         data.put("Phone", phone);
         data.put("Picture", pid);
+        data.put("DeviceId", null);
         data.put("CanOrganize", canOrganize);
         data.put("Location", null);
         data.put("isAdmin", false); // no admin creation interface in app but can add later
 
         users.document(uid).set(data);
     }
+
+    @SuppressLint("HardwareIds")
+    public static String getDeviceId(Context context) {
+        return Settings.Secure.getString(
+                context.getContentResolver(),
+                Settings.Secure.ANDROID_ID
+        );
+    }
+
+
+    public void setDeviceIdForUser(String uid, String deviceId, FirebaseCallback<Void> callback) {
+        Log.d("setDeviceId", "Setting DeviceId to: " + deviceId + " for UID: " + uid);
+
+        users.document(uid)
+                .update("DeviceId", deviceId)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d("setDeviceId", "DeviceId successfully updated");
+                    if (callback != null) callback.onSuccess(null);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("setDeviceId", "Failed to update DeviceId", e);
+                    if (callback != null) callback.onFailure(e);
+                })
+                .addOnCompleteListener(task -> {
+                    if (callback != null) callback.onComplete();
+                });
+    }
+
+    public void getUserByDeviceId(String deviceId, FirebaseCallback<String> callback) {
+        users.whereEqualTo("DeviceId", deviceId)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(query -> {
+                    if (!query.isEmpty()) {
+                        String uid = query.getDocuments().get(0).getId();
+                        callback.onSuccess(uid);
+                    } else {
+                        callback.onFailure(new Exception("No user linked to this device"));
+                    }
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
+
+
 
     /**
      * Updates an existing user’s data in Firestore.
@@ -241,9 +292,7 @@ public class FirebaseManager {
                                     userObj.setEmail(newEmail);
                                     users.document(userObj.getUid())
                                             .update("Email", userObj.getEmail());
-                                    Log.d("Update User", "User email address updated.");
                                 }).addOnFailureListener(e -> {
-                            Log.w("Update User", "User email address update failed with exception " + e);
                         });
                     }
                     if (!Objects.equals(photo_id, userObj.getPhotoID())) {
@@ -305,10 +354,8 @@ public class FirebaseManager {
     public void updateUserLocation(String uid, GeoPoint location) {
         users.document(uid).update("Location", location)
                 .addOnSuccessListener(unused -> {
-                    Log.d("Update User", "User location updated.");
                 })
                 .addOnFailureListener(e -> {
-                    Log.w("Update User", "User location update failed with exception " + e);
                 });
     }
 

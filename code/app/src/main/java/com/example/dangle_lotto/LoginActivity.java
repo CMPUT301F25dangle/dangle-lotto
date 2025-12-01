@@ -42,6 +42,14 @@ public class LoginActivity extends AppCompatActivity {
         checkDeviceLogin(savedInstanceState);
     }
 
+    /**
+     * Checks if the current device is linked to a user in Firestore for auto-login.
+     * <p>
+     * If a user is found for the device ID, the app immediately launches MainActivity
+     * with the associated UID. Otherwise, the login UI fragment is displayed.
+     *
+     * @param savedInstanceState Bundle used to restore the fragment state if needed.
+     */
     private void checkDeviceLogin(Bundle savedInstanceState) {
         String deviceId = FirebaseManager.getDeviceId(this);
         firebaseManager.getUserByDeviceId(deviceId, new FirebaseCallback<String>() {
@@ -68,4 +76,3 @@ public class LoginActivity extends AppCompatActivity {
     }
 
 }
-

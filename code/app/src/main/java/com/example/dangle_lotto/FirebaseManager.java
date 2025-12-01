@@ -218,6 +218,14 @@ public class FirebaseManager {
         users.document(uid).set(data);
     }
 
+    /**
+     * Returns a unique device ID for the current Android device.
+     * <p>
+     * This ID is used to identify the device for auto-login purposes.
+     *
+     * @param context Context of the calling component.
+     * @return A string representing the device's unique Android ID.
+     */
     @SuppressLint("HardwareIds")
     public static String getDeviceId(Context context) {
         return Settings.Secure.getString(
@@ -226,7 +234,15 @@ public class FirebaseManager {
         );
     }
 
-
+    /**
+     * Sets or updates the DeviceId field for a given user in Firestore.
+     * <p>
+     * Used to bind a device to a user for device-based auto-login.
+     *
+     * @param uid      UID of the user to update.
+     * @param deviceId The device ID to associate with this user.
+     * @param callback Callback to handle success, failure, and completion events.
+     */
     public void setDeviceIdForUser(String uid, String deviceId, FirebaseCallback<Void> callback) {
         Log.d("setDeviceId", "Setting DeviceId to: " + deviceId + " for UID: " + uid);
 
@@ -245,6 +261,14 @@ public class FirebaseManager {
                 });
     }
 
+    /**
+     * Retrieves the UID of a user associated with a given device ID.
+     * <p>
+     * Used for device-based auto-login to identify the user linked to the current device.
+     *
+     * @param deviceId The device ID to search for in Firestore.
+     * @param callback Callback to handle success (returns UID) or failure.
+     */
     public void getUserByDeviceId(String deviceId, FirebaseCallback<String> callback) {
         users.whereEqualTo("DeviceId", deviceId)
                 .limit(1)
@@ -259,8 +283,6 @@ public class FirebaseManager {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
-
-
 
 
 

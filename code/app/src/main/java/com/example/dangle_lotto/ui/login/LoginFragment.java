@@ -159,6 +159,13 @@ public class LoginFragment extends Fragment {
                 .commit();
     }
 
+    /**
+     * Saves the current device's ID to the specified user's Firestore document.
+     * <p>
+     * This allows the app to identify the user on future app launches for device-based auto-login.
+     *
+     * @param uid UID of the user to associate the device with.
+     */
     private void saveDeviceIdToUser(String uid) {
         String deviceId = FirebaseManager.getDeviceId(requireContext());
 

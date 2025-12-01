@@ -34,27 +34,35 @@ public class Notification {
         this.message = message;
         this.receiptTime = receiptTime;
     }
-
+    /** @return ID of the user who sent the notification. */
     public String getSenderId() {
         return senderId;
     }
 
+    /** @return ID of the user who receives the notification. */
     public String getReceiverId() {
         return receiverId;
     }
 
-
+    /** @return Notification ID. */
     public String getNid() {
         return nid;
     }
 
+    /** @return Time the notification was received. */
     public Timestamp getReceiptTime() {
         return receiptTime;
     }
 
-    public String getMessage() {return message; }
+    /** @return Notification message text. */
+    public String getMessage() {
+        return message;
+    }
 
-    public Boolean getIsFromAdmin() { return isFromAdmin; }
+    /** @return true if sent by an admin, false otherwise. */
+    public Boolean getIsFromAdmin() {
+        return isFromAdmin;
+    }
 
 
 

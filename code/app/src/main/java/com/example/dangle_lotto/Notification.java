@@ -15,49 +15,78 @@ import com.google.firebase.Timestamp;
  * @since 2025-11-28
  */
 public class Notification {
-    private String status;
-
-    private String eid;
-
+    private String senderId;
+    private String receiverId;
+    private String message;
+    private boolean isFromAdmin;
     private String nid;
-    private Timestamp receipt_time;
-    private String eventName;
+    private Timestamp receiptTime;
+
+    private String senderName;
+    private String receiverName;
 
 
     // An empty constructor for easy firestore loading
     public Notification() {}
 
-    public Notification(String nid, String eid, String status, Timestamp receipt_time) {
-        this.eid = eid;
-        this.status = status;
+    public Notification(String senderId, String receiverId, String nid, Timestamp receiptTime, String message, Boolean isFromAdmin) {
+        this.senderId = senderId;
+        this.receiverId = receiverId;
+        this.isFromAdmin = isFromAdmin;
         this.nid = nid;
-        this.receipt_time = receipt_time;
+        this.message = message;
+        this.receiptTime = receiptTime;
+    }
+    /** @return ID of the user who sent the notification. */
+    public String getSenderId() {
+        return senderId;
     }
 
-    public void setEventName(String eventName) {
-        this.eventName = eventName;
+    /** @return ID of the user who receives the notification. */
+    public String getReceiverId() {
+        return receiverId;
     }
 
-    public String getEventName() {
-        return eventName != null ? eventName : eid; // fallback to eid if name not set
-    }
-
-
-    public String getEid() {
-        return eid;
-    }
-
+    /** @return Notification ID. */
     public String getNid() {
         return nid;
     }
 
+    /** @return Time the notification was received. */
     public Timestamp getReceiptTime() {
-        return receipt_time;
+        return receiptTime;
     }
 
-    public String getStatus() { return status; }
-
-    public com.google.firebase.Timestamp getReceipt_time() {
-        return receipt_time;
+    /** @return Notification message text. */
+    public String getMessage() {
+        return message;
     }
+
+    /** @return true if sent by an admin, false otherwise. */
+    public Boolean getIsFromAdmin() {
+        return isFromAdmin;
+    }
+
+    /** @return Name of the sender. */
+    public String getSenderName() {
+        return senderName;
+    }
+
+    /** @return Name of the receiver. */
+    public String getReceiverName() {
+        return receiverName;
+    }
+
+    /** Sets the name of the sender. */
+    public void setSenderName(String senderName) {
+        this.senderName = senderName;
+    }
+
+    /** Sets the name of the receiver. */
+
+    public void setReceiverName(String receiverName) {
+        this.receiverName = receiverName;
+    }
+
+
 }

@@ -473,7 +473,7 @@ public class Event {
             throw new IllegalArgumentException("User is already registered");
         }
         registered.add(uid);
-        firebaseManager.createNotification(uid, eid, "Registered");
+        firebaseManager.createNotification(eid, uid, "You have been registered for " + name, false);
         this.deleteSignUp(uid);
         this.deleteChosen(uid);
         this.deleteCancelled(uid);
@@ -503,7 +503,7 @@ public class Event {
             throw new IllegalArgumentException("User is already chosen");
         }
         chosen.add(uid);
-        firebaseManager.createNotification(uid, eid, "Chosen");
+        firebaseManager.createNotification(eid, uid, "You have been chosen for " + name, false);
         this.deleteRegistered(uid);
         this.deleteSignUp(uid);
         this.deleteCancelled(uid);
@@ -533,7 +533,7 @@ public class Event {
             throw new IllegalArgumentException("User is already signed up");
         }
         signUps.add(uid);
-        firebaseManager.createNotification(uid, eid, "Signed Up");
+        firebaseManager.createNotification(eid, uid, "You have been Signed Up for " + name, false);
         this.deleteRegistered(uid);
         this.deleteChosen(uid);
         this.deleteCancelled(uid);
@@ -563,7 +563,7 @@ public class Event {
             throw new IllegalArgumentException("User is already cancelled");
         }
         cancelled.add(uid);
-        firebaseManager.createNotification(uid, eid, "Cancelled");
+        firebaseManager.createNotification(eid, uid, "You have been Cancelled for " + name, false);
         this.deleteRegistered(uid);
         this.deleteChosen(uid);
         this.deleteSignUp(uid);
@@ -636,6 +636,12 @@ public class Event {
         }
     }
 
+    /**
+     * Moves all users currently in the chosen list into the cancelled list.
+     * <p>
+     * Creates a copy of the chosen list to avoid modification issues while iterating,
+     * then marks each user as cancelled.
+     */
     public void cancelAllChosen() {
         ArrayList<String> temp = new ArrayList<>(chosen);
         for (String user : temp) {

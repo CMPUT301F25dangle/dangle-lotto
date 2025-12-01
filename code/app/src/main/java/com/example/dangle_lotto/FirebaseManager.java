@@ -25,6 +25,7 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 
 import java.io.ByteArrayOutputStream;
+import java.sql.Time;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -176,6 +177,12 @@ public class FirebaseManager {
                 });
     }
 
+    /**
+     * Retrieves all notifications for the specified user, ordered by most recent first.
+     *
+     * @param uid      UID of the user whose notifications are requested
+     * @param callback Callback returning a list of notification documents on success
+     */
     public void getNotificationsForUser(String uid, FirebaseCallback<List<DocumentSnapshot>> callback) {
         users.document(uid).collection("Notifications")
                 .orderBy("receiptTime", Query.Direction.DESCENDING)
@@ -185,6 +192,11 @@ public class FirebaseManager {
     }
 
 
+    /**
+     * Fetches the UIDs of all users in the database.
+     *
+     * @param callback Callback returning a list of user IDs on success
+     */
     public void getAllUsers(FirebaseCallback<ArrayList<String>> callback){
         users.get().addOnCompleteListener(task -> {
             ArrayList<String> userList = new ArrayList<>();
@@ -519,7 +531,8 @@ public class FirebaseManager {
      * @param uid       User ID.
      * @param callback  Callback that receives the retrieved user object.
      */
-    public void getUser(String uid, FirebaseCallback<User> callback) {
+    public Task<Void> getUser(String uid, FirebaseCallback<User> callback) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
         // idling resource for testing
         idlingResource.increment();
 
@@ -527,10 +540,13 @@ public class FirebaseManager {
             if (task.isSuccessful()) {
                 DocumentSnapshot doc = task.getResult();
                 if (doc.exists()) {
-                    User user = UserFactory.getUser(doc, this);;
+                    User user = UserFactory.getUser(doc, this);
+                    tcs.setResult(null);
                     callback.onSuccess(user);
                 } else {
+                    Exception e = new Exception("User not found");
                     callback.onFailure(new Exception("User not found"));
+                    tcs.setException(e);
                 }
             }else{
                 callback.onFailure(task.getException());
@@ -545,39 +561,32 @@ public class FirebaseManager {
             // idling resource for testing
             idlingResource.decrement();
         });
+        return tcs.getTask();
     }
 
+    /**
+     * Revokes a user's organizer permissions by setting their CanOrganize field to false.
+     *
+     * @param uid UID of the user to update
+     */
     public void revokeOrganizer(String uid){
         users.document(uid).update("CanOrganize", false);
     }
 
+    /**
+     * Grants organizer permissions to a user by setting their CanOrganize field to true.
+     *
+     * @param uid UID of the user to update
+     */
     public void grantOrganizer(String uid){
         users.document(uid).update("CanOrganize", true);
     }
 
-    public void getAdmin(String uid, FirebaseCallback<AdminUser> callback){
-        users.document(uid).get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                DocumentSnapshot doc = task.getResult();
-                if (doc.exists()) {
-                    Map<String, Object> data = doc.getData();
-                    assert data != null;
-                    String name = (String) data.get("Name");
-                    String username = (String) data.get("Username");
-                    String email = (String) data.get("Email");
-                    String phone = (String) data.get("Phone");
-                    String pid = (String) data.get("Picture");
-                    AdminUser user = new AdminUser(uid, name, username, email, phone, pid, this);
-                    callback.onSuccess(user);
-                } else {
-                    callback.onFailure(new Exception("User not found"));
-                }
-            }else{
-                callback.onFailure(task.getException());
-            }
-        }).addOnFailureListener(callback::onFailure);
-    }
-
+    /**
+     * Retrieves all event document IDs from Firestore.
+     *
+     * @param callback Callback returning a list of event IDs or an error
+     */
     public void getAllEvents(FirebaseCallback<ArrayList<String>> callback){
         events.get().addOnCompleteListener(task -> {
             ArrayList<String> eventList = new ArrayList<>();
@@ -790,7 +799,9 @@ public class FirebaseManager {
      * @param eid  string of user id to search for and retrieve all attributes
      * @param callback callback function to call when event is retrieved
      */
-    public void getEvent(String eid, FirebaseCallback<Event> callback){
+    public Task<Void> getEvent(String eid, FirebaseCallback<Event> callback){
+
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
         // idling resource for testing
         idlingResource.increment();
 
@@ -799,8 +810,11 @@ public class FirebaseManager {
                 DocumentSnapshot doc = task.getResult();
                 if (doc.exists()) {
                     callback.onSuccess(documentToEvent(doc));
+                    tcs.setResult(null);
                 } else {
+                    Exception e = new Exception("Event not found");
                     callback.onFailure(new Exception("Event not found"));
+                    tcs.setException(e);
                 }
             }else {
                 callback.onFailure(task.getException());
@@ -815,19 +829,21 @@ public class FirebaseManager {
             // idling resource for testing
             idlingResource.decrement();
         });
+        return tcs.getTask();
     }
 
     /**
      * Creates a notification document in the database.
      *
-     * @param uid  User id
-     * @param eid  Event id
-     * @param status  Status of the notification
+     * @param senderId  sender id (can either be a user id or event id)
+     * @param receiverId  receiver id (only a uid)
+     * @param message message to send to user
+     * @param isFromAdmin whether the notification is from an admin
      */
-    public void createNotification(String uid, String eid, String status){
-        String nid = users.document(uid).collection("Notifications").document().getId();
-        Notification newnNoti = new Notification(nid, eid, status, Timestamp.now());
-        users.document(uid).collection("Notifications").document(nid).set(newnNoti);
+    public void createNotification(String senderId, String receiverId, String message, Boolean isFromAdmin){
+        String nid = users.document(receiverId).collection("Notifications").document().getId();
+        Notification newnNoti = new Notification(senderId, receiverId, nid, Timestamp.now(), message, isFromAdmin);
+        users.document(receiverId).collection("Notifications").document(nid).set(newnNoti);
     }
 
     /**
@@ -838,10 +854,6 @@ public class FirebaseManager {
      */
     public Notification notiDocToNoti(DocumentSnapshot nDoc){
         return nDoc.toObject(Notification.class);
-    }
-
-    public void deleteNotification(String uid, String nid) {
-        users.document(uid).collection("Notifications").document(nid).delete();
     }
 
     /**

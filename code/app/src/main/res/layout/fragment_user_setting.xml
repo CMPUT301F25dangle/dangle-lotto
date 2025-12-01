@@ -141,12 +141,21 @@
         app:layout_constraintEnd_toEndOf="parent" />
 
     <CheckBox
-        android:id="@+id/cbNotiOptOut"
+        android:id="@+id/cbOrganizerNotiOptOut"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Opt out of all notifications"
+        android:text="Opt out of organizer notifications"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/user_settings_update_button" />
+
+    <CheckBox
+        android:id="@+id/cbAdminNotiOptOut"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="4dp"
+        android:text="Opt out of admin notifications"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cbOrganizerNotiOptOut" />
 
     <Button
         android:id="@+id/user_settings_update_button"
@@ -162,11 +171,12 @@
         android:id="@+id/logoutBtn"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:layout_marginTop="40dp"
         android:text="Logout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/cbNotiOptOut" />
+        app:layout_constraintTop_toBottomOf="@+id/cbOrganizerNotiOptOut" />
 
     <Button
         android:id="@+id/user_settings_delete_button"

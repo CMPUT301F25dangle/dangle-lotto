@@ -212,40 +212,12 @@ public class HomeFragment extends Fragment {
 
 
     /**
-     * Builds the Firestore query for events with pagination and selected filters.
-     *
-     * @param startAfter The last DocumentSnapshot from previous page for pagination, or null for first page.
-     * @return Firestore Query ready to execute.
+     * Loads the first page of events from Firestore.
+     * <p>
+     * Fetches upcoming events not created by the current user, applies
+     * category filters if present, and updates the RecyclerView adapter.
+     * Initializes pagination by storing the last visible document.
      */
-    private Query buildEventQuery(DocumentSnapshot startAfter) {
-        String userId = userViewModel.getUser().getValue().getUid();
-
-        Query query = firebaseManager.getEventsReference()
-                .orderBy("Event Date", Query.Direction.DESCENDING)
-                .whereGreaterThan("End Date", now);
-
-        // Exclude user's own events
-        if (userId != null && !userId.isEmpty()) {
-            query = query.whereNotEqualTo("Organizer", userId);
-        }
-
-        // Apply category filters only if they exist and <= 10
-        if (!selectedFilters.isEmpty() && selectedFilters.size() <= 10) {
-            query = query.whereArrayContainsAny("Categories", selectedFilters);
-        }
-
-        // Pagination
-        if (startAfter != null) {
-            query = query.startAfter(startAfter);
-        }
-
-        // Limit results per page
-        query = query.limit(PAGE_SIZE);
-
-        return query;
-    }
-
-
     private void loadFirstPage() {
         isLoading = true;
         String userId = userViewModel.getUser().getValue().getUid();
@@ -281,6 +253,13 @@ public class HomeFragment extends Fragment {
         });
     }
 
+    /**
+     * Loads the next page of events for pagination.
+     * <p>
+     * Continues fetching events after the last loaded document,
+     * applies filters, and appends them to the RecyclerView.
+     * Does nothing if already loading or no more results exist.
+     */
     private void loadNextPage() {
         if (isLoading || lastVisible == null) return;
         isLoading = true;
@@ -313,61 +292,6 @@ public class HomeFragment extends Fragment {
             @Override
             public void onFailure(Exception e) {
                 Log.d("Firebase", "Failed to load next page", e);
-                isLoading = false;
-            }
-        });
-    }
-
-
-    /**
-     * Builds and executes a query to Firestore with pagination and filters.
-     *
-     * @param startAfter DocumentSnapshot to start after (for pagination), null for first page
-     */
-    private void executeEventQuery(DocumentSnapshot startAfter) {
-        String userId = userViewModel.getUser().getValue().getUid();
-
-        Query query = firebaseManager.getEventsReference()
-                .orderBy("Event Date", Query.Direction.DESCENDING)
-                .whereGreaterThan("End Date", now);
-
-        if (userId != null && !userId.isEmpty()) {
-            query = query.whereNotEqualTo("Organizer", userId);
-        }
-
-        if (!selectedFilters.isEmpty() && selectedFilters.size() <= 10) {
-            query = query.whereArrayContainsAny("Categories", selectedFilters);
-        }
-
-        if (startAfter != null) {
-            query = query.startAfter(startAfter);
-        }
-
-        query = query.limit(PAGE_SIZE);
-
-        firebaseManager.getQuery(startAfter, query, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
-            @Override
-            public void onSuccess(ArrayList<DocumentSnapshot> result) {
-                Log.d("Firebase", "Fetched " + result.size() + " documents with filters: " + selectedFilters);
-
-                int startPos = events.size();
-                for (DocumentSnapshot doc : result) {
-                    events.add(firebaseManager.documentToEvent(doc));
-                }
-
-                adapter.notifyItemRangeInserted(startPos, result.size());
-                isLoading = false;
-
-                if (!result.isEmpty()) {
-                    lastVisible = result.get(result.size() - 1);
-                } else {
-                    lastVisible = null; // no more pages
-                }
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                Log.e("Firebase", "Failed to fetch events", e);
                 isLoading = false;
             }
         });

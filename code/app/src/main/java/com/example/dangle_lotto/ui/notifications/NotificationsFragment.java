@@ -110,36 +110,25 @@ public class NotificationsFragment extends Fragment {
 
                 for (DocumentSnapshot notifDoc : notifDocs) {
                     // Extract fields from the notification document
-                    String eid = notifDoc.getString("eid");
-                    String status = notifDoc.getString("status");
-                    com.google.firebase.Timestamp receiptTime = notifDoc.getTimestamp("receiptTime");
-                    String nid = notifDoc.getId();
-
-                    // Query the event name using eid
-                    firebaseManager.getEvent(eid, new FirebaseCallback<Event>() {
-                        @Override
-                        public void onSuccess(Event event) {
-                            Notification notification = new Notification(
-                                    nid,
-                                    event.getName(), // use event name here
-                                    status,
-                                    receiptTime,
-                                    null,
-                                    false
-                            );
-
-                            requireActivity().runOnUiThread(() -> {
-                                totalNotifications.add(notification);
-                                adapter.notifyDataSetChanged();
-                            });
-                        }
-
-                        @Override
-                        public void onFailure(Exception e) {
-                            Log.e("NotificationsFragment", "Failed to fetch event for notification", e);
-                        }
-                    });
+//                    String senderId = notifDoc.getString("senderId");
+//                    String receiverId = notifDoc.getString("receiverId");
+//                    String message = notifDoc.getString("message");
+//                    Boolean isFromAdmin = notifDoc.getBoolean("isFromAdmin");
+//                    String nid = notifDoc.getId();
+//                    Timestamp receiptTime = notifDoc.getTimestamp("receiptTime");
+//
+//                    Notification notification = new Notification(
+//                            senderId,
+//                            receiverId,
+//                            nid,
+//                            receiptTime,
+//                            message,
+//                            isFromAdmin
+//                    );
+                    Notification notification = firebaseManager.notiDocToNoti(notifDoc);
+                    totalNotifications.add(notification);
                 }
+                adapter.notifyDataSetChanged();
             }
 
             @Override

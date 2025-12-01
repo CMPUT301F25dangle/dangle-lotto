@@ -54,7 +54,7 @@ dependencies {
     //implementation(files("/home/mahdlinux/Android/Sdk/platforms/android-34/android.jar"))
 
     //javadocs
-    implementation(files("C:/Users/afzal/AppData/Local/Android/Sdk/platforms/android-36/android.jar"))
+//    implementation(files("C:/Users/afzal/AppData/Local/Android/Sdk/platforms/android-36/android.jar"))
     //implementation(files("/home/mahdlinux/Android/Sdk/platforms/android-34/android.jar"))
 
     // Import the Firebase BoM
@@ -68,7 +68,7 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
 
     // import dependency to generate QR code
-    implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     // import firebase storage dependency
     implementation("com.google.firebase:firebase-storage:20.3.0")
 

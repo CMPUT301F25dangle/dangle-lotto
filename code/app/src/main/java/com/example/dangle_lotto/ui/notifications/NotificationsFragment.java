@@ -12,6 +12,8 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.dangle_lotto.Event;
 import com.example.dangle_lotto.FirebaseCallback;
@@ -22,9 +24,13 @@ import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.User;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentNotificationsBinding;
+import com.example.dangle_lotto.ui.NotificationCardAdapter;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentSnapshot;
 
+import org.checkerframework.checker.signature.qual.ArrayWithoutPackage;
+
+import java.sql.Array;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,9 +52,11 @@ public class NotificationsFragment extends Fragment {
     private GeneralUser user;
 
     private FragmentNotificationsBinding binding;
-    private ListView notificationListView;
+    private RecyclerView notificationRecyclerView;
     private FirebaseManager firebaseManager;
-
+    private ArrayList<Notification> notifications;
+    private NotificationCardAdapter adapter;
+    private RecyclerView.LayoutManager layoutManager;
 
     public View onCreateView(@NonNull LayoutInflater inflater,
                              ViewGroup container, Bundle savedInstanceState) {
@@ -62,24 +70,26 @@ public class NotificationsFragment extends Fragment {
         View root = binding.getRoot();
 
         // initialize listview and firebase manager
-        notificationListView = root.findViewById(R.id.notification_lv);
+        notificationRecyclerView = root.findViewById(R.id.notification_lv);
         firebaseManager = FirebaseManager.getInstance();
 
-        // list of all notifications related to a user
-        List<Notification> totalNotifications = new ArrayList<>();
+        // initialize notification list
+        notifications = new ArrayList<>();
 
         // set adapter for notification list view
-        NotificationAdapter adapter = new NotificationAdapter(requireContext(), totalNotifications);
-        notificationListView.setAdapter(adapter);
+        adapter = new NotificationCardAdapter(notifications, "UserView");
+        notificationRecyclerView.setAdapter(adapter);
+        layoutManager = new LinearLayoutManager(getContext());
+        notificationRecyclerView.setLayoutManager(layoutManager);
 
         TextView tvOptedOutMessage = root.findViewById(R.id.tvOptedOutMessage);
 
-        if (user != null && user.getNotiStatus()) {
+        // check if user has opted out of notifications
+        if (user.getNotiStatus()) {
             tvOptedOutMessage.setVisibility(View.GONE);
             loadNotifications();
-        }
-        if (user!= null && !user.getNotiStatus()){
-            totalNotifications.clear();
+        } else {
+            notifications.clear();
             adapter.notifyDataSetChanged();
             tvOptedOutMessage.setVisibility(View.VISIBLE);
         }
@@ -104,42 +114,27 @@ public class NotificationsFragment extends Fragment {
         firebaseManager.getNotificationsForUser(user.getUid(), new FirebaseCallback<List<DocumentSnapshot>>() {
             @Override
             public void onSuccess(List<DocumentSnapshot> notifDocs) {
-                List<Notification> totalNotifications = new ArrayList<>();
-                NotificationAdapter adapter = new NotificationAdapter(requireContext(), totalNotifications);
-                notificationListView.setAdapter(adapter);
-
                 for (DocumentSnapshot notifDoc : notifDocs) {
                     // Extract fields from the notification document
-                    String eid = notifDoc.getString("eid");
-                    String status = notifDoc.getString("status");
-                    com.google.firebase.Timestamp receiptTime = notifDoc.getTimestamp("receiptTime");
-                    String nid = notifDoc.getId();
-
-                    // Query the event name using eid
-                    firebaseManager.getEvent(eid, new FirebaseCallback<Event>() {
-                        @Override
-                        public void onSuccess(Event event) {
-                            Notification notification = new Notification(
-                                    nid,
-                                    event.getName(), // use event name here
-                                    status,
-                                    receiptTime,
-                                    null,
-                                    false
-                            );
-
-                            requireActivity().runOnUiThread(() -> {
-                                totalNotifications.add(notification);
-                                adapter.notifyDataSetChanged();
-                            });
-                        }
-
-                        @Override
-                        public void onFailure(Exception e) {
-                            Log.e("NotificationsFragment", "Failed to fetch event for notification", e);
-                        }
-                    });
+//                    String senderId = notifDoc.getString("senderId");
+//                    String receiverId = notifDoc.getString("receiverId");
+//                    String message = notifDoc.getString("message");
+//                    Boolean isFromAdmin = notifDoc.getBoolean("isFromAdmin");
+//                    String nid = notifDoc.getId();
+//                    Timestamp receiptTime = notifDoc.getTimestamp("receiptTime");
+//
+//                    Notification notification = new Notification(
+//                            senderId,
+//                            receiverId,
+//                            nid,
+//                            receiptTime,
+//                            message,
+//                            isFromAdmin
+//                    );
+                    Notification notification = firebaseManager.notiDocToNoti(notifDoc);
+                    notifications.add(notification);
                 }
+                adapter.notifyDataSetChanged();
             }
 
             @Override

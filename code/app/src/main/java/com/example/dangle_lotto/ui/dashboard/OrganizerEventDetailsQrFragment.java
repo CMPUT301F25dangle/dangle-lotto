@@ -20,6 +20,13 @@ import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentOrganizerEventDetailsQrBinding;
 
+/**
+ * This fragment displays the QR code of an event created by the organizer
+ *
+ * @author Mahd Afzal
+ * @version 1.0
+ * @since 2025-11-30
+ */
 public class OrganizerEventDetailsQrFragment extends Fragment {
     private FragmentOrganizerEventDetailsQrBinding binding;
     private UserViewModel userViewModel;

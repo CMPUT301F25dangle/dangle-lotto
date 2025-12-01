@@ -636,6 +636,12 @@ public class Event {
         }
     }
 
+    /**
+     * Moves all users currently in the chosen list into the cancelled list.
+     * <p>
+     * Creates a copy of the chosen list to avoid modification issues while iterating,
+     * then marks each user as cancelled.
+     */
     public void cancelAllChosen() {
         ArrayList<String> temp = new ArrayList<>(chosen);
         for (String user : temp) {

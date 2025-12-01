@@ -1,23 +1,17 @@
-package com.example.dangle_lotto.ui.admin;
+package com.example.dangle_lotto.ui;
 
-import android.util.Log;
+import android.content.Context;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.dangle_lotto.Event;
-import com.example.dangle_lotto.FirebaseCallback;
-import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.Notification;
 import com.example.dangle_lotto.R;
-import com.example.dangle_lotto.User;
 import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.DocumentSnapshot;
-import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.Query;
 
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -38,10 +32,10 @@ import javax.annotation.Nonnull;
  */
 public class NotificationCardAdapter extends RecyclerView.Adapter<NotificationCardAdapter.ViewHolder> {
     private static ArrayList<Notification> notifications = new ArrayList<>();
+    private static String tag;
 
-    private static final FirebaseManager firebaseManager = FirebaseManager.getInstance();
-
-    public NotificationCardAdapter(ArrayList<Notification> notifications) {
+    public NotificationCardAdapter(ArrayList<Notification> notifications, String tag) {
+        this.tag = tag;
         this.notifications = notifications;
     }
 
@@ -71,7 +65,7 @@ public class NotificationCardAdapter extends RecyclerView.Adapter<NotificationCa
         /**
          * Creates a new ViewHolder that holds references to the views within an event card.
          *
-         * @param view
+         * @param view The root view for the event card.
          */
         public ViewHolder(View view) {
             super(view);
@@ -82,7 +76,23 @@ public class NotificationCardAdapter extends RecyclerView.Adapter<NotificationCa
         }
 
         public void bind(Notification notification) {
+            // Admin view notification
+            if (Objects.equals(tag, "AdminView")) {
+                // Set the sender text
+                if (notification.getIsFromAdmin()) {
+                    sender.setText("Admin");
+                } else {
+                    sender.setText(notification.getSenderId());
+                }
+                // Set the receiver text
+                receiver.setText(notification.getReceiverId());
+            }
 
+            // User view notification
+            if (Objects.equals(tag, "UserView")) {
+                sender.setText(null);
+                receiver.setText(null);
+            }
 
             content.setText(notification.getMessage());
             time.setText(formatTimeStamp(notification.getReceiptTime()));

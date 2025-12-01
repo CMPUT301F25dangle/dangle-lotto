@@ -15,6 +15,14 @@ import com.journeyapps.barcodescanner.BarcodeCallback;
 import com.journeyapps.barcodescanner.BarcodeResult;
 import com.journeyapps.barcodescanner.DecoratedBarcodeView;
 
+/**
+ * This fragment displays opens the QR code scanner
+ *
+ * @author Mahd Afzal
+ * @version 1.0
+ * @since 2025-11-30
+ */
+
 public class QRScannerDialogFragment extends DialogFragment {
     private DialogQrScannerBinding binding;
     private DecoratedBarcodeView barcodeView;

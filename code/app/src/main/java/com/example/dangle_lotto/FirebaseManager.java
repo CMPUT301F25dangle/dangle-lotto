@@ -177,6 +177,12 @@ public class FirebaseManager {
                 });
     }
 
+    /**
+     * Retrieves all notifications for the specified user, ordered by most recent first.
+     *
+     * @param uid      UID of the user whose notifications are requested
+     * @param callback Callback returning a list of notification documents on success
+     */
     public void getNotificationsForUser(String uid, FirebaseCallback<List<DocumentSnapshot>> callback) {
         users.document(uid).collection("Notifications")
                 .orderBy("receiptTime", Query.Direction.DESCENDING)
@@ -186,6 +192,11 @@ public class FirebaseManager {
     }
 
 
+    /**
+     * Fetches the UIDs of all users in the database.
+     *
+     * @param callback Callback returning a list of user IDs on success
+     */
     public void getAllUsers(FirebaseCallback<ArrayList<String>> callback){
         users.get().addOnCompleteListener(task -> {
             ArrayList<String> userList = new ArrayList<>();
@@ -548,37 +559,29 @@ public class FirebaseManager {
         });
     }
 
+    /**
+     * Revokes a user's organizer permissions by setting their CanOrganize field to false.
+     *
+     * @param uid UID of the user to update
+     */
     public void revokeOrganizer(String uid){
         users.document(uid).update("CanOrganize", false);
     }
 
+    /**
+     * Grants organizer permissions to a user by setting their CanOrganize field to true.
+     *
+     * @param uid UID of the user to update
+     */
     public void grantOrganizer(String uid){
         users.document(uid).update("CanOrganize", true);
     }
 
-    public void getAdmin(String uid, FirebaseCallback<AdminUser> callback){
-        users.document(uid).get().addOnCompleteListener(task -> {
-            if (task.isSuccessful()) {
-                DocumentSnapshot doc = task.getResult();
-                if (doc.exists()) {
-                    Map<String, Object> data = doc.getData();
-                    assert data != null;
-                    String name = (String) data.get("Name");
-                    String username = (String) data.get("Username");
-                    String email = (String) data.get("Email");
-                    String phone = (String) data.get("Phone");
-                    String pid = (String) data.get("Picture");
-                    AdminUser user = new AdminUser(uid, name, username, email, phone, pid, this);
-                    callback.onSuccess(user);
-                } else {
-                    callback.onFailure(new Exception("User not found"));
-                }
-            }else{
-                callback.onFailure(task.getException());
-            }
-        }).addOnFailureListener(callback::onFailure);
-    }
-
+    /**
+     * Retrieves all event document IDs from Firestore.
+     *
+     * @param callback Callback returning a list of event IDs or an error
+     */
     public void getAllEvents(FirebaseCallback<ArrayList<String>> callback){
         events.get().addOnCompleteListener(task -> {
             ArrayList<String> eventList = new ArrayList<>();
@@ -840,10 +843,6 @@ public class FirebaseManager {
      */
     public Notification notiDocToNoti(DocumentSnapshot nDoc){
         return nDoc.toObject(Notification.class);
-    }
-
-    public void deleteNotification(String uid, String nid) {
-        users.document(uid).collection("Notifications").document(nid).delete();
     }
 
     /**

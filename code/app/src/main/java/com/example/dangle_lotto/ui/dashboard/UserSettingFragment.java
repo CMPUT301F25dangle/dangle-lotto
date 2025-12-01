@@ -12,7 +12,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -65,7 +64,7 @@ public class UserSettingFragment extends Fragment {
         // getting user from view model
         user = userViewModel.getUser().getValue();
 
-        cbNotiOptOut = root.findViewById(R.id.cbNotiOptOut);
+        cbNotiOptOut = root.findViewById(R.id.cbOrganizerNotiOptOut);
         cbNotiOptOut.setChecked(!user.getNotiStatus()); // invert initial status if needed
 
         cbNotiOptOut.setOnCheckedChangeListener((buttonView, isChecked) -> {

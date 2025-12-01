@@ -29,5 +29,5 @@ You can also view our Scrum board [here](https://github.com/orgs/CMPUT301F25dang
 - User Profiles — Create and personalize profiles with editable details and profile images.
 - QR Code Integration — Generate and scan QR codes to navigate to an event's sign up page.
 - Image Upload Support — Attach and upload images (e.g., tickets, event posters, or proof of attendance) directly within the app.
-- Push Notifications — Receive alerts for registration updates, event changes, and important account actions.
+- Notifications — Receive alerts for registration updates, event changes, and important account actions.
 - Event Geolocation Map — Visualize where event entrants are located and track sign-up origins when geolocation is enabled.

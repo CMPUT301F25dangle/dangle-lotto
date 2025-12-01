@@ -123,6 +123,7 @@ public class AdminUserDetailFragment extends Fragment {
                 binding.adminSwitchOrganizer.setTrackTintList(
                         ContextCompat.getColorStateList(requireContext(), R.color.purple_200)
                 );
+                firebaseManager.createNotification(adminViewModel.getUser().getValue(), adminViewModel.getSelectedUser().getValue().getUid(), "You were granted organizer permissions!", true);
             } else {
                 firebaseManager.revokeOrganizer(selectedUser.getUid());
                 Query queryEvents = firebaseManager.getEventsReference().whereEqualTo("Organizer", selectedUser.getUid());
@@ -147,8 +148,8 @@ public class AdminUserDetailFragment extends Fragment {
                 binding.adminSwitchOrganizer.setTrackTintList(ContextCompat.getColorStateList(
 
                         requireContext(), R.color.light_grey));
+                firebaseManager.createNotification(adminViewModel.getUser().getValue(), adminViewModel.getSelectedUser().getValue().getUid(), "Your organizer permissions were revoked.", true);
             }
-            firebaseManager.createNotification(adminViewModel.getUser().getValue(), adminViewModel.getSelectedUser().getValue().getUid(), "Organizer status set to: " + binding.adminSwitchOrganizer.isChecked(), true);
         });
 
 

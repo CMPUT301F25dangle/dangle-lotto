@@ -821,15 +821,15 @@ public class FirebaseManager {
     /**
      * Creates a notification document in the database.
      *
-     * @param uid  User id
-     * @param eid  Event id
+     * @param senderId  sender id (can either be a user id or event id)
+     * @param receiverId  receiver id (only a uid)
      * @param message message to send to user
      * @param isFromAdmin whether the notification is from an admin
      */
-    public void createNotification(String eid, String uid, String message, Boolean isFromAdmin){
-        String nid = users.document(uid).collection("Notifications").document().getId();
-        Notification newnNoti = new Notification(eid, uid, nid, Timestamp.now(), message, isFromAdmin);
-        users.document(uid).collection("Notifications").document(nid).set(newnNoti);
+    public void createNotification(String senderId, String receiverId, String message, Boolean isFromAdmin){
+        String nid = users.document(receiverId).collection("Notifications").document().getId();
+        Notification newnNoti = new Notification(senderId, receiverId, nid, Timestamp.now(), message, isFromAdmin);
+        users.document(receiverId).collection("Notifications").document(nid).set(newnNoti);
     }
 
     /**

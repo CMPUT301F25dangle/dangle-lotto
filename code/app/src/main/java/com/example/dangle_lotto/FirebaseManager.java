@@ -823,7 +823,8 @@ public class FirebaseManager {
      *
      * @param uid  User id
      * @param eid  Event id
-     * @param status  Status of the notification
+     * @param message message to send to user
+     * @param isFromAdmin whether the notification is from an admin
      */
     public void createNotification(String eid, String uid, String message, Boolean isFromAdmin){
         String nid = users.document(uid).collection("Notifications").document().getId();

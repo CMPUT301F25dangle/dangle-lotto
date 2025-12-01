@@ -473,7 +473,7 @@ public class Event {
             throw new IllegalArgumentException("User is already registered");
         }
         registered.add(uid);
-        firebaseManager.createNotification(uid, eid, "Registered", null, false);
+        firebaseManager.createNotification(eid, uid, "You have been registered for " + name, false);
         this.deleteSignUp(uid);
         this.deleteChosen(uid);
         this.deleteCancelled(uid);
@@ -503,7 +503,7 @@ public class Event {
             throw new IllegalArgumentException("User is already chosen");
         }
         chosen.add(uid);
-        firebaseManager.createNotification(uid, eid, "Chosen", null, false);
+        firebaseManager.createNotification(eid, uid, "You have been chosen for " + name, false);
         this.deleteRegistered(uid);
         this.deleteSignUp(uid);
         this.deleteCancelled(uid);
@@ -533,7 +533,7 @@ public class Event {
             throw new IllegalArgumentException("User is already signed up");
         }
         signUps.add(uid);
-        firebaseManager.createNotification(uid, eid, "Signed Up", null, false);
+        firebaseManager.createNotification(eid, uid, "You have been Signed Up for " + name, false);
         this.deleteRegistered(uid);
         this.deleteChosen(uid);
         this.deleteCancelled(uid);
@@ -563,7 +563,7 @@ public class Event {
             throw new IllegalArgumentException("User is already cancelled");
         }
         cancelled.add(uid);
-        firebaseManager.createNotification(uid, eid, "Cancelled", null, false);
+        firebaseManager.createNotification(eid, uid, "You have been Cancelled for " + name, false);
         this.deleteRegistered(uid);
         this.deleteChosen(uid);
         this.deleteSignUp(uid);

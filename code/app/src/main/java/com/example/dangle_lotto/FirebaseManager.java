@@ -222,6 +222,7 @@ public class FirebaseManager {
         data.put("DeviceId", null);
         data.put("CanOrganize", canOrganize);
         data.put("Location", null);
+        data.put("notiStatus", true);
         data.put("isAdmin", false); // no admin creation interface in app but can add later
 
         users.document(uid).set(data);

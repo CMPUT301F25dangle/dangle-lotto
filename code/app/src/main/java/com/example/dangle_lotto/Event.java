@@ -473,7 +473,7 @@ public class Event {
             throw new IllegalArgumentException("User is already registered");
         }
         registered.add(uid);
-        firebaseManager.createNotification(uid, eid, "Register");
+        firebaseManager.createNotification(uid, eid, "Registered");
         this.deleteSignUp(uid);
         this.deleteChosen(uid);
         this.deleteCancelled(uid);
@@ -533,7 +533,7 @@ public class Event {
             throw new IllegalArgumentException("User is already signed up");
         }
         signUps.add(uid);
-        firebaseManager.createNotification(uid, eid, "SignUps");
+        firebaseManager.createNotification(uid, eid, "Signed Up");
         this.deleteRegistered(uid);
         this.deleteChosen(uid);
         this.deleteCancelled(uid);

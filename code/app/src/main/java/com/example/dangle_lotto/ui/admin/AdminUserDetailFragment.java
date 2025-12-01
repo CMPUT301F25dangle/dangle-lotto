@@ -133,7 +133,7 @@ public class AdminUserDetailFragment extends Fragment {
                             firebaseManager.deleteEvent(doc.getId());
                         }
                         adminViewModel.setEvents(null); // reset events in view model to refresh
-                        events = new ArrayList<>();
+                        events.clear();
                         adapter.notifyDataSetChanged();
                     }
                     @Override

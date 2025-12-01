@@ -68,7 +68,7 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
 
     // import dependency to generate QR code
-    implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     // import firebase storage dependency
     implementation("com.google.firebase:firebase-storage:20.3.0")
 

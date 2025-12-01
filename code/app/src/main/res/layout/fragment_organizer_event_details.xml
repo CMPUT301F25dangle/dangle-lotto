@@ -6,12 +6,13 @@
     android:layout_height="match_parent"
     tools:context=".ui.dashboard.OrganizerEventDetailsFragment">
 
+
     <ImageButton
         android:id="@+id/organizer_event_details_back_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="8dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginTop="24dp"
         android:background="@android:color/transparent"
         android:src="@drawable/outline_arrow_back_24"
         app:layout_constraintStart_toStartOf="parent"

@@ -32,8 +32,8 @@ public class EventFirebaseTest {
 
     public EventFirebaseTest() {
         firebaseManager = FirebaseManager.getInstance();
-        testOrganizer = new GeneralUser("FvKUWJ366kM80HcFeM6gqZxGaIPU", "Mahd", "immahd","afzalmahd@gmail.com", "", null,"", firebaseManager, true);
-        testRegistrant = new GeneralUser("RPkgAupyndxOZNRTAlad4wQRE2A6", "Tirth", "mynametirth","qbin57@gmail.com", "", null,"", firebaseManager, false);
+        testOrganizer = new GeneralUser("FvKUWJ366kM80HcFeM6gqZxGaIPU", "Mahd", "immahd","afzalmahd@gmail.com", "", null,"", null, firebaseManager, true);
+        testRegistrant = new GeneralUser("RPkgAupyndxOZNRTAlad4wQRE2A6", "Tirth", "mynametirth","qbin57@gmail.com", "", null,"", null, firebaseManager, false);
     }
 
     public Event createTemplateEvent(){

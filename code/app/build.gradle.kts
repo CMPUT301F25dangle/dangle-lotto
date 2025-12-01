@@ -84,6 +84,11 @@ dependencies {
 
     // get location permissions
     implementation("com.google.android.gms:play-services-location:21.3.0")
+
+    // For map functionality
+    implementation("org.osmdroid:osmdroid-android:6.1.18")
+
+
 }
 
 

@@ -6,9 +6,22 @@
     tools:context=".ui.dashboard.OrganizerEventDetailsMapFragment">
 
     <!-- TODO: Update blank fragment layout -->
-    <TextView
+    <!-- OpenStreetMap (osmdroid) MapView -->
+    <org.osmdroid.views.MapView
+        android:id="@+id/map_view"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="map" />
+        android:layout_height="match_parent" />
+
+    <!-- Optional overlay text/info panel -->
+    <TextView
+        android:id="@+id/map_overlay_text"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:text="Loading map..."
+        android:layout_gravity="center"
+        android:textColor="@android:color/white"
+        android:background="#66000000"
+        android:padding="8dp" />
 
 </FrameLayout>

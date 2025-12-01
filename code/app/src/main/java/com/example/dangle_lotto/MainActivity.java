@@ -4,6 +4,7 @@ import static androidx.activity.result.ActivityResultCallerKt.registerForActivit
 
 import android.Manifest;
 import android.annotation.SuppressLint;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.util.Log;
@@ -22,6 +23,7 @@ import androidx.navigation.ui.NavigationUI;
 import com.example.dangle_lotto.databinding.ActivityMainBinding;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.GeoPoint;
 
 import java.util.Objects;
@@ -154,4 +156,18 @@ public class MainActivity extends AppCompatActivity {
 
                 });
     }
+
+    @Override
+    protected void onDestroy() {
+        SharedPreferences prefs = getSharedPreferences("prefs", MODE_PRIVATE);
+        boolean remember = prefs.getBoolean("rememberMe", true);
+        Log.d("onDestroy", "rememberMe: " + remember);
+        if (!remember) {
+            Log.d("onDestroy", "rememberMe is firing: " + remember);
+            FirebaseManager.getInstance().getAuth().signOut();
+        }
+
+        super.onDestroy();
+    }
+
 }

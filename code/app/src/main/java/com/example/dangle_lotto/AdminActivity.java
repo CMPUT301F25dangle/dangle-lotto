@@ -1,7 +1,9 @@
 package com.example.dangle_lotto;
 
+import android.content.SharedPreferences;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.lifecycle.ViewModelProvider;
@@ -53,6 +55,18 @@ public class AdminActivity extends AppCompatActivity {
             NavigationUI.onNavDestinationSelected(item, navController);
             return true;
         });
+    }
 
+    @Override
+    protected void onDestroy() {
+        SharedPreferences prefs = getSharedPreferences("prefs", MODE_PRIVATE);
+        boolean remember = prefs.getBoolean("rememberMe", true);
+        Log.d("onDestroy", "rememberMe: " + remember);
+        if (!remember) {
+            FirebaseManager firebaseManager = FirebaseManager.getInstance();
+            firebaseManager.getAuth().signOut();
+        }
+
+        super.onDestroy();
     }
 }

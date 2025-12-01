@@ -1,7 +1,10 @@
 package com.example.dangle_lotto;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -22,20 +25,85 @@ import com.google.firebase.FirebaseApp;
  */
 public class LoginActivity extends AppCompatActivity {
 
+    private FirebaseManager firebaseManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+
+        FirebaseApp.initializeApp(this);
+        firebaseManager = FirebaseManager.getInstance();
+        SharedPreferences prefs = getSharedPreferences("prefs", MODE_PRIVATE);
+        boolean remember = prefs.getBoolean("rememberMe", true);
+
+        if (firebaseManager.getAuth().getCurrentUser() != null && remember) {
+            loadUser(firebaseManager.getAuth().getCurrentUser().getUid());
+        }
+
         setContentView(R.layout.activity_login);
 
         // set to light mode
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
-        // opens login fragment by default
-        if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.auth_fragment_container, new LoginFragment())
-                    .commit();
-        }
-        FirebaseApp.initializeApp(this);
+        // attempt device-based auto login
+        checkDeviceLogin(savedInstanceState);
     }
+
+    private void loadUser(String uid){
+        firebaseManager.getUser(uid, new FirebaseCallback<User>() {
+
+            @Override
+            public void onSuccess(User result) {
+                Intent intent = null;
+                if (result.isAdmin())
+                    intent = new Intent(LoginActivity.this, AdminActivity.class);
+                else
+                    intent = new Intent(LoginActivity.this, MainActivity.class);
+                intent.putExtra("UID", uid);
+                startActivity(intent);
+                Toast.makeText(LoginActivity.this, "Login successful", Toast.LENGTH_SHORT).show();
+                finish();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e("LoginFragment", "Error loading user: " + e.getMessage());
+            }
+        });
+    }
+
+    /**
+     * Checks if the current device is linked to a user in Firestore for auto-login.
+     * <p>
+     * If a user is found for the device ID, the app immediately launches MainActivity
+     * with the associated UID. Otherwise, the login UI fragment is displayed.
+     *
+     * @param savedInstanceState Bundle used to restore the fragment state if needed.
+     */
+    private void checkDeviceLogin(Bundle savedInstanceState) {
+        String deviceId = FirebaseManager.getDeviceId(this);
+        firebaseManager.getUserByDeviceId(deviceId, new FirebaseCallback<String>() {
+            @Override
+            public void onSuccess(String uid) {
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                intent.putExtra("UID", uid);
+                startActivity(intent);
+                finish();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                if (savedInstanceState == null) {
+                    getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.auth_fragment_container, new LoginFragment())
+                            .commit();
+                }
+            }
+
+            @Override
+            public void onComplete() { }
+        });
+    }
+
 }

@@ -73,6 +73,7 @@ public class AdminEventDetailFragment extends Fragment {
         binding.adminEventDescription.setText(selectedEvent.getDescription());
         binding.adminEventStartDate.setText("Opens: " + formatTimeStamp(selectedEvent.getStartDate()));
         binding.adminEventEndDate.setText("Closes: " + formatTimeStamp(selectedEvent.getEndDate()));
+        binding.adminEventEventDate.setText("Event Date: " + formatTimeStamp(selectedEvent.getEndDate()));
 
         // Display event poster (if available")
         if (!(selectedEvent.getPhotoID().isEmpty() || selectedEvent.getPhotoID() == null))
@@ -155,7 +156,7 @@ public class AdminEventDetailFragment extends Fragment {
     private String formatTimeStamp(Timestamp ts) {
         if (ts == null) return "N/A";
         Date date = ts.toDate();
-        DateFormat df = new SimpleDateFormat("MM dd, yyyy HH:mm", Locale.getDefault());
+        DateFormat df = new SimpleDateFormat("MMM dd, yyyy HH:mm", Locale.getDefault());
         return df.format(date);
     }
 

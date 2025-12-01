@@ -6,7 +6,6 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
@@ -19,14 +18,13 @@ import com.example.dangle_lotto.LoginActivity;
 import com.example.dangle_lotto.Notification;
 import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.databinding.FragmentAdminViewNotificationsBinding;
-import com.example.dangle_lotto.ui.notifications.NotificationAdapter;
+import com.example.dangle_lotto.ui.NotificationCardAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
-import java.util.List;
 
 /**
  * AdminViewNotificationsFragment - Fragment displays all notifications sent
@@ -45,15 +43,20 @@ public class AdminViewNotificationsFragment extends Fragment {
     private ArrayList<Notification> notifications;
 
     public View onCreateView(@NonNull LayoutInflater inflater, ViewGroup container, Bundle savedInstanceBundle) {
+        // Inflate the layout for this fragment
         binding = FragmentAdminViewNotificationsBinding.inflate(inflater, container, false);
         View root = binding.getRoot();
+
+        // Setup recycler view
         recyclerView = root.findViewById(R.id.admin_notifications_list);
-        List<Notification> totalNotifications = new ArrayList<>();
-        manager = new LinearLayoutManager(getContext());
         notifications = new ArrayList<>();
-        adapter = new NotificationCardAdapter(notifications);
-        recyclerView.setAdapter(adapter);
+
+        // Setup adapter and attach it to the recycler view
+        manager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(manager);
+        adapter = new NotificationCardAdapter(notifications, "AdminView");
+        recyclerView.setAdapter(adapter);
+
 
         // Fetch all notifications
         FirebaseFirestore db = FirebaseFirestore.getInstance();

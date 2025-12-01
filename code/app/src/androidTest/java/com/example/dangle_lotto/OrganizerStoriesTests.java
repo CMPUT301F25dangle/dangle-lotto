@@ -376,12 +376,61 @@ public class OrganizerStoriesTests {
      * US 02.02.03 As an organizer I want to enable or disable the geolocation requirement for my event.
      */
     @Test
-    public void OrganizerCanEnableDisableGeolocation() {
+    public void OrganizerCanEnableDisableGeolocation() throws InterruptedException {
         // Login
         login("owner@gmail.com", "password");
 
-        // Fails test instantly
-        fail("Fail immediately");
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on create event button
+        onView(withId(R.id.dashboard_fragment_new_event_button)).perform(click());
+
+        // Event name
+        onView(withHint("Dangle Lotto Gathering")).perform(typeText("Good Party"), closeSoftKeyboard());
+
+        // Event size
+        onView(withId(R.id.create_event_size_input)).perform(typeText("100"), closeSoftKeyboard());
+
+        // Event registration start date
+        onView(withId(R.id.create_event_registration_start_input)).perform(scrollTo(), click());
+        fillDatePicker("12122026");
+
+        // Event registration end date
+        onView(withId(R.id.create_event_registration_end_input)).perform(scrollTo(), click());
+        fillDatePicker("12132026");
+
+        // Event date
+        onView(withId(R.id.create_event_date_input)).perform(scrollTo(), click());
+        fillDatePicker("12142026");
+
+        // Event description
+        onView(withId(R.id.create_event_description_input)).perform(scrollTo(), typeText("A party for good people"), closeSoftKeyboard());
+
+        // Check box for geolocation twice
+        onView(withId(R.id.cb_enable_geolocation)).perform(scrollTo(), click());
+        onView(withId(R.id.cb_enable_geolocation)).perform(scrollTo(), click());
+
+        // Click on done button
+        onView(withText("Done")).perform(scrollTo(), click());
+
+        // Let QR code dialogue to appear
+        Thread.sleep(3000);
+
+        // Check if qr code is displayed
+        onView(withId(R.id.create_event_banner_QR_display)).check(matches(isDisplayed()));
+
+        // Click on done button
+        onView(withText("Done")).perform(click());
+
+        // Click on event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on EVENT button
+        onView(withText("MAP")).perform(click());
+
+        // Check that map no exist
+        onView(withText("Geolocation for event is turned off.")).check(matches(isDisplayed()));
     }
 
     /**

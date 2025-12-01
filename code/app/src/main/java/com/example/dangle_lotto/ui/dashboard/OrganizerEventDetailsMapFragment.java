@@ -76,7 +76,6 @@ public class OrganizerEventDetailsMapFragment extends Fragment {
 
         loadUserMarkers();
 
-
         return root;
     }
 

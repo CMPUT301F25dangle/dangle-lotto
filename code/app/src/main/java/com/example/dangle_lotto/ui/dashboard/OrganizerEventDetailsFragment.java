@@ -1,5 +1,6 @@
 package com.example.dangle_lotto.ui.dashboard;
 
+
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -13,10 +14,13 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 
+
 import com.example.dangle_lotto.Event;
 import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.UserViewModel;
 import com.example.dangle_lotto.databinding.FragmentOrganizerEventDetailsBinding;
+
+
 
 /**
  * This fragment creates the organizer view of their event
@@ -53,11 +57,13 @@ public class OrganizerEventDetailsFragment extends Fragment {
         // setting event name
         binding.organizerEventDetailsTitle.setText(event.getName());
 
+
         // making back button actually take you to previous fragment
         binding.organizerEventDetailsBackButton.setOnClickListener(v -> {
             NavController navController = NavHostFragment.findNavController(this);
             navController.popBackStack();
         });
+
 
         // initialize buttons
         qrButton = binding.eventQrViewButton;

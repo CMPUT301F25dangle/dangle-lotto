@@ -22,8 +22,12 @@ You can also view our Scrum board [here](https://github.com/orgs/CMPUT301F25dang
 ---
 
 ## Features  
-*(To be filled in)*
 
-- [ ]  
-- [ ]  
-- [ ]  
+- Secure User Authentication — Sign up and log in using email and password.
+- Role-Based Access Control — Distinguish between regular users and administrators with different permissions.
+- Device-Based Login (“Remember My Device”) — Option to link a device ID to a user account for automatic login without entering credentials.
+- User Profiles — Create and personalize profiles with editable details and profile images.
+- QR Code Integration — Generate and scan QR codes for event entry, ticket validation, and user check-ins.
+- Image Upload Support — Attach and upload images (e.g., tickets, event posters, or proof of attendance) directly within the app.
+- Push Notifications — Receive alerts for registration updates, event changes, and important account actions.
+- Event Geolocation Map — Visualize where event entrants are located and track sign-up origins when geolocation is enabled.

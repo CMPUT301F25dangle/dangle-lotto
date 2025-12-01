@@ -14,6 +14,7 @@ import androidx.navigation.ui.NavigationUI;
 
 import com.example.dangle_lotto.databinding.ActivityAdminBinding;
 import com.example.dangle_lotto.databinding.ActivityMainBinding;
+import com.example.dangle_lotto.ui.admin.AdminViewModel;
 import com.google.firebase.auth.FirebaseAuth;
 
 /**
@@ -27,7 +28,7 @@ import com.google.firebase.auth.FirebaseAuth;
  */
 public class AdminActivity extends AppCompatActivity {
     private ActivityAdminBinding binding;
-    private UserViewModel userViewModel;
+    private AdminViewModel adminViewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,11 +39,11 @@ public class AdminActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         // initialize and view model
-        userViewModel = new ViewModelProvider(this).get(UserViewModel.class);
+        adminViewModel = new ViewModelProvider(this).get(AdminViewModel.class);
 
         // Get user from firebase and save in view model
         String uid = getIntent().getStringExtra("UID");
-        userViewModel.loadUser(uid);
+        adminViewModel.setUser(uid);
 
         NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment_activity_admin);
 

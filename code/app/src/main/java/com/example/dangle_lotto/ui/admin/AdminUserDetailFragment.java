@@ -141,7 +141,6 @@ public class AdminUserDetailFragment extends Fragment {
                         Log.e("AdminUserDetailFragment", "Error deleting events: " + e.getMessage());
                     }
                 });
-                // TODO: Notify users related to event
                 binding.adminSwitchOrganizer.setThumbTintList(ContextCompat.getColorStateList(
 
                         requireContext(), R.color.grey));
@@ -149,6 +148,7 @@ public class AdminUserDetailFragment extends Fragment {
 
                         requireContext(), R.color.light_grey));
             }
+            firebaseManager.createNotification(adminViewModel.getUser().getValue(), adminViewModel.getSelectedUser().getValue().getUid(), "Organizer status set to: " + binding.adminSwitchOrganizer.isChecked(), true);
         });
 
 
@@ -165,7 +165,6 @@ public class AdminUserDetailFragment extends Fragment {
             // reset users in view model to refresh
             adminViewModel.setEvents(null);
 
-            //TODO: send a notification to any users who were registered to event user organized
             Navigation.findNavController(view).popBackStack();
         });
 

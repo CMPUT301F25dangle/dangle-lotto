@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.ViewModel;
 
+import com.example.dangle_lotto.AdminUser;
 import com.example.dangle_lotto.Event;
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.GeneralUser;
@@ -19,6 +20,7 @@ import java.util.ArrayList;
  * @since 2025-11-27
  */
 public class AdminViewModel extends ViewModel {
+    private final MutableLiveData<String> admin = new MutableLiveData<>();
     private final MutableLiveData<ArrayList<Event>> events = new MutableLiveData<>();
     private final MutableLiveData<Event> selectedEvent = new MutableLiveData<>();
 
@@ -102,5 +104,21 @@ public class AdminViewModel extends ViewModel {
      */
     public LiveData<GeneralUser> getSelectedUser() {
         return selectedUser;
+    }
+
+    /**
+     * Sets the user
+     * @param user
+     */
+    public void setUser(String user) {
+        admin.setValue(user);
+    }
+
+    /**
+     * Gets the user
+     * @return
+     */
+    public LiveData<String> getUser() {
+        return admin;
     }
 }

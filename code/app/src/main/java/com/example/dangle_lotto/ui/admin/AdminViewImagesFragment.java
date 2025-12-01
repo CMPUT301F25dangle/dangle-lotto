@@ -90,7 +90,7 @@ public class AdminViewImagesFragment extends Fragment {
                         for (Event event : events) {
                             if (event.getPhotoID().equals(image)) {
                                 event.setPhotoID(null);
-
+                                firebaseManager.createNotification(adminViewModel.getUser().getValue(), event.getOrganizerID(), "Removed banner from event: " + event.getName(), true);
                                 // resets the event in the view model, so it refetches
                                 adminViewModel.setEvents(null);
                             }

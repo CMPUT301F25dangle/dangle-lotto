@@ -34,20 +34,28 @@ public class LoginActivity extends AppCompatActivity {
 
         FirebaseApp.initializeApp(this);
         firebaseManager = FirebaseManager.getInstance();
-        SharedPreferences prefs = getSharedPreferences("prefs", MODE_PRIVATE);
-        boolean remember = prefs.getBoolean("rememberMe", true);
-
-        if (firebaseManager.getAuth().getCurrentUser() != null && remember) {
-            loadUser(firebaseManager.getAuth().getCurrentUser().getUid());
-        }
 
         setContentView(R.layout.activity_login);
 
         // set to light mode
         AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
 
+        SharedPreferences prefs = getSharedPreferences("prefs", MODE_PRIVATE);
+        boolean remember = prefs.getBoolean("rememberMe", true);
+
+        if (firebaseManager.getAuth().getCurrentUser() != null && remember) {
+            loadUser(firebaseManager.getAuth().getCurrentUser().getUid());
+            return;
+        }
+
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.auth_fragment_container, new LoginFragment())
+                    .commit();
+        }
+
         // attempt device-based auto login
-        checkDeviceLogin(savedInstanceState);
+//        checkDeviceLogin(savedInstanceState);
     }
 
     private void loadUser(String uid){

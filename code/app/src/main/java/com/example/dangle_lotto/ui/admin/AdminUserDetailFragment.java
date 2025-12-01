@@ -163,7 +163,8 @@ public class AdminUserDetailFragment extends Fragment {
             ArrayList<GeneralUser> users = adminViewModel.getUsers().getValue();
             String removeId = selectedUser.getUid();
             users.removeIf(u -> u.getUid().equals(removeId));
-            // reset users in view model to refresh
+
+            // reset events in view model to refresh
             adminViewModel.setEvents(null);
 
             Navigation.findNavController(view).popBackStack();

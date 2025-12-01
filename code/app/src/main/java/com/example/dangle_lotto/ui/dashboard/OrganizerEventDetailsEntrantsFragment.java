@@ -129,19 +129,19 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
 
             } else if (id == chipChosen.getId()) {
                 currentFilter = Filter.CHOSEN;
-                dynamicButton.setText("Notify");
+                dynamicButton.setVisibility(View.GONE);
                 removeButton.setVisibility(View.VISIBLE);
                 exportButton.setVisibility(View.GONE);
 
             }  else if (id == chipSignups.getId()) {
                 currentFilter = Filter.SIGNUPS;
-                dynamicButton.setText("Notify");
+                dynamicButton.setVisibility(View.GONE);
                 removeButton.setVisibility(View.GONE);
                 exportButton.setVisibility(View.VISIBLE);
 
             } else if (id == chipCancelled.getId()) {
                 currentFilter = Filter.CANCELLED;
-                dynamicButton.setText("Notify");
+                dynamicButton.setVisibility(View.GONE);
                 removeButton.setVisibility(View.GONE);
                 exportButton.setVisibility(View.GONE);
             }
@@ -149,13 +149,10 @@ public class OrganizerEventDetailsEntrantsFragment extends Fragment {
             loadEntrants(currentFilter);
         });
 
-
         dynamicButton.setOnClickListener(v -> {
             if (currentFilter == Filter.REGISTRANTS) {
                 event.chooseLottoWinners();
                 loadEntrants(currentFilter);
-            } else {
-                // can add manual notify functionality here using the data in the list view
             }
         });
 

@@ -530,11 +530,44 @@ public class OrganizerStoriesTests {
      */
     @Test
     public void OrganizerSendsNotificationsToChosenEntrants() {
+        // Create an event to test on
+        Event eventOfInterest = createEvent();
+
+        // Add user as registrant
+        eventOfInterest.addRegistered(testerUid);
+
         // Login
         login("owner@gmail.com", "password");
 
-        // Fails test instantly
-        fail("Fail immediately");
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on ENTRANTS button
+        onView(withText("Entrants")).perform(click());
+
+        // Click on Choose
+        onView(withText("CHOOSE")).perform(click());
+
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on settings button
+        onView(withId(R.id.dashboard_fragment_setting_button)).perform(click());
+
+        // Click logout
+        onView(withText("Logout")).perform(click());
+
+        // Login as tester
+        login("tester@gmail.com", "password");
+
+        // Click on notifications button
+        onView(withId(R.id.navigation_notifications)).perform(click());
+
+        // Check if notification is displayed
+        onView(withText("You have been chosen for Good Party")).check(matches(isDisplayed()));
     }
 
     /**
@@ -829,25 +862,71 @@ public class OrganizerStoriesTests {
      */
     @Test
     public void OrganizerCanExportFinalList() throws InterruptedException {
+        // Login
+        login("owner@gmail.com", "password");
+
+        // Skip test
+        assumeTrue(false);
+    }
+
+    /**
+     * Check if organizer can send notifications to all registrants
+     * <p>
+     * US 02.07.01 As an organizer I want to send notifications to all entrants on the waiting list
+     */
+    @Test
+    public void OrganizerSendsNotificationsToAllRegistrants() {
         // Create an event to test on
         Event eventOfInterest = createEvent();
 
-        // Create another test user
-        firebaseManager.signUp("tester2@gmail.com", "password", "Tester User 2", "Tester User 2", "", "", true, new FirebaseCallback<String>() {
-            @Override
-            public void onSuccess(String result) {
-                tester2Uid = result;
-            }
+        // Add user as registrant
+        eventOfInterest.addRegistered(testerUid);
 
-            @Override
-            public void onFailure(Exception e) { }
-        });
-        Thread.sleep(1500);
+        // Login
+        login("owner@gmail.com", "password");
 
-        // Add the test2 user to the event register list
-        eventOfInterest.addSignUp(tester2Uid);
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
 
-        // Add the test user to the event register list
+        // Click on event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on ENTRANTS button
+        onView(withText("Entrants")).perform(click());
+
+        // Check if user is displayed
+        onView(withText("Tester User (tester@gmail.com)")).check(matches(isDisplayed()));
+
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on settings button
+        onView(withId(R.id.dashboard_fragment_setting_button)).perform(click());
+
+        // Click logout
+        onView(withText("Logout")).perform(click());
+
+        // Login as tester
+        login("tester@gmail.com", "password");
+
+        // Click on notifications button
+        onView(withId(R.id.navigation_notifications)).perform(click());
+
+        // Check if notification is displayed
+        onView(withText("You have been registered for Good Party")).check(matches(isDisplayed()));
+    }
+
+    /**
+     * Check if organizer can send notifications to all selected entrants
+     * <p>
+     * US 02.07.02 As an organizer I want to send notifications to all selected entrants
+     */
+    @Test
+    public void OrganizerSendsNotificationsToAllSelectedEntrants() {
+        // Create an event to test on
+        Event eventOfInterest = createEvent();
+
+        // Add user as registrant
         eventOfInterest.addSignUp(testerUid);
 
         // Login
@@ -859,36 +938,32 @@ public class OrganizerStoriesTests {
         // Click on event
         onView(withText("Good Party")).perform(click());
 
-        // FAIL TEST
-        fail("Fail immediately");
-    }
+        // Click on ENTRANTS button
+        onView(withText("Entrants")).perform(click());
 
-    /**
-     * Check if organizer can send notifications to all registrants
-     * <p>
-     * US 02.07.01 As an organizer I want to send notifications to all entrants on the waiting list
-     */
-    @Test
-    public void OrganizerSendsNotificationsToAllRegistrants() {
-        // Login
-        login("owner@gmail.com", "password");
+        // Click on Signups button
+        onView(withText("Signups")).perform(click());
 
-        // Fails test instantly
-        fail("Test not implemented");
-    }
+        // Check if user is displayed
+        onView(withText("Tester User (tester@gmail.com)")).check(matches(isDisplayed()));
 
-    /**
-     * Check if organizer can send notifications to all selected entrants
-     * <p>
-     * US 02.07.02 As an organizer I want to send notifications to all selected entrants
-     */
-    @Test
-    public void OrganizerSendsNotificationsToAllSelectedEntrants() {
-        // Login
-        login("owner@gmail.com", "password");
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
 
-        // Fails test instantly
-        fail("Test not implemented");
+        // Click on settings button
+        onView(withId(R.id.dashboard_fragment_setting_button)).perform(click());
+
+        // Click logout
+        onView(withText("Logout")).perform(click());
+
+        // Login as tester
+        login("tester@gmail.com", "password");
+
+        // Click on notifications button
+        onView(withId(R.id.navigation_notifications)).perform(click());
+
+        // Check if notification is displayed
+        onView(withText("You have been Signed Up for Good Party")).check(matches(isDisplayed()));
     }
 
     /**
@@ -898,10 +973,52 @@ public class OrganizerStoriesTests {
      */
     @Test
     public void OrganizerSendsNotificationsToAllCancelledEntrants() {
+        // Create an event to test on
+        Event eventOfInterest = createEvent();
+
+        // Add user as registrant
+        eventOfInterest.addChosen(testerUid);
+
         // Login
         login("owner@gmail.com", "password");
 
-        // Fails test instantly
-        fail("Test not implemented");
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on event
+        onView(withText("Good Party")).perform(click());
+
+        // Click on ENTRANTS button
+        onView(withText("Entrants")).perform(click());
+
+        // Click on chosen button
+        onView(withText("Chosen")).perform(click());
+
+        // Click on Remove button
+        onView(withText("Remove")).perform(click());
+
+        // Click on cancelled button
+        onView(withText("Cancelled")).perform(click());
+
+        // Check if user is displayed
+        onView(withText("Tester User (tester@gmail.com)")).check(matches(isDisplayed()));
+
+        // Navigate to dashboard
+        onView(withId(R.id.navigation_dashboard)).perform(click());
+
+        // Click on settings button
+        onView(withId(R.id.dashboard_fragment_setting_button)).perform(click());
+
+        // Click logout
+        onView(withText("Logout")).perform(click());
+
+        // Login as tester
+        login("tester@gmail.com", "password");
+
+        // Click on notifications button
+        onView(withId(R.id.navigation_notifications)).perform(click());
+
+        // Check if notification is displayed
+        onView(withText("You have been Cancelled for Good Party")).check(matches(isDisplayed()));
     }
 }

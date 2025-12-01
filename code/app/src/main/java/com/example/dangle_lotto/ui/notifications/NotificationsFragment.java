@@ -115,22 +115,6 @@ public class NotificationsFragment extends Fragment {
             @Override
             public void onSuccess(List<DocumentSnapshot> notifDocs) {
                 for (DocumentSnapshot notifDoc : notifDocs) {
-                    // Extract fields from the notification document
-//                    String senderId = notifDoc.getString("senderId");
-//                    String receiverId = notifDoc.getString("receiverId");
-//                    String message = notifDoc.getString("message");
-//                    Boolean isFromAdmin = notifDoc.getBoolean("isFromAdmin");
-//                    String nid = notifDoc.getId();
-//                    Timestamp receiptTime = notifDoc.getTimestamp("receiptTime");
-//
-//                    Notification notification = new Notification(
-//                            senderId,
-//                            receiverId,
-//                            nid,
-//                            receiptTime,
-//                            message,
-//                            isFromAdmin
-//                    );
                     Notification notification = firebaseManager.notiDocToNoti(notifDoc);
                     notifications.add(notification);
                 }

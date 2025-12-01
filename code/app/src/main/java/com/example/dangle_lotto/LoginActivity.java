@@ -58,6 +58,15 @@ public class LoginActivity extends AppCompatActivity {
 //        checkDeviceLogin(savedInstanceState);
     }
 
+    /**
+     * Loads a user's profile from Firebase using the provided UID and navigates
+     * to the appropriate activity based on their role. If the user is an admin,
+     * they are redirected to {@link AdminActivity}; otherwise, they are taken to
+     * {@link MainActivity}. Displays a success message on completion and finishes
+     * the current activity.
+     *
+     * @param uid The unique identifier of the user whose data should be loaded.
+     */
     private void loadUser(String uid){
         firebaseManager.getUser(uid, new FirebaseCallback<User>() {
 
@@ -80,38 +89,4 @@ public class LoginActivity extends AppCompatActivity {
             }
         });
     }
-
-    /**
-     * Checks if the current device is linked to a user in Firestore for auto-login.
-     * <p>
-     * If a user is found for the device ID, the app immediately launches MainActivity
-     * with the associated UID. Otherwise, the login UI fragment is displayed.
-     *
-     * @param savedInstanceState Bundle used to restore the fragment state if needed.
-     */
-    private void checkDeviceLogin(Bundle savedInstanceState) {
-        String deviceId = FirebaseManager.getDeviceId(this);
-        firebaseManager.getUserByDeviceId(deviceId, new FirebaseCallback<String>() {
-            @Override
-            public void onSuccess(String uid) {
-                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                intent.putExtra("UID", uid);
-                startActivity(intent);
-                finish();
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                if (savedInstanceState == null) {
-                    getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.auth_fragment_container, new LoginFragment())
-                            .commit();
-                }
-            }
-
-            @Override
-            public void onComplete() { }
-        });
-    }
-
 }

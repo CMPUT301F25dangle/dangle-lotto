@@ -49,6 +49,12 @@ public class QRDialogueFragment extends DialogFragment {
         this.qr = bitmap;
     }
 
+    /**
+     * Handles dialog dismissal by asking the parent
+     * {@link CreateEventFragment} to navigate back if present.
+     *
+     * @param dialog the dismissed dialog
+     */
     @Override
     public void onDismiss(@NonNull DialogInterface dialog) {
         super.onDismiss(dialog);

@@ -35,25 +35,26 @@ public class Notification {
         this.receiptTime = receiptTime;
     }
 
-    public String getSenderId() {
-        return senderId;
-    }
-
-    public String getReceiverId() {
-        return receiverId;
-    }
-
-
-    public String getNid() {
-        return nid;
-    }
-
+    /**
+     * Returns the timestamp indicating when this notification was received.
+     *
+     * @return A {@link Timestamp} representing the receipt time.
+     */
     public Timestamp getReceiptTime() {
         return receiptTime;
     }
-
+    /**
+     * Returns the text content of this notification message.
+     *
+     * @return The message body as a string.
+     */
     public String getMessage() {return message; }
 
+    /**
+     * Indicates whether this notification was sent by an administrator account.
+     *
+     * @return {@code true} if sent by an admin, {@code false} otherwise.
+     */
     public Boolean getIsFromAdmin() { return isFromAdmin; }
 
 

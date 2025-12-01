@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
@@ -42,6 +43,8 @@ public class SignupFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_signup, container, false);
+        TextView tvGoToLogin = view.findViewById(R.id.tvGoToLogin);
+
 
         etSignupName = view.findViewById(R.id.signup_name_input);
         etSignupUsername = view.findViewById(R.id.signup_username_input);
@@ -53,6 +56,9 @@ public class SignupFragment extends Fragment {
         firebaseManager = FirebaseManager.getInstance();
 
         btnSignUp.setOnClickListener(v -> registerUser());
+
+        tvGoToLogin.setOnClickListener(v -> switchToLogin());
+
 
         return view;
     }
@@ -137,4 +143,17 @@ public class SignupFragment extends Fragment {
                 });
 
     }
+
+    /**
+     * switchToLogin - Navigates the user back to the login screen.
+     * <p>
+     * Replaces the current fragment with {@link LoginFragment} to allow users to log in.
+     */
+    private void switchToLogin() {
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.auth_fragment_container, new LoginFragment())
+                .commit();
+    }
+
 }

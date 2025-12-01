@@ -112,27 +112,28 @@ public class NotificationCardAdapter extends RecyclerView.Adapter<NotificationCa
                     Log.d("NotificationCardAdapter", "Failed to get sender");
                 }
             });
-            firebaseManager.getEvent(notification.getEid(), new FirebaseCallback<Event>() {
-                @Override
-                public void onSuccess(Event result) {
-                    firebaseManager.getUser(result.getOrganizerID(), new FirebaseCallback<User>() {
-                        @Override
-                        public void onSuccess(User result) {
-                            sender.setText("From: " + result.getName());
-                        }
-
-                        @Override
-                        public void onFailure(Exception e) {
-                            Log.d("NotificationCardAdapter", "Failed to get sender");
-                        }
-                    });
-                }
-
-                @Override
-                public void onFailure(Exception e) {
-                    Log.d("NotificationCardAdapter", "Failed to get event");
-                }
-            });
+//            firebaseManager.getEvent(notification.getEid(), new FirebaseCallback<Event>() {
+//                @Override
+//                public void onSuccess(Event result) {
+//                    firebaseManager.getUser(result.getOrganizerID(), new FirebaseCallback<User>() {
+//                        @Override
+//                        public void onSuccess(User result) {
+//                            sender.setText("From: " + result.getName());
+//                        }
+//
+//                        @Override
+//                        public void onFailure(Exception e) {
+//                            Log.d("NotificationCardAdapter", "Failed to get sender");
+//                        }
+//                    });
+//                }
+//
+//                @Override
+//                public void onFailure(Exception e) {
+//                    Log.d("NotificationCardAdapter", "Failed to get event");
+//                }
+//            });
+//            sender.setText(notification.getSenderName());
             content.setText(notification.getMessage());
             time.setText(formatTimeStamp(notification.getReceiptTime()));
         }

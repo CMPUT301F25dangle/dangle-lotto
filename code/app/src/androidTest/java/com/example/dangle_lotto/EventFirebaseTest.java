@@ -85,7 +85,7 @@ public class EventFirebaseTest {
         Event expected = new Event(
                 "POyVEkNrFErffhZYds1b",
                 "FvKUWJ366kM80HcFeM6gqZxGaIPU",
-                "Diddy Party",
+                "Party",
                 new Timestamp(date),
                 new Timestamp(date),
                 new Timestamp(date),

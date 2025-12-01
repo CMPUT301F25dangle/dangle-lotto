@@ -121,8 +121,7 @@ public class AdminEventDetailFragment extends Fragment {
             events.removeIf(e -> e.getEid().equals(removeId));
             adminViewModel.setEvents(events);
 
-            // TODO: send a notification
-
+            firebaseManager.createNotification(adminViewModel.getUser().getValue(), selectedEvent.getOrganizerID(), "Deleted event " + selectedEvent.getName(), true);
             // Return to previous fragment
             Navigation.findNavController(v).popBackStack();
         });

@@ -1,6 +1,7 @@
 package com.example.dangle_lotto.ui;
 
 import android.content.Context;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -80,12 +81,13 @@ public class NotificationCardAdapter extends RecyclerView.Adapter<NotificationCa
             if (Objects.equals(tag, "AdminView")) {
                 // Set the sender text
                 if (notification.getIsFromAdmin()) {
-                    sender.setText("Admin");
+                    sender.setText("From: Admin");
                 } else {
-                    sender.setText(notification.getSenderId());
+                    Log.d("AdminViewNotificationsFragment", "Notification: " + notification.getSenderName());
+                    sender.setText("From: " + notification.getSenderName());
                 }
                 // Set the receiver text
-                receiver.setText(notification.getReceiverId());
+                receiver.setText("To: " + notification.getReceiverName());
             }
 
             // User view notification

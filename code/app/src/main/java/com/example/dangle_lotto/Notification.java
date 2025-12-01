@@ -22,6 +22,9 @@ public class Notification {
     private String nid;
     private Timestamp receiptTime;
 
+    private String senderName;
+    private String receiverName;
+
 
     // An empty constructor for easy firestore loading
     public Notification() {}
@@ -64,6 +67,26 @@ public class Notification {
         return isFromAdmin;
     }
 
+    /** @return Name of the sender. */
+    public String getSenderName() {
+        return senderName;
+    }
+
+    /** @return Name of the receiver. */
+    public String getReceiverName() {
+        return receiverName;
+    }
+
+    /** Sets the name of the sender. */
+    public void setSenderName(String senderName) {
+        this.senderName = senderName;
+    }
+
+    /** Sets the name of the receiver. */
+
+    public void setReceiverName(String receiverName) {
+        this.receiverName = receiverName;
+    }
 
 
 }

@@ -537,7 +537,8 @@ public class FirebaseManager {
      * @param uid       User ID.
      * @param callback  Callback that receives the retrieved user object.
      */
-    public void getUser(String uid, FirebaseCallback<User> callback) {
+    public Task<Void> getUser(String uid, FirebaseCallback<User> callback) {
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
         // idling resource for testing
         idlingResource.increment();
 
@@ -545,10 +546,13 @@ public class FirebaseManager {
             if (task.isSuccessful()) {
                 DocumentSnapshot doc = task.getResult();
                 if (doc.exists()) {
-                    User user = UserFactory.getUser(doc, this);;
+                    User user = UserFactory.getUser(doc, this);
+                    tcs.setResult(null);
                     callback.onSuccess(user);
                 } else {
+                    Exception e = new Exception("User not found");
                     callback.onFailure(new Exception("User not found"));
+                    tcs.setException(e);
                 }
             }else{
                 callback.onFailure(task.getException());
@@ -563,6 +567,7 @@ public class FirebaseManager {
             // idling resource for testing
             idlingResource.decrement();
         });
+        return tcs.getTask();
     }
 
     /**
@@ -800,7 +805,9 @@ public class FirebaseManager {
      * @param eid  string of user id to search for and retrieve all attributes
      * @param callback callback function to call when event is retrieved
      */
-    public void getEvent(String eid, FirebaseCallback<Event> callback){
+    public Task<Void> getEvent(String eid, FirebaseCallback<Event> callback){
+
+        TaskCompletionSource<Void> tcs = new TaskCompletionSource<>();
         // idling resource for testing
         idlingResource.increment();
 
@@ -809,8 +816,11 @@ public class FirebaseManager {
                 DocumentSnapshot doc = task.getResult();
                 if (doc.exists()) {
                     callback.onSuccess(documentToEvent(doc));
+                    tcs.setResult(null);
                 } else {
+                    Exception e = new Exception("Event not found");
                     callback.onFailure(new Exception("Event not found"));
+                    tcs.setException(e);
                 }
             }else {
                 callback.onFailure(task.getException());
@@ -825,6 +835,7 @@ public class FirebaseManager {
             // idling resource for testing
             idlingResource.decrement();
         });
+        return tcs.getTask();
     }
 
     /**

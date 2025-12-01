@@ -123,6 +123,7 @@ public class AdminUserDetailFragment extends Fragment {
                 binding.adminSwitchOrganizer.setTrackTintList(
                         ContextCompat.getColorStateList(requireContext(), R.color.purple_200)
                 );
+                firebaseManager.createNotification(adminViewModel.getUser().getValue(), adminViewModel.getSelectedUser().getValue().getUid(), "You were granted organizer permissions!", true);
             } else {
                 firebaseManager.revokeOrganizer(selectedUser.getUid());
                 Query queryEvents = firebaseManager.getEventsReference().whereEqualTo("Organizer", selectedUser.getUid());
@@ -141,13 +142,13 @@ public class AdminUserDetailFragment extends Fragment {
                         Log.e("AdminUserDetailFragment", "Error deleting events: " + e.getMessage());
                     }
                 });
-                // TODO: Notify users related to event
                 binding.adminSwitchOrganizer.setThumbTintList(ContextCompat.getColorStateList(
 
                         requireContext(), R.color.grey));
                 binding.adminSwitchOrganizer.setTrackTintList(ContextCompat.getColorStateList(
 
                         requireContext(), R.color.light_grey));
+                firebaseManager.createNotification(adminViewModel.getUser().getValue(), adminViewModel.getSelectedUser().getValue().getUid(), "Your organizer permissions were revoked.", true);
             }
         });
 
@@ -165,7 +166,6 @@ public class AdminUserDetailFragment extends Fragment {
             // reset users in view model to refresh
             adminViewModel.setEvents(null);
 
-            //TODO: send a notification to any users who were registered to event user organized
             Navigation.findNavController(view).popBackStack();
         });
 

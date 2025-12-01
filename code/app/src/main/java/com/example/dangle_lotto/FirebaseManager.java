@@ -209,7 +209,6 @@ public class FirebaseManager {
      * @param phone       User phone number (nullable).
      * @param pid         Profile photo ID (nullable).
      * @param canOrganize Whether the user can organize events.
-     * @return Instantiated {@link GeneralUser} object.
      */
     public void createNewUser(String uid, String name, String username, String email, String phone, String pid, boolean canOrganize){
         Map<String, Object> data = new HashMap<>();

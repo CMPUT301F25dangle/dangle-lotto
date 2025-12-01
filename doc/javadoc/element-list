@@ -1,5 +1,6 @@
 com.example.dangle_lotto
 com.example.dangle_lotto.ui
+com.example.dangle_lotto.ui.admin
 com.example.dangle_lotto.ui.create_event
 com.example.dangle_lotto.ui.dashboard
 com.example.dangle_lotto.ui.detail

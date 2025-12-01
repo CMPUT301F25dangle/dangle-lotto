@@ -1,6 +1,7 @@
 package com.example.dangle_lotto.ui.admin;
 
 import android.app.AlertDialog;
+import android.content.Intent;
 import android.health.connect.GetMedicalDataSourcesRequest;
 import android.os.Bundle;
 import android.util.Log;
@@ -20,9 +21,11 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.dangle_lotto.FirebaseCallback;
 import com.example.dangle_lotto.FirebaseManager;
 import com.example.dangle_lotto.GeneralUser;
+import com.example.dangle_lotto.LoginActivity;
 import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.User;
 import com.example.dangle_lotto.databinding.FragmentAdminViewUsersBinding;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 import java.util.Objects;
@@ -62,7 +65,13 @@ public class AdminViewUsersFragment extends Fragment {
         } else {
             users = new ArrayList<>();
         }
-
+        // Logout button
+        binding.adminLogoutBtnUser.setOnClickListener(v -> {
+            FirebaseAuth.getInstance().signOut();
+            Intent intent = new Intent(getActivity(), LoginActivity.class);
+            startActivity(intent);
+            requireActivity().finish();
+        });
 
         // Set up adapter and attach it to the recycler view
         adapter = new UserCardAdapter(users, position -> {
@@ -70,39 +79,6 @@ public class AdminViewUsersFragment extends Fragment {
             adminViewModel.setSelectedUser(users.get(position));
             NavController navController = NavHostFragment.findNavController(this);
             navController.navigate(R.id.action_adminviewUsers_to_userdetailfragment);
-//            GeneralUser user = users.get(position);
-//
-//            // Show dialog to confirm action
-//            AlertDialog.Builder builder = new AlertDialog.Builder(getContext());
-//
-//            // Title
-//            builder.setTitle("Manage " + user.getName());
-//
-//            // Organizer button
-//            if (user.canOrganize()) {
-//                builder.setPositiveButton("Remove organizer", (dialogInterface, i) -> {
-//                    Toast.makeText(getContext(), "Removed organization rights from" + user.getName(), Toast.LENGTH_SHORT).show();
-//                    // TODO: Notify user
-//
-//                    // Remove organizer privilege
-//                    user.setCanNotOrganize();
-//                });
-//            }
-//
-//            // User button button
-//            builder.setNegativeButton("Delete user", (dialogInterface, i) -> {
-//                Toast.makeText(getContext(), "Removed user " + user.getName(), Toast.LENGTH_SHORT).show();
-//                firebaseManager.deleteUser(user.getUid());
-//
-//                // Remove user from list
-//                users.remove(user);
-//                adapter.notifyItemRemoved(i);
-//                adapter.notifyItemRangeChanged(i, users.size() - i);
-//            });
-//
-//            // Cancel button
-//            builder.setNeutralButton("Cancel", (dialogInterface, i) -> dialogInterface.dismiss());
-//            builder.show();
         });
         recyclerView.setAdapter(adapter);
 

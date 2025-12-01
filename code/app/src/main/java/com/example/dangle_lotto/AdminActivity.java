@@ -54,12 +54,5 @@ public class AdminActivity extends AppCompatActivity {
             return true;
         });
 
-        // Logout button
-        binding.adminLogoutBtn.setOnClickListener(v -> {
-            FirebaseAuth.getInstance().signOut();
-            Intent intent = new Intent(this, LoginActivity.class);
-            startActivity(intent);
-            this.finish();
-        });
     }
 }

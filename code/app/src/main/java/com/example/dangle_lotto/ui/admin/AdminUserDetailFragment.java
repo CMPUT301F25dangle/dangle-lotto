@@ -61,11 +61,7 @@ public class AdminUserDetailFragment extends Fragment {
         recyclerView = binding.adminDashboardList;
         manager = new LinearLayoutManager(getContext());
         recyclerView.setLayoutManager(manager);
-        // Check if user is null
-        if (selectedUser == null) {
-            Log.e("UserDetailFragment", "No selected user found.");
-            return root;
-        }
+
         if (events == null) {
             events = new ArrayList<>();
         } else {
@@ -73,8 +69,7 @@ public class AdminUserDetailFragment extends Fragment {
         }
 
         adapter = new EventCardAdapter(events, position -> {
-            Event event = events.get(position);
-            adminViewModel.setSelectedEvent(event);
+
         });
         recyclerView.setAdapter(adapter);
         // get all events user organized
@@ -103,6 +98,7 @@ public class AdminUserDetailFragment extends Fragment {
             Glide.with(requireContext()).load(selectedUser.getPhotoID()).into(binding.adminDashboardFragmentUserPicture);
         }
 
+        // Set back button
         binding.adminUserBtnBack.setOnClickListener(v -> {
             adminViewModel.setSelectedUser(null);
             Navigation.findNavController(v).popBackStack();
@@ -117,10 +113,6 @@ public class AdminUserDetailFragment extends Fragment {
             Toast.makeText(requireContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
         });
 
-        /**
-         * Set organizer switch
-         *
-         */
         binding.adminSwitchOrganizer.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (isChecked) {
                 firebaseManager.grantOrganizer(selectedUser.getUid());
@@ -133,8 +125,27 @@ public class AdminUserDetailFragment extends Fragment {
                 );
             } else {
                 firebaseManager.revokeOrganizer(selectedUser.getUid());
-                binding.adminSwitchOrganizer.setThumbTintList(ContextCompat.getColorStateList(requireContext(), R.color.grey));
-                binding.adminSwitchOrganizer.setTrackTintList(ContextCompat.getColorStateList(requireContext(), R.color.light_grey));
+                Query queryEvents = firebaseManager.getEventsReference().whereEqualTo("Organizer", selectedUser.getUid());
+                firebaseManager.getQuery(null, queryEvents, new FirebaseCallback<ArrayList<DocumentSnapshot>>() {
+                    @Override
+                    public void onSuccess(ArrayList<DocumentSnapshot> result) {
+                        for (DocumentSnapshot doc : result) {
+                            firebaseManager.deleteEvent(doc.getId());
+                        }
+                        adminViewModel.setEvents(null); // reset events in view model to refresh
+                    }
+                    @Override
+                    public void onFailure(Exception e) {
+                        Log.e("AdminUserDetailFragment", "Error deleting events: " + e.getMessage());
+                    }
+                });
+                // TODO: Notify users related to event
+                binding.adminSwitchOrganizer.setThumbTintList(ContextCompat.getColorStateList(
+
+                        requireContext(), R.color.grey));
+                binding.adminSwitchOrganizer.setTrackTintList(ContextCompat.getColorStateList(
+
+                        requireContext(), R.color.light_grey));
             }
         });
 

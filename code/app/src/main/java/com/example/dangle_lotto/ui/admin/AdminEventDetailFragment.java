@@ -56,11 +56,6 @@ public class AdminEventDetailFragment extends Fragment {
         adminViewModel = new ViewModelProvider(requireActivity()).get(AdminViewModel.class);
         selectedEvent = adminViewModel.getSelectedEvent().getValue();
 
-        // Check if event is null
-        if (selectedEvent == null) {
-            Log.e("EventDetailFragment", "No selected event found.");
-            return root;
-        }
         // get organizer and set their name
         firebaseManager.getUser(selectedEvent.getOrganizerID(), new FirebaseCallback<User>() {
             @Override

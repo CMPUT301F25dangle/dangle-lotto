@@ -1,5 +1,6 @@
 package com.example.dangle_lotto.ui.admin;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,10 +12,12 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.dangle_lotto.FirebaseManager;
+import com.example.dangle_lotto.LoginActivity;
 import com.example.dangle_lotto.Notification;
 import com.example.dangle_lotto.R;
 import com.example.dangle_lotto.databinding.FragmentAdminViewNotificationsBinding;
 import com.example.dangle_lotto.ui.notifications.NotificationAdapter;
+import com.google.firebase.auth.FirebaseAuth;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +42,13 @@ public class AdminViewNotificationsFragment extends Fragment {
         List<Notification> totalNotifications = new ArrayList<>();
         NotificationAdapter adapter = new NotificationAdapter(requireContext(), totalNotifications);
 //        notificationListView.setAdapter(adapter);
+        // Logout button
+        binding.adminLogoutBtnNotif.setOnClickListener(v -> {
+            FirebaseAuth.getInstance().signOut();
+            Intent intent = new Intent(getActivity(), LoginActivity.class);
+            startActivity(intent);
+            requireActivity().finish();
+        });
 
         return root;
     }

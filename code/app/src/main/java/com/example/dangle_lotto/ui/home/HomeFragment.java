@@ -212,41 +212,6 @@ public class HomeFragment extends Fragment {
 
 
     /**
-     * Builds the Firestore query for events with pagination and selected filters.
-     *
-     * @param startAfter The last DocumentSnapshot from previous page for pagination, or null for first page.
-     * @return Firestore Query ready to execute.
-     */
-    private Query buildEventQuery(DocumentSnapshot startAfter) {
-        String userId = userViewModel.getUser().getValue().getUid();
-
-        Query query = firebaseManager.getEventsReference()
-                .orderBy("Event Date", Query.Direction.DESCENDING)
-                .whereGreaterThan("End Date", now);
-
-        // Exclude user's own events
-        if (userId != null && !userId.isEmpty()) {
-            query = query.whereNotEqualTo("Organizer", userId);
-        }
-
-        // Apply category filters only if they exist and <= 10
-        if (!selectedFilters.isEmpty() && selectedFilters.size() <= 10) {
-            query = query.whereArrayContainsAny("Categories", selectedFilters);
-        }
-
-        // Pagination
-        if (startAfter != null) {
-            query = query.startAfter(startAfter);
-        }
-
-        // Limit results per page
-        query = query.limit(PAGE_SIZE);
-
-        return query;
-    }
-
-
-    /**
      * Loads the first page of events from Firestore.
      * <p>
      * Fetches upcoming events not created by the current user, applies

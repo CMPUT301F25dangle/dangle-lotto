@@ -33,6 +33,11 @@ public class GeneralUser extends User {
     /** User's location. */
     protected GeoPoint location;
 
+    /** User's device ID. */
+
+    protected String did;
+
+
     /**
      * Constructs a new GeneralUser object with the given attributes.
      *
@@ -43,14 +48,16 @@ public class GeneralUser extends User {
      * @param phone           User’s phone number (nullable).
      * @param location        User’s location (nullable).
      * @param pid             Profile photo identifier (nullable).
+     * @param did             User device identifier (nullable).
      * @param firebaseManager Reference to the {@link FirebaseManager} for database operations.
      * @param canOrganize     Whether the user has organizer privileges.
      */
     public GeneralUser(String uid, String name, String username, String email, String phone, GeoPoint location,
-                       String pid, FirebaseManager firebaseManager, boolean canOrganize) {
+                       String pid, String did, FirebaseManager firebaseManager, boolean canOrganize) {
         super(uid, name, username, email, phone, pid, firebaseManager);
         this.canOrganize = canOrganize;
         this.location = location;
+        this.did = did;
     }
 
     // ============================================================
@@ -82,6 +89,23 @@ public class GeneralUser extends User {
     public void setLocation(GeoPoint location) {
         this.location = location;
         firebaseManager.updateUserLocation(this.getUid(), location);
+    }
+
+    /**
+     * @return User’s device identifier.
+     */
+    public String getDeviceID() {
+        return did;
+    }
+
+
+    /**
+     * Updates the user's device ID locally and in Firestore.
+     *
+     * @param did New device identifier.
+     */
+    public void setDeviceID(String did) {
+        this.did = did;
     }
 
     // ============================================================

@@ -8,6 +8,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import android.text.TextUtils;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -27,7 +28,6 @@ import com.google.firebase.auth.FirebaseAuth;
 /**
  * UserSettingFragment - Fragment shows user settings.
  * NEED TO ADD CALLBACK TO UPDATE USER CUZ OTHERWISE DONT KNOW IF THERE ARE PROBLEMS IN IT
- * NEED TO CHANGE THE EMAIL IN FIREBASE AUTH
  * @author Aditya Soni
  * @version 1.0
  * @since 2025-11-06
@@ -62,11 +62,44 @@ public class UserSettingFragment extends Fragment {
         user = userViewModel.getUser().getValue();
 
         binding.logoutBtn.setOnClickListener(v -> {
+            String uid = null;
+
+            // Try getting UID from view model
+            if (userViewModel.getUser().getValue() != null) {
+                uid = userViewModel.getUser().getValue().getUid();
+            }
+
+            // If still null, fallback to FirebaseAuth current user
+            if (uid == null && FirebaseAuth.getInstance().getCurrentUser() != null) {
+                uid = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            }
+
+            // Clear device binding if we have a UID
+            Log.d("usersettingfragment", "before uid!=null");
+
+            if (uid != null) {
+                FirebaseManager.getInstance().getUsersReference().document(uid)
+                        .update("DeviceId", null)
+                        .addOnCompleteListener(task -> {
+                            if (task.isSuccessful()) {
+                                Log.d("Logout", "DeviceId cleared successfully");
+                            } else {
+                                Log.e("Logout", "Failed to clear DeviceId", task.getException());
+                            }
+                        });
+            }
+
+
+            // Sign out from Firebase
             FirebaseAuth.getInstance().signOut();
+
+            // Go back to login screen
             Intent intent = new Intent(getActivity(), LoginActivity.class);
             startActivity(intent);
             requireActivity().finish();
         });
+
+
 
         // making back button actually take you to previous fragment
         binding.settingsFragmentBackButton.setOnClickListener(v -> {

@@ -31,6 +31,7 @@ public class UserFactory {
         String email = doc.getString("Email");
         String phone = doc.getString("Phone");
         String pid = doc.getString("Picture");
+        String did = doc.getString("DeviceId");
         GeoPoint location = doc.getGeoPoint("Location");
         Log.d("UserFactory", "User loaded: " + username);
 
@@ -39,7 +40,7 @@ public class UserFactory {
             return new AdminUser(doc.getId(), name, username, email, phone, pid, firebaseManager);
         }else{
             Boolean canOrganize = doc.getBoolean("CanOrganize");
-            return new GeneralUser(doc.getId(), name, username, email, phone, location, pid,
+            return new GeneralUser(doc.getId(), name, username, email, phone, location, pid, did,
                     firebaseManager, Boolean.TRUE.equals(canOrganize));
         }
 

@@ -46,6 +46,10 @@ public class LoginFragment extends Fragment {
     private TextView tvToSignUp;
     private FirebaseManager firebaseManager;
 
+    private Button btnDeviceSignIn;
+    private FirebaseAuth auth;
+
+
     public LoginFragment() {
         // Required empty public constructor
     }
@@ -55,10 +59,11 @@ public class LoginFragment extends Fragment {
                              Bundle savedInstanceState) {
 
         View view = inflater.inflate(R.layout.fragment_login, container, false);
+        auth = FirebaseAuth.getInstance();
 
         etLoginEmail = view.findViewById(R.id.etLoginEmail);
         etLoginPassword = view.findViewById(R.id.etLoginPassword);
-        //cbRememberMe = view.findViewById(R.id.cbRememberMe);
+        cbRememberMe = view.findViewById(R.id.cbRememberMe);
         btnLogin = view.findViewById(R.id.btnLogin);
         tvToSignUp = view.findViewById(R.id.tvGoToSignup);
 
@@ -127,6 +132,9 @@ public class LoginFragment extends Fragment {
 
             @Override
             public void onSuccess(String result) {
+                if (cbRememberMe.isChecked()) {
+                    saveDeviceIdToUser(result);
+                }
                 loadUser(result);
             }
 
@@ -150,4 +158,34 @@ public class LoginFragment extends Fragment {
                 .addToBackStack(null)
                 .commit();
     }
+
+    /**
+     * Saves the current device's ID to the specified user's Firestore document.
+     * <p>
+     * This allows the app to identify the user on future app launches for device-based auto-login.
+     *
+     * @param uid UID of the user to associate the device with.
+     */
+    private void saveDeviceIdToUser(String uid) {
+        String deviceId = FirebaseManager.getDeviceId(requireContext());
+
+        firebaseManager.setDeviceIdForUser(uid, deviceId, new FirebaseCallback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                Log.d("saveDeviceIdToUser", "DeviceId successfully saved: " + deviceId);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.e("saveDeviceIdToUser", "Failed to save DeviceId", e);
+            }
+
+            @Override
+            public void onComplete() {
+                Log.d("saveDeviceIdToUser", "DeviceId save operation completed");
+            }
+        });
+    }
+
+
 }
